@@ -1,0 +1,4 @@
+Flask
+pyodbc
+Werkzeug
+python-dotenv
