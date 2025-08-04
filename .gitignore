@@ -1,0 +1,17 @@
+# Ignore virtual environment
+venv/
+
+# Environment variables
+.env
+
+# Compiled files
+__pycache__/
+*.pyc
+
+# SQLite DB or logs
+*.db
+*.log
+
+# IDE settings
+.vscode/
+.idea/

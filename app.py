@@ -507,9 +507,10 @@ def add_contractor():
     try:
         name = request.form.get('name', '').strip()
         father_name = request.form.get('father_name', '').strip()
+        phone_no = request.form.get('phone_no', '').strip()
         address = request.form.get('address', '').strip()
         is_active = 'is_active' in request.form
-        
+
         if not name or not father_name:
             flash('Name and Father Name are required.', 'error')
             return redirect(url_for('list_contractors'))
@@ -519,9 +520,9 @@ def add_contractor():
         created_at = datetime.now()
         
         success = DatabaseManager.execute_query("""
-            INSERT INTO Contractor (Name, FatherName, Address, IsActive, CreatedBy, CreatedAt)
-            VALUES (?, ?, ?, ?, ?, ?)
-        """, (name, father_name, address or None, is_active, created_by, created_at))
+            INSERT INTO Contractor (Name, FatherName, Address, PhoneNo, IsActive, CreatedBy, CreatedAt)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+        """, (name, father_name, address or None, phone_no, is_active, created_by, created_at))
         
         if success:
             flash('Contractor added successfully.', 'success')
@@ -538,6 +539,8 @@ def add_contractor():
 
 
     # Update the update_contractor function (you'll need to add this if it doesn't exist)
+
+
 @app.route('/contractor/edit/<int:contractor_id>', methods=['POST'])
 @require_auth
 @require_role(['admin'])
