@@ -1,0 +1,58 @@
+from flask import render_template, request, redirect, url_for, session, flash
+from datetime import datetime
+import logging
+from . import auth_bp
+from app.database import DatabaseManager
+
+logger = logging.getLogger(__name__)
+
+@auth_bp.route('/login', methods=['GET', 'POST'])
+def login():
+    """Login page with enhanced security"""
+    if request.method == 'POST':
+        email = request.form.get('email', '').strip().lower()
+        password = request.form.get('password', '')
+        
+        if not email or not password:
+            flash('Email and password are required.', 'error')
+            return render_template('auth/login.html')
+        
+        user = DatabaseManager.execute_query(
+            "SELECT Id, Email, Password, Type FROM [User] WHERE LOWER(TRIM(Email)) = ?",
+            (email,),
+            fetch_one=True
+        )
+        
+        if user and user[2] == password:
+            session.clear()
+            session.permanent = True
+            session['user_id'] = user[0]
+            session['email'] = user[1].strip()
+            session['user_type'] = user[3].lower().strip()
+            session['last_activity'] = datetime.now()
+            
+            logger.info(f"User {email} logged in successfully")
+            
+            user_type = session['user_type']
+            if user_type == 'admin':
+                return redirect(url_for('admin.dashboard'))
+            elif user_type == 'hr':
+                return redirect(url_for('hr.dashboard'))
+            else:
+                session.clear()
+                flash(f'Invalid user role: {user_type}', 'error')
+                return render_template('errors/access_denied.html'), 403
+        else:
+            logger.warning(f"Failed login attempt for email: {email}")
+            flash('Invalid email or password.', 'error')
+    
+    return render_template('auth/login.html')
+
+@auth_bp.route('/logout')
+def logout():
+    """Logout and clear session"""
+    if 'email' in session:
+        logger.info(f"User {session['email']} logged out")
+    session.clear()
+    flash('You have been logged out successfully.', 'info')
+    return redirect(url_for('auth.login'))

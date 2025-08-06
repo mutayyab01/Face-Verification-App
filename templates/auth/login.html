@@ -1,0 +1,33 @@
+{% extends "master.html" %}
+
+{% block title %}Login - Employee Management System{% endblock %}
+
+{% block content %}
+<div style="
+    background: linear-gradient(rgba(11, 197, 230, 0.6), rgba(124, 58, 237, 0.6)),
+                url('picks/backgroundpick.png') no-repeat center center fixed;
+    background-size: cover;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  ">
+  
+ <div class="form-box">
+    <h4 class="text-center">Login</h4>
+   <form method="POST">
+      <div class="mb-3">
+        <label class="form-label">Email</label>
+        <input type="text" name="email" class="form-control" id="Email" required />
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Password</label>
+        <input type="password" name="password" class="form-control" id="loginPassword" required />
+      </div>
+      <button type="submit" class="btn-orange w-100 Mutayyab" >Login</button>
+    </form>
+    <p class="text-center mt-3">Don't have an account? <a href="signup.html">Sign up here</a></p>
+  </div>
+  </div>
+
+{% endblock %}
