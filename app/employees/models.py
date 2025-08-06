@@ -52,18 +52,35 @@ class EmployeeModel:
         ))
 
     @staticmethod
+    @staticmethod
     def update(employee_id, data, updated_by):
-        """Update employee"""
-        return DatabaseManager.execute_query("""
-            UPDATE Employee 
-            SET Name = ?, FatherName = ?, PhoneNo = ?, Address = ?, 
-                ContractorId = ?, IsActive = ?, UpdatedBy = ?, UpdatedAt = ?
-            WHERE Id = ?
-        """, (
-            data['Name'], data['FatherName'], data.get('PhoneNumber'),
-            data.get('Address'), data.get('ContractorId'), data['IsActive'],
-            updated_by, datetime.now(), employee_id
-        ))
+        """Update employee with optional image"""        
+        if data['image']:
+            return DatabaseManager.execute_query("""
+                UPDATE Employee 
+                SET NucleusId = ?, Name = ?, FatherName = ?, 
+                    PhoneNo = ?, Address = ?, 
+                    ContractorId = ?, Image = ?, IsActive = ?, 
+                    UpdatedBy = ?, UpdatedAt = ?
+                WHERE Id = ?
+            """, (
+                data['NucleusId'], data['Name'], data['FatherName'], data['PhoneNumber'],
+                data['Address'], data['ContractorId'], data['image'],
+                data['IsActive'], updated_by, datetime.now(), employee_id
+            ))
+        else:
+            return DatabaseManager.execute_query("""
+                UPDATE Employee 
+                SET NucleusId = ?, Name = ?, FatherName = ?, 
+                    PhoneNo = ?, Address = ?, 
+                    ContractorId = ?, IsActive = ?, 
+                    UpdatedBy = ?, UpdatedAt = ?
+                WHERE Id = ?
+            """, (
+                data['NucleusId'], data['Name'], data['FatherName'], data['PhoneNumber'],
+                data['Address'], data['ContractorId'], 
+                data['IsActive'], updated_by, datetime.now(), employee_id
+            ))
 
     @staticmethod
     def delete(employee_id):

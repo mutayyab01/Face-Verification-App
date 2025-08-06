@@ -5,9 +5,10 @@ import os
 import logging
 
 def create_app():
-    app = Flask(__name__,template_folder='../templates',
-    static_folder='../templates/static',        # <-- where the folder actually is
-    static_url_path='/static' )
+    app = Flask(__name__,
+               template_folder='../templates',
+               static_folder='../templates/static',
+               static_url_path='/static')
     
     # ---- Setup Logging for Werkzeug ----
     log_dir = 'logs'
@@ -29,9 +30,6 @@ def create_app():
     if not werkzeug_logger.handlers:
         werkzeug_logger.addHandler(file_handler)
 
-
-
-    
     app.config.from_object(Config)
     app.secret_key = Config.SECRET_KEY
     app.permanent_session_lifetime = timedelta(hours=2)
@@ -54,7 +52,6 @@ def create_app():
     app.register_blueprint(hr_bp, url_prefix='/admin/hr')
     app.register_blueprint(users_bp, url_prefix='/admin/users')
 
-    
     # Register error handlers
     from app.utils import register_error_handlers, inject_user_context
     register_error_handlers(app)

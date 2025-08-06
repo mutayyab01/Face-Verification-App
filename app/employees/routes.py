@@ -71,8 +71,7 @@ def edit_employee(employee_id):
         try:
             
             # Prepare data
-            data = EmployeeForm.prepare_data(request.form)
-            
+            data = EmployeeForm.prepare_data(request.form, request.files)
             # Update employee
             success = EmployeeModel.update(employee_id, data, session['user_id'])
             
