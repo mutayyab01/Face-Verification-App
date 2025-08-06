@@ -9,7 +9,7 @@ class ContractorModel:
     def get_all():
         """Get all contractors"""
         return DatabaseManager.execute_query("""
-            SELECT c.Id, c.Name, c.FatherName, c.Address, c.IsActive,
+            SELECT c.Id, c.Name, c.FatherName, c.PhoneNo, c.Address, c.IsActive,
                 u1.Email as CreatedByEmail, c.CreatedAt,
                 u2.Email as UpdatedByEmail, c.UpdatedAt
             FROM Contractor c
