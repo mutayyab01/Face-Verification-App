@@ -10,8 +10,8 @@ logger = logging.getLogger(__name__)
 def login():
     """Login page with enhanced security"""
     if request.method == 'POST':
-        email = request.form.get('email', '').strip().lower()
-        password = request.form.get('password', '')
+        email = request.form.get('loginEmail', '').strip().lower()
+        password = request.form.get('loginPassword', '')
         
         if not email or not password:
             flash('Email and password are required.', 'error')
@@ -38,6 +38,8 @@ def login():
                 return redirect(url_for('admin.dashboard'))
             elif user_type == 'hr':
                 return redirect(url_for('hr.dashboard'))
+            elif user_type == 'finance':
+                return redirect(url_for('finance.dashboard'))
             else:
                 session.clear()
                 flash(f'Invalid user role: {user_type}', 'error')

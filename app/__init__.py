@@ -44,10 +44,12 @@ def create_app():
     from app.employees import employees_bp
     from app.contractors import contractors_bp
     from app.users import users_bp
+    from app.finance import finance_bp
     
     app.register_blueprint(auth_bp)
     app.register_blueprint(admin_bp)
     app.register_blueprint(hr_bp)
+    app.register_blueprint(finance_bp)
     app.register_blueprint(employees_bp, url_prefix='/admin/employees')
     app.register_blueprint(contractors_bp, url_prefix='/admin/contractors')    
     app.register_blueprint(users_bp, url_prefix='/admin/users')
@@ -67,6 +69,8 @@ def create_app():
                 return redirect(url_for('admin.dashboard'))
             elif user_type == 'hr':
                 return redirect(url_for('hr.dashboard'))
+            elif user_type == 'finance':
+                return redirect(url_for('finance.dashboard'))
         return redirect(url_for('auth.login'))
     
     return app

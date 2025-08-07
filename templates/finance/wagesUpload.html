@@ -1,0 +1,34 @@
+{% extends "master.html" %}
+
+{% block title %} Finance Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- DataTales Example -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold">Employee DataTables</h6>
+        </div>
+        <div class="mb-3">
+            <label for="uploadFile" class="form-label">Upload File</label>
+            <input type="file" class="form-control" id="uploadFile" accept=".xlsx" />
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Email Address</th>
+                        <th>Salary</th>
+                        <th>Paid</th>
+                    </tr>
+                </thead>
+                <tbody id="employeeTableBody"></tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+{% endblock %}
