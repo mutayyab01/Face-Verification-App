@@ -1,16 +1,17 @@
 from app.database import DatabaseManager
 from datetime import datetime
 import logging
+import base64  # ✅ Import for base64 encoding
 
 logger = logging.getLogger(__name__)
 
 class EmployeeModel:
     @staticmethod
     def get_all():
-        """Get all employees with contractor information"""
-        return DatabaseManager.execute_query("""
+        """Get all employees with contractor information, including base64 image"""
+        raw_employees = DatabaseManager.execute_query("""
             SELECT e.Id, e.Name, e.FatherName, e.PhoneNo, e.Address, 
-                c.Name as ContractorName, e.IsActive,
+                c.Name as ContractorName, e.Image, e.IsActive,
                 u1.Email as CreatedByEmail, e.CreatedAt,
                 u2.Email as UpdatedByEmail, e.UpdatedAt
             FROM Employee e
@@ -19,6 +20,31 @@ class EmployeeModel:
             LEFT JOIN [User] u2 ON e.UpdatedBy = u2.Id
             ORDER BY e.Id DESC
         """, fetch_all=True)
+
+        employees = []
+        for emp in raw_employees:
+            image_data = None
+            if emp[6]:  # e.Image (binary blob)
+                image_data = "data:image/jpeg;base64," + base64.b64encode(emp[6]).decode('utf-8')
+
+            # Create a new tuple with base64 image
+            emp_with_image = (
+                emp[0],  # Id
+                emp[1],  # Name
+                emp[2],  # FatherName
+                emp[3],  # PhoneNo
+                emp[4],  # Address
+                emp[5],  # ContractorName
+                image_data,  # 🔁 Converted to base64 string
+                emp[7],  # IsActive
+                emp[8],  # CreatedByEmail
+                emp[9],  # CreatedAt
+                emp[10], # UpdatedByEmail
+                emp[11], # UpdatedAt
+            )
+            employees.append(emp_with_image)
+
+        return employees
 
     @staticmethod
     def exists_nucleus_id(nucleus_id):
@@ -51,7 +77,6 @@ class EmployeeModel:
             created_by, datetime.now()
         ))
 
-    @staticmethod
     @staticmethod
     def update(employee_id, data, updated_by):
         """Update employee with optional image"""        

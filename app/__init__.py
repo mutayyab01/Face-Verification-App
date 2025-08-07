@@ -47,9 +47,9 @@ def create_app():
     
     app.register_blueprint(auth_bp)
     app.register_blueprint(admin_bp)
+    app.register_blueprint(hr_bp)
     app.register_blueprint(employees_bp, url_prefix='/admin/employees')
-    app.register_blueprint(contractors_bp, url_prefix='/admin/contractors')
-    app.register_blueprint(hr_bp, url_prefix='/admin/hr')
+    app.register_blueprint(contractors_bp, url_prefix='/admin/contractors')    
     app.register_blueprint(users_bp, url_prefix='/admin/users')
 
     # Register error handlers
