@@ -26,29 +26,29 @@ def list_contractors():
 def add_contractor():
     """Add new contractor"""
     try:
-        name = request.form.get('name', '').strip()
-        father_name = request.form.get('father_name', '').strip()
-        phone_no = request.form.get('phone_no', '').strip()
-        address = request.form.get('address', '').strip()
-        is_active = 'is_active' in request.form
+        
+          # Get form data
+           # Read image file as binary
+        image_file = request.files.get('ProfileImage')   
+        image_binary = image_file.read()  # read binary data
 
-        if not name or not father_name:
-            flash('Name and Father Name are required.', 'error')
-            return redirect(url_for('contractors.list_contractors'))
-        
-        data = {
-            'name': name,
-            'father_name': father_name,
-            'phone_no': phone_no or None,
-            'address': address or None,
-            'is_active': is_active
+        UserData = {
+            "Name": request.form.get('Name', '').strip().lower(),
+            "FatherName": request.form.get('FatherName', '').strip().lower(),
+            "PhoneNumber": request.form.get('PhoneNumber', '').strip().lower(),
+            "Unit": request.form.get('Unit', '').strip(),
+            "ProfileImage": image_binary,
+            "Address": request.form.get('Address', '').strip().lower(),
+            "IsActive": 'IsActive' in request.form,
+            
         }
-        
-        success = ContractorModel.create(data, session['user_id'])
+        logger.info(UserData)
+
+        success = ContractorModel.create(UserData, session['user_id'])
         
         if success:
             flash('Contractor added successfully.', 'success')
-            logger.info(f"Contractor {name} added by user {session['email']}")
+            logger.info(f"Contractor {UserData['Name']} added by user {session['email']}")
         else:
             flash('Error adding contractor. Please try again.', 'error')
             

@@ -7,8 +7,9 @@
     <div class="col-12">
         <div class="d-flex justify-content-between align-items-center mb-3">
             <h2><i class="fas fa-users me-2"></i>Employee Management</h2>
-            <a href="{{ url_for('admin.dashboard' if session.user_type == 'admin' else 'hr.dashboard') }}" class="btn btn-secondary">
-                <i class="fas fa-arrow-left me-1"></i> Back 
+            <a href="{{ url_for('admin.dashboard' if session.user_type == 'admin' else 'hr.dashboard') }}"
+                class="btn btn-secondary">
+                <i class="fas fa-arrow-left me-1"></i> Back
             </a>
         </div>
         <style>
@@ -31,37 +32,63 @@
                 <h5 class="mb-0"><i class="fas fa-plus me-2"></i>Add New Contractor</h5>
             </div>
             <div class="card-body">
-                <form method="POST" action="{{ url_for('contractors.add_contractor') }}">
+                <form method="POST" action="{{ url_for('contractors.add_contractor') }}" enctype="multipart/form-data" >
                     <div class="row">
                         <div class="col-md-6">
                             <div class="mb-3">
-                                <label for="name" class="form-label">Name *</label>
-                                <input type="text" class="form-control" id="name" name="name" required>
+                                <label for="Name" class="form-label">Name *</label>
+                                <input type="text" class="form-control" id="Name" name="Name" required>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="mb-3">
-                                <label for="father_name" class="form-label">Father Name *</label>
-                                <input type="text" class="form-control" id="father_name" name="father_name" required>
+                                <label for="FatherName" class="form-label">Father Name *</label>
+                                <input type="text" class="form-control" id="FatherName" name="FatherName" required>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="mb-3">
-                                <label for="phone_no" class="form-label">Phone Number</label>
-                                <input type="text" class="form-control" id="phone_no" name="phone_no"
+                                <label for="PhoneNumber" class="form-label">Phone Number</label>
+                                <input type="text" class="form-control" id="PhoneNumber" name="PhoneNumber"
                                     pattern="[0-9]{11}" title="Phone number should be 10-15 digits" required>
                                 <div class="invalid-feedback">Please provide a valid phone number (11 digits).</div>
                             </div>
                         </div>
+
+                        <!-- Unit -->
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="Unit" class="form-label">Select Unit *</label>
+                                <select class="form-control" id="Unit" name="Unit" required>
+                                    <option value="">Select Unit</option>
+                                    <option value="C4">C-4</option>
+                                    <option value="B44">B44</option>
+                                    <option value="E38">E-38</option>
+                                </select>
+                                <div class="invalid-feedback">Please select a Unit.</div>
+                            </div>
+                        </div>
+
+                        <!-- File Upload -->
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="ProfileImage" class="form-label">Upload Image *</label>
+                                <input class="form-control form-control-lg" id="ProfileImage" name="ProfileImage"
+                                    type="file" required accept="image/*" />
+                                <div class="invalid-feedback">Please upload an image file.</div>
+                            </div>
+                        </div>
+
+
                     </div>
                     <div class="mb-3">
-                        <label for="address" class="form-label">Address</label>
-                        <textarea class="form-control" id="address" name="address" rows="2" required></textarea>
+                        <label for="Address" class="form-label">Address</label>
+                        <textarea class="form-control" id="Address" name="Address" rows="2" required></textarea>
                     </div>
 
                     <div class="mb-3 form-check">
-                        <input type="checkbox" class="form-check-input" id="is_active" name="is_active" checked>
-                        <label class="form-check-label" for="is_active">Active</label>
+                        <input type="checkbox" class="form-check-input" id="IsActive" name="IsActive" checked>
+                        <label class="form-check-label" for="IsActive">Active</label>
                     </div>
                     <button type="submit" class="btn"
                         style="background-color: #0bc5e6 !important; border-color: #0bc5e6 !important; color: white;">
