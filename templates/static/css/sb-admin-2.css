@@ -2358,33 +2358,33 @@ fieldset:disabled a.btn {
 .btn-primary {
   color: #fff;
   background-color: #0aa3c6;
-  border-color: #4e73df;
+  border-color: #0aa3c6;
 }
 
 .btn-primary:hover {
   color: #fff;
   background-color: #0aa3c6;
-  border-color: #2653d4;
+  border-color: #0aa3c6;
 }
 
 .btn-primary:focus, .btn-primary.focus {
   color: #fff;
   background-color: #0aa3c6;
-  border-color: #2653d4;
+  border-color: #0aa3c6;
   box-shadow: 0 0 0 0.2rem rgba(105, 136, 228, 0.5);
 }
 
 .btn-primary.disabled, .btn-primary:disabled {
   color: #fff;
   background-color: #0aa3c6;
-  border-color: #4e73df;
+  border-color: #0aa3c6;
 }
 
 .btn-primary:not(:disabled):not(.disabled):active, .btn-primary:not(:disabled):not(.disabled).active,
 .show > .btn-primary.dropdown-toggle {
   color: #fff;
   background-color: #0aa3c6;
-  border-color: #244ec9;
+  border-color: #0aa3c6;
 }
 
 .btn-primary:not(:disabled):not(.disabled):active:focus, .btn-primary:not(:disabled):not(.disabled).active:focus,
