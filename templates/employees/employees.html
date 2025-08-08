@@ -4,29 +4,28 @@
   <div class="col-12">
     <div class="d-flex justify-content-between align-items-center mb-3">
       <h2><i class="fas fa-users me-2"></i>Add Employee</h2>
-      <a
-        href="{{ url_for('admin.dashboard' if session.user_type == 'admin' else 'hr.dashboard') }}"
-        class="btn btn-secondary"
-      >
+      <a href="{{ url_for('admin.dashboard' if session.user_type == 'admin' else 'hr.dashboard') }}"
+        class="btn btn-secondary">
         <i class="fas fa-arrow-left me-1"></i> Back
       </a>
     </div>
-   <style>
-/* Bootstrap + DataTables override */
-table.dataTable > thead {
-    background-color: #0bc5e6 !important;
-    color: white !important;
-}
-table.dataTable > thead > tr > th {
-    background-color: #0bc5e6 !important;
-    color: white !important;
-}
-</style>
+    <style>
+      /* Bootstrap + DataTables override */
+      table.dataTable>thead {
+        background-color: #0bc5e6 !important;
+        color: white !important;
+      }
+
+      table.dataTable>thead>tr>th {
+        background-color: #0bc5e6 !important;
+        color: white !important;
+      }
+    </style>
     <!-- Add Employee Form -->
     <div class="card shadow mb-4">
       <div class="card-header text-white">
         <h5 class="mb-0">
-          <i class="fas fa-user-plus me-2"></i>Add  Employee
+          <i class="fas fa-user-plus me-2"></i>Add Employee
         </h5>
       </div>
       <div class="card-body">
@@ -37,15 +36,8 @@ table.dataTable > thead > tr > th {
             <div class="col-md-6">
               <div class="mb-3">
                 <label for="NucleusId" class="form-label">Employee ID*</label>
-                <input
-                  type="text"
-                  class="form-control"
-                  id="NucleusId"
-                  name="NucleusId"
-                  required
-                  pattern="^\d+$"
-                  title="Only digits are allowed (e.g., 123456)"
-                />
+                <input type="text" class="form-control" id="NucleusId" name="NucleusId" required pattern="^\d+$"
+                  title="Only digits are allowed (e.g., 123456)" />
                 <div class="invalid-feedback">
                   Only digits are allowed. This field is required.
                 </div>
@@ -116,10 +108,26 @@ table.dataTable > thead > tr > th {
               </div>
             </div>
           </div>
-
-          <!-- File Upload -->
           <div class="row">
-            <div class="col-md-12">
+
+            <!-- Unit -->
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label for="Unit" class="form-label">Select Unit *</label>
+                <select class="form-control" id="Unit" name="Unit" required>
+                  <option value="">Select Unit</option>
+                  {% for unit in units %}
+                  <option value="{{ unit[0] }}">
+                    {{ unit[1] }}
+                  </option>
+                  {% endfor %}
+                </select>
+                <div class="invalid-feedback">Please select a Unit.</div>
+              </div>
+            </div>
+
+            <!-- File Upload -->
+            <div class="col-md-6">
               <div class="mb-3">
                 <label for="ProfileImage" class="form-label">Upload Image *</label>
                 <input class="form-control form-control-lg" id="ProfileImage" name="ProfileImage" type="file" required
@@ -127,8 +135,8 @@ table.dataTable > thead > tr > th {
                 <div class="invalid-feedback">Please upload an image file.</div>
               </div>
             </div>
-          </div>
 
+          </div>
           <!-- Active Status -->
           <div class="mb-3 form-check">
             <input type="checkbox" class="form-check-input" id="IsActive" name="IsActive" checked />
@@ -136,7 +144,8 @@ table.dataTable > thead > tr > th {
           </div>
 
           <!-- Submit -->
-          <button type="submit" class="btn" style="background-color: #0bc5e6 !important; border-color: #0bc5e6 !important; color: white;">
+          <button type="submit" class="btn"
+            style="background-color: #0bc5e6 !important; border-color: #0bc5e6 !important; color: white;">
             <i class="fas fa-plus me-1"></i> Add Employee
           </button>
         </form>
@@ -157,7 +166,7 @@ table.dataTable > thead > tr > th {
         <div class="table-responsive">
           <table class="table table-striped table-hover" id="employeesTable">
             <thead class="table" style="background-color: #0bc5e6 !important; color: white !important;">
-              <tr >
+              <tr>
                 <th>ID</th>
                 <th>Name</th>
                 <th>Father Name</th>

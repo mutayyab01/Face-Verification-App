@@ -16,10 +16,12 @@ def list_employees():
     try:
         employees = EmployeeModel.get_all()
         contractors = ContractorModel.get_active()
-        logger.info(employees)
+        units = ContractorModel.get_unit()
+      
         return render_template('employees/employees.html', 
                              employees=employees, 
-                             contractors=contractors)
+                             contractors=contractors,
+                             units=units)
     
     except Exception as e:
         logger.error(f"Error in list_employees: {e}")
