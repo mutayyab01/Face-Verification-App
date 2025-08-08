@@ -18,17 +18,21 @@ def login():
             return render_template('auth/login.html')
         
         user = DatabaseManager.execute_query(
-            "SELECT Id, Email, Password, Type FROM [User] WHERE LOWER(TRIM(Email)) = ?",
+            "SELECT Id, FirstName, LastName, Email, Password, Type FROM [User] WHERE LOWER(TRIM(Email)) = ? and IsActive=1",
             (email,),
             fetch_one=True
         )
         
-        if user and user[2] == password:
+        logger.info(user)
+
+        if user and user[4] == password:
             session.clear()
             session.permanent = True
             session['user_id'] = user[0]
-            session['email'] = user[1].strip()
-            session['user_type'] = user[3].lower().strip()
+            session['FirstName'] = user[1]
+            session['LastName'] = user[2]
+            session['email'] = user[3].strip()
+            session['user_type'] = user[5].lower().strip()
             session['last_activity'] = datetime.now()
             
             logger.info(f"User {email} logged in successfully")
