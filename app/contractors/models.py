@@ -39,11 +39,11 @@ class ContractorModel:
     def create(data, created_by):
         """Create new contractor"""
         return DatabaseManager.execute_query("""
-            INSERT INTO Contractor (Name, FatherName, Address, PhoneNo, IsActive, CreatedBy, CreatedAt)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO Contractor (Name, FatherName, PhoneNo, Unit, Image, Address, IsActive, CreatedBy, CreatedAt)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
         """, (
-            data['name'], data['father_name'], data.get('address'),
-            data.get('phone_no'), data['is_active'], created_by, datetime.now()
+            data['Name'], data['FatherName'], data['PhoneNumber'],
+            data['Unit'], data['ProfileImage'], data['Address'], data['IsActive'], created_by, datetime.now()
         ))
     
     @staticmethod
