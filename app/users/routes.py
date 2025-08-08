@@ -26,29 +26,27 @@ def list_users():
 def add_user():
     """Add new user"""
     try:
-        email = request.form.get('email', '').strip().lower()
-        password = request.form.get('password', '').strip()
-        user_type = request.form.get('type', '').strip().lower()
-        
-        if not email or not password or not user_type:
-            flash('All fields are required.', 'error')
-            return redirect(url_for('users.list_users'))
-        
-        if user_type not in ['admin', 'hr']:
-            flash(f'Invalid user type: {user_type}. Must be admin or hr.', 'error')
-            return redirect(url_for('users.list_users'))
+         # Get form data
+        UserData = {
+            "FirstName": request.form.get('FirstName', '').strip().lower(),
+            "LastName": request.form.get('LastName', '').strip().lower(),
+            "Email": request.form.get('email', '').strip().lower(),
+            "Password": request.form.get('password', '').strip(),
+            "UserType": request.form.get('type', '').strip().lower(),
+            "IsActive": 'IsActive' in request.form
+        }
         
         # Check if email already exists
-        existing_user = UserModel.get_by_email(email)
+        existing_user = UserModel.get_by_email(UserData['Email'])
         if existing_user:
             flash('Email already exists.', 'error')
             return redirect(url_for('users.list_users'))
         
-        success = UserModel.create(email, password, user_type)
+        success = UserModel.create(UserData)
         
         if success:
             flash('User added successfully.', 'success')
-            logger.info(f"User {email} added by user {session['email']}")
+            logger.info(f"User {UserData['Email']} added by user {session['email']}")
         else:
             flash('Error adding user. Please try again.', 'error')
             

@@ -11,7 +11,7 @@
                 <i class="fas fa-arrow-left me-1"></i> Back to Admin Dashboard
             </a>
         </div>
-        
+
         <!-- Add User Form -->
         <div class="card shadow">
             <div class="card-header bg-success text-white">
@@ -20,6 +20,18 @@
             <div class="card-body">
                 <form method="POST" action="{{ url_for('users.add_user') }}">
                     <div class="row">
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="FirstName" class="form-label">First Name *</label>
+                                <input type="FirstName" class="form-control" id="FirstName" name="FirstName" required>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="LastName" class="form-label">First Name *</label>
+                                <input type="LastName" class="form-control" id="LastName" name="LastName" required>
+                            </div>
+                        </div>
                         <div class="col-md-4">
                             <div class="mb-3">
                                 <label for="email" class="form-label">Email *</label>
@@ -39,8 +51,16 @@
                                     <option value="">Select User Type</option>
                                     <option value="admin">Admin</option>
                                     <option value="hr">HR</option>
+                                    <option value="finance">FINANCE</option>
                                 </select>
                             </div>
+                        </div>
+                    </div>
+                    <!-- Active Status -->
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            <input type="checkbox" class="form-check-input" id="IsActive" name="IsActive" checked />
+                            <label class="form-check-label" for="IsActive">Active</label>
                         </div>
                     </div>
                     <button type="submit" class="btn btn-success">
@@ -72,7 +92,8 @@
                                 <td>{{ user[1] }}</td>
                                 <td>
                                     <span class="badge bg-{{ 'primary' if user[2] == 'admin' else 'info' }}">
-                                        <i class="fas fa-{{ 'user-shield' if user[2] == 'admin' else 'user-tie' }} me-1"></i>
+                                        <i
+                                            class="fas fa-{{ 'user-shield' if user[2] == 'admin' else 'user-tie' }} me-1"></i>
                                         {{ user[2]|title }}
                                     </span>
                                 </td>

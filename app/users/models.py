@@ -8,7 +8,7 @@ class UserModel:
     def get_all():
         """Get all users"""
         return DatabaseManager.execute_query(
-            "SELECT Id, Email, Type FROM [User] ORDER BY Email",
+            "SELECT Id, FirstName, LastName, Email, Type FROM [User] ORDER BY Email",
             fetch_all=True
         )
     
@@ -22,9 +22,9 @@ class UserModel:
         )
     
     @staticmethod
-    def create(email, password, user_type):
+    def create(UserData):
         """Create new user"""
         return DatabaseManager.execute_query(
-            "INSERT INTO [User] (Email, Password, Type) VALUES (?, ?, ?)",
-            (email, password, user_type)
+            "INSERT INTO [User] (FirstName, LastName, Email, Password, Type, IsActive) VALUES (?, ?, ?, ?, ?, ?)",
+            (UserData['FirstName'], UserData['LastName'], UserData['Email'], UserData['Password'], UserData['UserType'], UserData['IsActive'])
         )
