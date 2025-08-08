@@ -8,8 +8,7 @@
         href="{{ url_for('admin.dashboard' if session.user_type == 'admin' else 'hr.dashboard') }}"
         class="btn btn-secondary"
       >
-        <i class="fas fa-arrow-left me-1"></i> Back to {{ 'Admin' if
-        session.user_type == 'admin' else 'HR' }}
+        <i class="fas fa-arrow-left me-1"></i> Back
       </a>
     </div>
 

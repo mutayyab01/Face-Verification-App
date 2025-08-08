@@ -8,7 +8,7 @@ class UserModel:
     def get_all():
         """Get all users"""
         return DatabaseManager.execute_query(
-            "SELECT Id, FirstName, LastName, Email, Type FROM [User] ORDER BY Email",
+            "SELECT Id, FirstName, LastName, Email,Type, IsActive  FROM [User] ORDER BY Email",
             fetch_all=True
         )
     
