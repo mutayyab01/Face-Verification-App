@@ -13,7 +13,8 @@ def list_contractors():
     """List all contractors"""
     try:
         contractors = ContractorModel.get_all()
-        return render_template('contractors/contractors.html', contractors=contractors or [])
+        units = ContractorModel.get_unit()
+        return render_template('contractors/contractors.html', contractors=contractors ,units=units)
     
     except Exception as e:
         logger.error(f"Error in list_contractors: {e}")

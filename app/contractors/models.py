@@ -7,6 +7,13 @@ logger = logging.getLogger(__name__)
 
 class ContractorModel:
     @staticmethod
+    def get_unit():
+        """Get all Unit"""
+        return DatabaseManager.execute_query("""
+            SELECT Id, Name FROM Unit
+        """, fetch_all=True)
+    
+    @staticmethod
     def get_all():
         """Get all contractors with base64-encoded profile image"""
         try:
