@@ -2,6 +2,7 @@ from flask import render_template, request, redirect, url_for, flash, session
 import logging
 from . import contractors_bp
 from .models import ContractorModel
+from .forms import ContractorForm
 from app.auth.decorators import require_auth, require_role
 
 logger = logging.getLogger(__name__)
@@ -14,6 +15,7 @@ def list_contractors():
     try:
         contractors = ContractorModel.get_all()
         units = ContractorModel.get_unit()
+        logger.info(contractors)
         return render_template('contractors/contractors.html', contractors=contractors ,units=units)
     
     except Exception as e:
@@ -27,29 +29,20 @@ def list_contractors():
 def add_contractor():
     """Add new contractor"""
     try:
-        
-          # Get form data
-           # Read image file as binary
-        image_file = request.files.get('ProfileImage')   
-        image_binary = image_file.read()  # read binary data
-
-        UserData = {
-            "Name": request.form.get('Name', '').strip().lower(),
-            "FatherName": request.form.get('FatherName', '').strip().lower(),
-            "PhoneNumber": request.form.get('PhoneNumber', '').strip().lower(),
-            "Unit": request.form.get('Unit', '').strip(),
-            "ProfileImage": image_binary,
-            "Address": request.form.get('Address', '').strip().lower(),
-            "IsActive": 'IsActive' in request.form,
+        # Prepare data
+        data = ContractorForm.prepare_data(request.form, request.files)
             
-        }
-        logger.info(UserData)
-
-        success = ContractorModel.create(UserData, session['user_id'])
+        if ContractorModel.exists_Contractor_Id(data['ContractorId']):
+            flash('Error: Contractor ID already exists.', 'error')
+            return redirect(url_for('contractors.list_contractors'))
+            
+            # Create employee
+        success = ContractorModel.create(data, session['user_id'])
+    
         
         if success:
             flash('Contractor added successfully.', 'success')
-            logger.info(f"Contractor {UserData['Name']} added by user {session['email']}")
+            logger.info(f"Contractor {data['Name']} added by user {session['email']}")
         else:
             flash('Error adding contractor. Please try again.', 'error')
             

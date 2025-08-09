@@ -69,11 +69,11 @@ class EmployeeModel:
     def create(data, created_by):
         """Create new employee"""
         return DatabaseManager.execute_query("""
-            INSERT INTO Employee (NucleusId, Name, FatherName, PhoneNo, Address, ContractorId, Image, IsActive, CreatedBy, CreatedAt)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO Employee (NucleusId, Name, FatherName, PhoneNo, Address, ContractorId, UnitId, Image, IsActive, CreatedBy, CreatedAt)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """, (
             data['NucleusId'], data['Name'], data['FatherName'], data['PhoneNumber'],
-            data['Address'], data.get('ContractorId'), data['image'], data['IsActive'],
+            data['Address'], data.get('ContractorId'), data['Unit'], data['image'], data['IsActive'],
             created_by, datetime.now()
         ))
 
@@ -85,12 +85,12 @@ class EmployeeModel:
                 UPDATE Employee 
                 SET NucleusId = ?, Name = ?, FatherName = ?, 
                     PhoneNo = ?, Address = ?, 
-                    ContractorId = ?, Image = ?, IsActive = ?, 
+                    ContractorId = ?, UnitId = ?, Image = ?, IsActive = ?, 
                     UpdatedBy = ?, UpdatedAt = ?
                 WHERE Id = ?
             """, (
                 data['NucleusId'], data['Name'], data['FatherName'], data['PhoneNumber'],
-                data['Address'], data['ContractorId'], data['image'],
+                data['Address'], data['ContractorId'], data['Unit'], data['image'],
                 data['IsActive'], updated_by, datetime.now(), employee_id
             ))
         else:
@@ -98,12 +98,12 @@ class EmployeeModel:
                 UPDATE Employee 
                 SET NucleusId = ?, Name = ?, FatherName = ?, 
                     PhoneNo = ?, Address = ?, 
-                    ContractorId = ?, IsActive = ?, 
+                    ContractorId = ?, UnitId = ?, IsActive = ?, 
                     UpdatedBy = ?, UpdatedAt = ?
                 WHERE Id = ?
             """, (
                 data['NucleusId'], data['Name'], data['FatherName'], data['PhoneNumber'],
-                data['Address'], data['ContractorId'], 
+                data['Address'], data['ContractorId'], data['Unit'],
                 data['IsActive'], updated_by, datetime.now(), employee_id
             ))
 

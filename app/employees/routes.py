@@ -15,7 +15,7 @@ def list_employees():
     """List all employees"""
     try:
         employees = EmployeeModel.get_all()
-        contractors = ContractorModel.get_active()
+        contractors = ContractorModel.get_active_contractors()
         units = ContractorModel.get_unit()
       
         return render_template('employees/employees.html', 
@@ -39,7 +39,7 @@ def add_employee():
             data = EmployeeForm.prepare_data(request.form, request.files)
             
             if EmployeeModel.exists_nucleus_id(data['NucleusId']):
-                flash('Error: Nucleus ID already exists.', 'error')
+                flash('Error: Employee ID already exists.', 'error')
                 return redirect(url_for('employees.list_employees'))
             
             # Create employee
@@ -58,7 +58,7 @@ def add_employee():
         return redirect(url_for('employees.list_employees'))
 
     # GET request - show add form
-    contractors = ContractorModel.get_active()
+    contractors = ContractorModel.get_active_contractors()
     return render_template('employees/add.html', contractors=contractors or [])
 
 
@@ -91,7 +91,7 @@ def edit_employee(employee_id):
     # GET request - show edit form
     try:
         employee = EmployeeModel.get_by_id(employee_id)
-        contractors = ContractorModel.get_active()
+        contractors = ContractorModel.get_active_contractors()
         
         logger.error(f"Error updating employee: {employee},{contractors}")
 

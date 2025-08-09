@@ -1,6 +1,7 @@
 from app.database import DatabaseManager
 from datetime import datetime
 import logging
+import base64  # ✅ Import for base64 encoding
 
 logger = logging.getLogger(__name__)
 
@@ -18,7 +19,7 @@ class ContractorModel:
         """Get all contractors with base64-encoded profile image"""
         try:
             raw_contractors = DatabaseManager.execute_query("""
-                SELECT c.Id, c.Name, c.FatherName, c.PhoneNo, c.Unit,
+                SELECT c.Id, c.Name, c.FatherName, c.PhoneNo, c.UnitId,
                     c.Image, c.Address, c.IsActive,
                     u1.Email as CreatedByEmail, c.CreatedAt,
                     u2.Email as UpdatedByEmail, c.UpdatedAt
@@ -67,7 +68,14 @@ class ContractorModel:
             return []
         
      
-        
+    @staticmethod
+    def get_active_contractors():
+        """Get active contractors for dropdown"""
+        return DatabaseManager.execute_query(
+            "SELECT ContractorId, Name FROM Contractor WHERE IsActive = 1 ORDER BY Name",
+            fetch_all=True
+        )
+
     @staticmethod
     def get_by_id(contractor_id):
         """Get contractor by ID"""
@@ -78,13 +86,24 @@ class ContractorModel:
         )
     
     @staticmethod
+    def exists_Contractor_Id(contractor_id):
+        """Check if a given ContractorId already exists in the Contractor table."""
+        result = DatabaseManager.execute_query(
+            "SELECT 1 FROM Contractor WHERE ContractorId = ?",
+            (contractor_id,),
+            fetch_one=True
+        )
+        return result is not None
+    
+
+    @staticmethod
     def create(data, created_by):
         """Create new contractor"""
         return DatabaseManager.execute_query("""
-            INSERT INTO Contractor (Name, FatherName, PhoneNo, Unit, Image, Address, IsActive, CreatedBy, CreatedAt)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO Contractor (ContractorId, Name, FatherName, PhoneNo, UnitId, Image, Address, IsActive, CreatedBy, CreatedAt)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """, (
-            data['Name'], data['FatherName'], data['PhoneNumber'],
+            data['ContractorId'], data['Name'], data['FatherName'], data['PhoneNumber'],
             data['Unit'], data['ProfileImage'], data['Address'], data['IsActive'], created_by, datetime.now()
         ))
     
