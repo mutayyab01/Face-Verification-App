@@ -108,3 +108,13 @@ h3 {
   justify-content: center;
   align-items: center;
 }
+/* Bootstrap + DataTables override */
+table > thead {
+  background-color: #0bc5e6 !important;
+  color: white !important;
+}
+
+table > thead > tr > th {
+  background-color: #0bc5e6 !important;
+  color: white !important;
+}

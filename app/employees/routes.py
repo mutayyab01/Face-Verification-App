@@ -75,7 +75,9 @@ def edit_employee(employee_id):
             # Prepare data
             data = EmployeeForm.prepare_data(request.form, request.files)
             # Update employee
+            logger.info(data)
             success = EmployeeModel.update(employee_id, data, session['user_id'])
+            logger.info(success)
             
             if success:
                 flash('Employee updated successfully.', 'success')
@@ -92,7 +94,8 @@ def edit_employee(employee_id):
     try:
         employee = EmployeeModel.get_by_id(employee_id)
         contractors = ContractorModel.get_active_contractors()
-        
+        units = ContractorModel.get_unit()
+
         logger.error(f"Error updating employee: {employee},{contractors}")
 
         if not employee:
@@ -101,7 +104,8 @@ def edit_employee(employee_id):
         
         return render_template('employees/edit_employee.html', 
                              employee=employee, 
-                             contractors=contractors)
+                             contractors=contractors,
+                             units=units)
     
     except Exception as e:
         logger.error(f"Error in edit_employee: {e}")

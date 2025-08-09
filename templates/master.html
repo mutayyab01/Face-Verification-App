@@ -1,751 +1,561 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>{% block title %} Dashboard{% endblock %}</title>
-    <link
-      href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
-      rel="stylesheet"
-      type="text/css"
-    />
-    <link
-      href="{{ url_for('static',filename='vendor/fontawesome-free/css/all.min.css') }}"
-      rel="stylesheet"
-      type="text/css"
-    />
-    <link
-      href="{{ url_for('static',filename='css/sb-admin-2.min.css') }}"
-      rel="stylesheet"
-      type="text/css"
-    />
-    <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
-      rel="stylesheet"
-    />
-    <link
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
-      rel="stylesheet"
-    />
-    <link
-      href="{{ url_for('static',filename='css/style.css') }}"
-      rel="stylesheet"
-      type="text/css"
-    />
-    <link
-      href="{{ url_for('static',filename='vendor/datatables/dataTables.bootstrap4.min.css') }}"
-      rel="stylesheet"
-      type="text/css"
-    />
-    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
-    {% block extra_css %}{% endblock %}
-  </head>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %} Dashboard{% endblock %}</title>
+  <link
+    href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
+    rel="stylesheet" type="text/css" />
+  <link href="{{ url_for('static',filename='vendor/fontawesome-free/css/all.min.css') }}" rel="stylesheet"
+    type="text/css" />
+  <link href="{{ url_for('static',filename='css/sb-admin-2.min.css') }}" rel="stylesheet" type="text/css" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet" />
+  <link href="{{ url_for('static',filename='css/style.css') }}" rel="stylesheet" type="text/css" />
+  <link href="{{ url_for('static',filename='css/dataTables.bootstrap5.min.css') }}" rel="stylesheet" type="text/css" />
+  <link rel="stylesheet" type="text/css"
+    href="https://cdn.datatables.net/buttons/2.2.2/css/buttons.bootstrap5.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
-  <body id="page-top">
-    <!-- Page Wrapper -->
-    <div id="wrapper">
-      <!-- Sidebar -->
-      <ul
-        class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion"
-        id="accordionSidebar"
-      >
-        <!-- Sidebar - Brand -->
+  {% block extra_css %}{% endblock %}
+</head>
 
-        <!-- Divider -->
-        <hr class="sidebar-divider" />
+<body id="page-top">
+  <!-- Page Wrapper -->
+  <div id="wrapper">
+    <!-- Sidebar -->
+    <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
+      <!-- Sidebar - Brand -->
+      <br /><br /><br />
+      <!-- Divider -->
+      <hr class="sidebar-divider" />
 
-        {% if session.user_type == 'admin' %}
-        <!-- Dashboard Link -->
-        <li class="nav-item">
-          <a class="nav-link" href="{{ url_for('admin.dashboard') }}">
-            <i class="fas fa-fw fa-tachometer-alt"></i>
-            <span>Dashboard</span>
-          </a>
-        </li>
-        {% endif %} {% if session.user_type == 'hr' %}
-        <!-- Dashboard Link -->
-        <li class="nav-item">
-          <a class="nav-link" href="{{ url_for('hr.dashboard') }}">
-            <i class="fas fa-fw fa-tachometer-alt"></i>
-            <span>Dashboard</span>
-          </a>
-        </li>
-        {% endif %} {% if session.user_type == 'finance' %}
-        <!-- Dashboard Link -->
-        <li class="nav-item">
-          <a class="nav-link" href="{{ url_for('finance.dashboard') }}">
-            <i class="fas fa-fw fa-tachometer-alt"></i>
-            <span>Dashboard</span>
-          </a>
-        </li>
-        {% endif %}
+      {% if session.user_type == 'admin' %}
+      <!-- Dashboard Link -->
+      <li class="nav-item">
+        <a class="nav-link" href="{{ url_for('admin.dashboard') }}">
+          <i class="fas fa-fw fa-tachometer-alt"></i>
+          <span>Dashboard</span>
+        </a>
+      </li>
+      {% endif %} {% if session.user_type == 'hr' %}
+      <!-- Dashboard Link -->
+      <li class="nav-item">
+        <a class="nav-link" href="{{ url_for('hr.dashboard') }}">
+          <i class="fas fa-fw fa-tachometer-alt"></i>
+          <span>Dashboard</span>
+        </a>
+      </li>
+      {% endif %} {% if session.user_type == 'finance' %}
+      <!-- Dashboard Link -->
+      <li class="nav-item">
+        <a class="nav-link" href="{{ url_for('finance.dashboard') }}">
+          <i class="fas fa-fw fa-tachometer-alt"></i>
+          <span>Dashboard</span>
+        </a>
+      </li>
+      {% endif %}
 
-        <!-- Divider -->
-        <hr class="sidebar-divider" />
+      <!-- Divider -->
+      <hr class="sidebar-divider" />
 
-        {% if session.user_type == 'admin' or session.user_type == 'hr' %}
-        <!-- Employee Management Section -->
-        <div class="sidebar-heading">Employee Management</div>
+      {% if session.user_type == 'admin' or session.user_type == 'hr' %}
+      <!-- Employee Management Section -->
+      <div class="sidebar-heading">Employee Management</div>
 
-        <li class="nav-item">
-          <a
-            class="nav-link collapsed"
-            href="#"
-            data-toggle="collapse"
-            data-target="#collapseEmployee"
-            aria-expanded="true"
-            aria-controls="collapseEmployee"
-          >
-            <i class="fas fa-fw fa-users"></i>
-            <span>Employees</span>
-          </a>
-          <div
-            id="collapseEmployee"
-            class="collapse"
-            aria-labelledby="headingEmployee"
-            data-parent="#accordionSidebar"
-          >
-            <div class="bg-white py-2 collapse-inner rounded">
-              <h6 class="collapse-header">Employee Operations:</h6>
-              <a
-                class="collapse-item"
-                href="{{ url_for('employees.list_employees') }}"
-                >Manage Employees</a
-              >
-            </div>
+      <li class="nav-item">
+        <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseEmployee"
+          aria-expanded="true" aria-controls="collapseEmployee">
+          <i class="fas fa-fw fa-users"></i>
+          <span>Employees</span>
+        </a>
+        <div id="collapseEmployee" class="collapse" aria-labelledby="headingEmployee" data-parent="#accordionSidebar">
+          <div class="bg-white py-2 collapse-inner rounded">
+            <h6 class="collapse-header">Employee Operations:</h6>
+            <a class="collapse-item" href="{{ url_for('employees.list_employees') }}">Manage Employees</a>
           </div>
-        </li>
-        {% endif %} {% if session.user_type == 'admin' or session.user_type == 'hr' %}
-        <!-- Contractor Management Section -->
-        <div class="sidebar-heading">Contractor Management</div>
-
-        <li class="nav-item">
-          <a
-            class="nav-link collapsed"
-            href="#"
-            data-toggle="collapse"
-            data-target="#collapseContractors"
-            aria-expanded="true"
-            aria-controls="collapseContractors"
-          >
-            <i class="fas fa-fw fa-hard-hat"></i>
-            <span>Contractors</span>
-          </a>
-          <div
-            id="collapseContractors"
-            class="collapse"
-            aria-labelledby="headingContractors"
-            data-parent="#accordionSidebar"
-          >
-            <div class="bg-white py-2 collapse-inner rounded">
-              <h6 class="collapse-header">Contractor Operations:</h6>
-              <a
-                class="collapse-item"
-                href="{{ url_for('contractors.list_contractors') }}"
-                >Manage Contractors</a
-              >
-            </div>
-          </div>
-        </li>
-        {% endif %} {% if session.user_type == 'admin' %}
-        <!-- User Management Section -->
-        <div class="sidebar-heading">User Management</div>
-
-        <li class="nav-item">
-          <a
-            class="nav-link collapsed"
-            href="#"
-            data-toggle="collapse"
-            data-target="#collapseUsers"
-            aria-expanded="true"
-            aria-controls="collapseUsers"
-          >
-            <i class="fas fa-fw fa-user-shield"></i>
-            <span>System Users</span>
-          </a>
-          <div
-            id="collapseUsers"
-            class="collapse"
-            aria-labelledby="headingUsers"
-            data-parent="#accordionSidebar"
-          >
-            <div class="bg-white py-2 collapse-inner rounded">
-              <h6 class="collapse-header">User Operations:</h6>
-              <a class="collapse-item" href="{{ url_for('users.list_users') }}"
-                >Manage Users</a
-              >
-            </div>
-          </div>
-        </li>
-        {% endif %} {% if session.user_type == 'finance' %}
-        <!-- User Management Section -->
-        <div class="sidebar-heading">Finance Management</div>
-
-        <li class="nav-item">
-          <a
-            class="nav-link collapsed"
-            href="#"
-            data-toggle="collapse"
-            data-target="#collapseUsers"
-            aria-expanded="true"
-            aria-controls="collapseUsers"
-          >
-            <i class="fas fa-fw fa-user-shield"></i>
-            <span>Finance </span>
-          </a>
-          <div
-            id="collapseUsers"
-            class="collapse"
-            aria-labelledby="headingUsers"
-            data-parent="#accordionSidebar"
-          >
-            <div class="bg-white py-2 collapse-inner rounded">
-              <h6 class="collapse-header">User Operations:</h6>
-              <a
-                class="collapse-item"
-                href="{{ url_for('finance.WagesUpload') }}"
-                >Upload Employee Record</a
-              >
-            </div>
-          </div>
-        </li>
-        {% endif %}
-
-        <!-- Divider -->
-        <hr class="sidebar-divider d-none d-md-block" />
-
-        <!-- Sidebar Toggler (Sidebar) -->
-        <div class="text-center d-none d-md-inline">
-          <button class="rounded-circle border-0" id="sidebarToggle"></button>
         </div>
-      </ul>
-      <!-- End of Sidebar -->
+      </li>
+      {% endif %} {% if session.user_type == 'admin' or session.user_type == 'hr' %}
+      <!-- Contractor Management Section -->
+      <div class="sidebar-heading">Contractor Management</div>
 
-      <!-- Content Wrapper -->
-      <div id="content-wrapper" class="d-flex flex-column">
-        <!-- Main Content -->
-        <div id="content">
-          <!-- Topbar -->
-          <nav
-            class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow"
-          >
-            <!-- Sidebar Toggle (Topbar) -->
-            <button
-              id="sidebarToggleTop"
-              class="btn btn-link d-md-none rounded-circle mr-3"
-            >
-              <i class="fa fa-bars"></i>
-            </button>
+      <li class="nav-item">
+        <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseContractors"
+          aria-expanded="true" aria-controls="collapseContractors">
+          <i class="fas fa-fw fa-hard-hat"></i>
+          <span>Contractors</span>
+        </a>
+        <div id="collapseContractors" class="collapse" aria-labelledby="headingContractors"
+          data-parent="#accordionSidebar">
+          <div class="bg-white py-2 collapse-inner rounded">
+            <h6 class="collapse-header">Contractor Operations:</h6>
+            <a class="collapse-item" href="{{ url_for('contractors.list_contractors') }}">Manage Contractors</a>
+          </div>
+        </div>
+      </li>
+      {% endif %} {% if session.user_type == 'admin' %}
+      <!-- User Management Section -->
+      <div class="sidebar-heading">User Management</div>
 
-            <!-- Topbar Search -->
+      <li class="nav-item">
+        <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseUsers" aria-expanded="true"
+          aria-controls="collapseUsers">
+          <i class="fas fa-fw fa-user-shield"></i>
+          <span>System Users</span>
+        </a>
+        <div id="collapseUsers" class="collapse" aria-labelledby="headingUsers" data-parent="#accordionSidebar">
+          <div class="bg-white py-2 collapse-inner rounded">
+            <h6 class="collapse-header">User Operations:</h6>
+            <a class="collapse-item" href="{{ url_for('users.list_users') }}">Manage Users</a>
+          </div>
+        </div>
+      </li>
+      {% endif %} {% if session.user_type == 'finance' %}
+      <!-- User Management Section -->
+      <div class="sidebar-heading">Finance Management</div>
 
-            <!-- Topbar Navbar -->
-            <ul class="navbar-nav ml-auto">
-              <!-- Nav Item - Search Dropdown (Visible Only XS) -->
-              <li class="nav-item dropdown no-arrow d-sm-none">
-                <a
-                  class="nav-link dropdown-toggle"
-                  href="#"
-                  id="searchDropdown"
-                  role="button"
-                  data-toggle="dropdown"
-                  aria-haspopup="true"
-                  aria-expanded="false"
-                >
-                  <i class="fas fa-search fa-fw"></i>
+      <li class="nav-item">
+        <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseUsers" aria-expanded="true"
+          aria-controls="collapseUsers">
+          <i class="fas fa-fw fa-user-shield"></i>
+          <span>Finance </span>
+        </a>
+        <div id="collapseUsers" class="collapse" aria-labelledby="headingUsers" data-parent="#accordionSidebar">
+          <div class="bg-white py-2 collapse-inner rounded">
+            <h6 class="collapse-header">User Operations:</h6>
+            <a class="collapse-item" href="{{ url_for('finance.WagesUpload') }}">Upload Employee Record</a>
+          </div>
+        </div>
+      </li>
+      {% endif %}
+
+      <!-- Divider -->
+      <hr class="sidebar-divider d-none d-md-block" />
+
+      <!-- Sidebar Toggler (Sidebar) -->
+      <div class="text-center d-none d-md-inline">
+        <button class="rounded-circle border-0" id="sidebarToggle"></button>
+      </div>
+    </ul>
+    <!-- End of Sidebar -->
+
+    <!-- Content Wrapper -->
+    <div id="content-wrapper" class="d-flex flex-column">
+      <!-- Main Content -->
+      <div id="content">
+        <!-- Topbar -->
+        <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow">
+          <!-- Sidebar Toggle (Topbar) -->
+          <button id="sidebarToggleTop" class="btn btn-link d-md-none rounded-circle mr-3">
+            <i class="fa fa-bars"></i>
+          </button>
+
+          <!-- Topbar Search -->
+
+          <!-- Topbar Navbar -->
+          <ul class="navbar-nav ml-auto">
+            <!-- Nav Item - Search Dropdown (Visible Only XS) -->
+            <li class="nav-item dropdown no-arrow d-sm-none">
+              <a class="nav-link dropdown-toggle" href="#" id="searchDropdown" role="button" data-toggle="dropdown"
+                aria-haspopup="true" aria-expanded="false">
+                <i class="fas fa-search fa-fw"></i>
+              </a>
+              <!-- Dropdown - Messages -->
+              <div class="dropdown-menu dropdown-menu-right p-3 shadow animated--grow-in"
+                aria-labelledby="searchDropdown">
+                <form class="form-inline mr-auto w-100 navbar-search">
+                  <div class="input-group">
+                    <input type="text" class="form-control bg-light border-0 small" placeholder="Search for..."
+                      aria-label="Search" aria-describedby="basic-addon2" />
+                    <div class="input-group-append">
+                      <button class="btn" type="button">
+                        <i class="fas fa-search fa-sm"></i>
+                      </button>
+                    </div>
+                  </div>
+                </form>
+              </div>
+            </li>
+
+            <!-- Nav Item - Alerts -->
+            <li class="nav-item dropdown no-arrow mx-1">
+              <a class="nav-link dropdown-toggle" href="#" id="alertsDropdown" role="button" data-toggle="dropdown"
+                aria-haspopup="true" aria-expanded="false">
+                <!-- <i class="fas fa-bell fa-fw"></i> -->
+                <!-- Counter - Alerts -->
+                <!-- <span class="badge badge-danger badge-counter">3+</span> -->
+              </a>
+              <!-- Dropdown - Alerts -->
+              <div class="dropdown-list dropdown-menu dropdown-menu-right shadow animated--grow-in"
+                aria-labelledby="alertsDropdown">
+                <!-- <h6 class="dropdown-header">Alerts Center</h6> -->
+                <a class="dropdown-item d-flex align-items-center" href="#">
+                  <div class="mr-3">
+                    <div class="icon-circle bg-primary">
+                      <i class="fas fa-file-alt text-white"></i>
+                    </div>
+                  </div>
+                  <div>
+                    <div class="small text-gray-500">December 12, 2019</div>
+                    <span class="font-weight-bold">A new monthly report is ready to download!</span>
+                  </div>
                 </a>
-                <!-- Dropdown - Messages -->
-                <div
-                  class="dropdown-menu dropdown-menu-right p-3 shadow animated--grow-in"
-                  aria-labelledby="searchDropdown"
-                >
-                  <form class="form-inline mr-auto w-100 navbar-search">
-                    <div class="input-group">
-                      <input
-                        type="text"
-                        class="form-control bg-light border-0 small"
-                        placeholder="Search for..."
-                        aria-label="Search"
-                        aria-describedby="basic-addon2"
-                      />
-                      <div class="input-group-append">
-                        <button class="btn" type="button">
-                          <i class="fas fa-search fa-sm"></i>
-                        </button>
-                      </div>
+                <a class="dropdown-item d-flex align-items-center" href="#">
+                  <div class="mr-3">
+                    <div class="icon-circle bg-success">
+                      <i class="fas fa-donate text-white"></i>
                     </div>
-                  </form>
-                </div>
-              </li>
-
-              <!-- Nav Item - Alerts -->
-              <li class="nav-item dropdown no-arrow mx-1">
-                <a
-                  class="nav-link dropdown-toggle"
-                  href="#"
-                  id="alertsDropdown"
-                  role="button"
-                  data-toggle="dropdown"
-                  aria-haspopup="true"
-                  aria-expanded="false"
-                >
-                  <!-- <i class="fas fa-bell fa-fw"></i> -->
-                  <!-- Counter - Alerts -->
-                  <!-- <span class="badge badge-danger badge-counter">3+</span> -->
+                  </div>
+                  <div>
+                    <div class="small text-gray-500">December 7, 2019</div>
+                    $290.29 has been deposited into your account!
+                  </div>
                 </a>
-                <!-- Dropdown - Alerts -->
-                <div
-                  class="dropdown-list dropdown-menu dropdown-menu-right shadow animated--grow-in"
-                  aria-labelledby="alertsDropdown"
-                >
-                  <!-- <h6 class="dropdown-header">Alerts Center</h6> -->
-                  <a class="dropdown-item d-flex align-items-center" href="#">
-                    <div class="mr-3">
-                      <div class="icon-circle bg-primary">
-                        <i class="fas fa-file-alt text-white"></i>
-                      </div>
+                <a class="dropdown-item d-flex align-items-center" href="#">
+                  <div class="mr-3">
+                    <div class="icon-circle bg-warning">
+                      <i class="fas fa-exclamation-triangle text-white"></i>
                     </div>
-                    <div>
-                      <div class="small text-gray-500">December 12, 2019</div>
-                      <span class="font-weight-bold"
-                        >A new monthly report is ready to download!</span
-                      >
-                    </div>
-                  </a>
-                  <a class="dropdown-item d-flex align-items-center" href="#">
-                    <div class="mr-3">
-                      <div class="icon-circle bg-success">
-                        <i class="fas fa-donate text-white"></i>
-                      </div>
-                    </div>
-                    <div>
-                      <div class="small text-gray-500">December 7, 2019</div>
-                      $290.29 has been deposited into your account!
-                    </div>
-                  </a>
-                  <a class="dropdown-item d-flex align-items-center" href="#">
-                    <div class="mr-3">
-                      <div class="icon-circle bg-warning">
-                        <i class="fas fa-exclamation-triangle text-white"></i>
-                      </div>
-                    </div>
-                    <div>
-                      <div class="small text-gray-500">December 2, 2019</div>
-                      Spending Alert: We've noticed unusually high spending for
-                      your account.
-                    </div>
-                  </a>
-                  <a
-                    class="dropdown-item text-center small text-gray-500"
-                    href="#"
-                    >Show All Alerts</a
-                  >
-                </div>
-              </li>
-
-              <!-- Nav Item - Messages -->
-              <li class="nav-item dropdown no-arrow mx-1">
-                <!-- Dropdown - Messages -->
-                <div
-                  class="dropdown-list dropdown-menu dropdown-menu-right shadow animated--grow-in"
-                  aria-labelledby="messagesDropdown"
-                >
-                  <h6 class="dropdown-header">Message Center</h6>
-                  <a class="dropdown-item d-flex align-items-center" href="#">
-                    <div class="dropdown-list-image mr-3">
-                      <div class="status-indicator bg-success"></div>
-                    </div>
-                    <div class="font-weight-bold">
-                      <div class="text-truncate">
-                        Hi there! I am wondering if you can help me with a
-                        problem I've been having.
-                      </div>
-                      <div class="small text-gray-500">Shizra · 58m</div>
-                    </div>
-                  </a>
-                  <a class="dropdown-item d-flex align-items-center" href="#">
-                    <div class="dropdown-list-image mr-3">
-                      <img
-                        class="rounded-circle"
-                        src="img/undraw_profile_2.svg"
-                        alt="..."
-                      />
-                      <div class="status-indicator"></div>
-                    </div>
-                    <div>
-                      <div class="text-truncate">
-                        I have the photos that you ordered last month, how would
-                        you like them sent to you?
-                      </div>
-                      <div class="small text-gray-500">Shan Gul · 1d</div>
-                    </div>
-                  </a>
-                  <a class="dropdown-item d-flex align-items-center" href="#">
-                    <div class="dropdown-list-image mr-3">
-                      <img
-                        class="rounded-circle"
-                        src="img/undraw_profile_3.svg"
-                        alt="..."
-                      />
-                      <div class="status-indicator bg-warning"></div>
-                    </div>
-                    <div>
-                      <div class="text-truncate">
-                        Last month's report looks great, I am very happy with
-                        the progress so far, keep up the good work!
-                      </div>
-                      <div class="small text-gray-500">Shizra · 2d</div>
-                    </div>
-                  </a>
-                  <a
-                    class="dropdown-item text-center small text-gray-500"
-                    href="#"
-                    >Read More Messages</a
-                  >
-                </div>
-              </li>
-
-              <div class="topbar-divider d-none d-sm-block"></div>
-
-              <!-- Nav Item - User Information -->
-              <li class="nav-item dropdown no-arrow">
-                <a
-                  class="nav-link dropdown-toggle"
-                  href="#"
-                  id="userDropdown"
-                  role="button"
-                  data-toggle="dropdown"
-                  aria-haspopup="true"
-                  aria-expanded="false"
-                >
-                  <span class="mr-2 d-none d-lg-inline text-gray-600 small">
-                    {% if session.FirstName %}{{ session.FirstName}}
-                    {{session.LastName }}{% else %}edenrobe User{% endif %}
-                  </span>
-                  <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                  </div>
+                  <div>
+                    <div class="small text-gray-500">December 2, 2019</div>
+                    Spending Alert: We've noticed unusually high spending for
+                    your account.
+                  </div>
                 </a>
-                <!-- Dropdown - User Information -->
-                <div
-                  class="dropdown-menu dropdown-menu-right shadow animated--grow-in"
-                  aria-labelledby="userDropdown"
-                >
-                  <a
-                    class="dropdown-item"
-                    href="#"
-                    data-toggle="modal"
-                    data-target="#logoutModal"
-                  >
-                    <i
-                      class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"
-                    ></i>
-                    Logout
-                  </a>
-                </div>
-              </li>
-            </ul>
-          </nav>
-          <!-- End of Topbar -->
+                <a class="dropdown-item text-center small text-gray-500" href="#">Show All Alerts</a>
+              </div>
+            </li>
 
-          <!-- Begin Page Content -->
-          <div class="container-fluid">
-            {% with messages = get_flashed_messages(with_categories=true) %} {%
-            if messages %} {% for category, message in messages %}
-            <div
-              class="alert alert-{{ 'danger' if category == 'error' else 'success' if category == 'success' else 'warning' if category == 'warning' else 'info' }} alert-dismissible fade show"
-            >
-              {{ message }}
-              <button
-                type="button"
-                class="btn-close"
-                data-bs-dismiss="alert"
-              ></button>
-            </div>
-            {% endfor %} {% endif %} {% endwith %} {% block content %}
-            <!-- Page Heading -->
-            <div
-              class="d-sm-flex align-items-center justify-content-between mb-4"
-            >
-              <h1 class="h3 mb-0 text-gray-800">Dashboard</h1>
-              <a
-                href="#"
-                class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm"
-                ><i class="fas fa-download fa-sm text-white-50"></i> Generate
-                Report</a
-              >
-            </div>
+            <!-- Nav Item - Messages -->
+            <li class="nav-item dropdown no-arrow mx-1">
+              <!-- Dropdown - Messages -->
+              <div class="dropdown-list dropdown-menu dropdown-menu-right shadow animated--grow-in"
+                aria-labelledby="messagesDropdown">
+                <h6 class="dropdown-header">Message Center</h6>
+                <a class="dropdown-item d-flex align-items-center" href="#">
+                  <div class="dropdown-list-image mr-3">
+                    <div class="status-indicator bg-success"></div>
+                  </div>
+                  <div class="font-weight-bold">
+                    <div class="text-truncate">
+                      Hi there! I am wondering if you can help me with a
+                      problem I've been having.
+                    </div>
+                    <div class="small text-gray-500">Shizra · 58m</div>
+                  </div>
+                </a>
+                <a class="dropdown-item d-flex align-items-center" href="#">
+                  <div class="dropdown-list-image mr-3">
+                    <img class="rounded-circle" src="img/undraw_profile_2.svg" alt="..." />
+                    <div class="status-indicator"></div>
+                  </div>
+                  <div>
+                    <div class="text-truncate">
+                      I have the photos that you ordered last month, how would
+                      you like them sent to you?
+                    </div>
+                    <div class="small text-gray-500">Shan Gul · 1d</div>
+                  </div>
+                </a>
+                <a class="dropdown-item d-flex align-items-center" href="#">
+                  <div class="dropdown-list-image mr-3">
+                    <img class="rounded-circle" src="img/undraw_profile_3.svg" alt="..." />
+                    <div class="status-indicator bg-warning"></div>
+                  </div>
+                  <div>
+                    <div class="text-truncate">
+                      Last month's report looks great, I am very happy with
+                      the progress so far, keep up the good work!
+                    </div>
+                    <div class="small text-gray-500">Shizra · 2d</div>
+                  </div>
+                </a>
+                <a class="dropdown-item text-center small text-gray-500" href="#">Read More Messages</a>
+              </div>
+            </li>
 
-            <!-- Content Row -->
-            <div class="row">
-              <!-- Admin Dashboard Example -->
-              <div class="col-xl-3 col-md-6 mb-4">
-                <div class="card border-left-primary shadow h-100 py-2">
-                  <div class="card-body">
-                    <div class="row no-gutters align-items-center">
-                      <div class="col mr-2">
-                        <div
-                          class="text-xs font-weight-bold text-primary text-uppercase mb-1"
-                        >
-                          Admin Dashboard
-                        </div>
-                        <div class="h5 mb-0 font-weight-bold text-gray-800">
-                          20
-                        </div>
+            <div class="topbar-divider d-none d-sm-block"></div>
+
+            <!-- Nav Item - User Information -->
+            <li class="nav-item dropdown no-arrow">
+              <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-toggle="dropdown"
+                aria-haspopup="true" aria-expanded="false">
+                <span class="mr-2 d-none d-lg-inline text-gray-600 small">
+                  {% if session.FirstName %}{{ session.FirstName}}
+                  {{session.LastName }}{% else %}edenrobe User{% endif %}
+                </span>
+                <i class="fa-solid fa-arrow-right-from-bracket"></i>
+              </a>
+              <!-- Dropdown - User Information -->
+              <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in" aria-labelledby="userDropdown">
+                <a class="dropdown-item" href="#" data-toggle="modal" data-target="#logoutModal">
+                  <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>
+                  Logout
+                </a>
+              </div>
+            </li>
+          </ul>
+        </nav>
+        <!-- End of Topbar -->
+
+        <!-- Begin Page Content -->
+        <div class="container-fluid">
+          {% with messages = get_flashed_messages(with_categories=true) %} {%
+          if messages %} {% for category, message in messages %}
+          <div
+            class="alert alert-{{ 'danger' if category == 'error' else 'success' if category == 'success' else 'warning' if category == 'warning' else 'info' }} alert-dismissible fade show">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+          </div>
+          {% endfor %} {% endif %} {% endwith %} {% block content %}
+          <!-- Page Heading -->
+          <div class="d-sm-flex align-items-center justify-content-between mb-4">
+            <h1 class="h3 mb-0 text-gray-800">Dashboard</h1>
+            <a href="#" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm"><i
+                class="fas fa-download fa-sm text-white-50"></i> Generate
+              Report</a>
+          </div>
+
+          <!-- Content Row -->
+          <div class="row">
+            <!-- Admin Dashboard Example -->
+            <div class="col-xl-3 col-md-6 mb-4">
+              <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                  <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                      <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                        Admin Dashboard
                       </div>
-                      <div class="col-auto">
-                        <img
-                          src="{{ url_for('static', filename='Icons/admin.png') }}"
-                          alt="admin Icon"
-                          width="40"
-                          height="40"
-                        />
+                      <div class="h5 mb-0 font-weight-bold text-gray-800">
+                        20
                       </div>
+                    </div>
+                    <div class="col-auto">
+                      <img src="{{ url_for('static', filename='Icons/admin.png') }}" alt="admin Icon" width="40"
+                        height="40" />
                     </div>
                   </div>
                 </div>
               </div>
+            </div>
 
-              <!-- HR Dashboard Example -->
-              <div class="col-xl-3 col-md-6 mb-4">
-                <div class="card border-left-success shadow h-100 py-2">
-                  <div class="card-body">
-                    <div class="row no-gutters align-items-center">
-                      <div class="col mr-2">
-                        <div
-                          class="text-xs font-weight-bold text-success text-uppercase mb-1"
-                        >
-                          HR Dashboard
-                        </div>
-                        <div class="h5 mb-0 font-weight-bold text-gray-800">
-                          30
-                        </div>
+            <!-- HR Dashboard Example -->
+            <div class="col-xl-3 col-md-6 mb-4">
+              <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                  <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                      <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                        HR Dashboard
                       </div>
-                      <div class="col-auto">
-                        <img
-                          src="{{ url_for('static', filename='Icons/HR.png') }}"
-                          alt="hr Icon"
-                          width="40"
-                          height="40"
-                        />
+                      <div class="h5 mb-0 font-weight-bold text-gray-800">
+                        30
                       </div>
+                    </div>
+                    <div class="col-auto">
+                      <img src="{{ url_for('static', filename='Icons/HR.png') }}" alt="hr Icon" width="40"
+                        height="40" />
                     </div>
                   </div>
                 </div>
               </div>
+            </div>
 
-              <!-- Total Dashboard -->
-              <div class="col-xl-3 col-md-6 mb-4">
-                <div class="card border-left-info shadow h-100 py-2">
-                  <div class="card-body">
-                    <div class="row no-gutters align-items-center">
-                      <div class="col mr-2">
-                        <div
-                          class="text-xs font-weight-bold text-info text-uppercase mb-1"
-                        >
-                          Total Employee
-                        </div>
-                        <div class="row no-gutters align-items-center">
-                          <div class="col-auto">
-                            <div
-                              class="h5 mb-0 mr-3 font-weight-bold text-gray-800"
-                            >
-                              51-100
-                            </div>
+            <!-- Total Dashboard -->
+            <div class="col-xl-3 col-md-6 mb-4">
+              <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                  <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                      <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                        Total Employee
+                      </div>
+                      <div class="row no-gutters align-items-center">
+                        <div class="col-auto">
+                          <div class="h5 mb-0 mr-3 font-weight-bold text-gray-800">
+                            51-100
                           </div>
-                          <div class="col">
-                            <div class="progress progress-sm mr-2">
-                              <div
-                                class="progress-bar bg-info"
-                                role="progressbar"
-                                style="width: 50%"
-                                aria-valuenow="50"
-                                aria-valuemin="0"
-                                aria-valuemax="100"
-                              ></div>
-                            </div>
+                        </div>
+                        <div class="col">
+                          <div class="progress progress-sm mr-2">
+                            <div class="progress-bar bg-info" role="progressbar" style="width: 50%" aria-valuenow="50"
+                              aria-valuemin="0" aria-valuemax="100"></div>
                           </div>
                         </div>
                       </div>
-                      <div class="col-auto">
-                        <img
-                          src="{{ url_for('static', filename='Icons/staff.png') }}"
-                          alt="Staff Icon"
-                          width="40"
-                          height="40"
-                        />
-                      </div>
                     </div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Active Employee -->
-              <div class="col-xl-3 col-md-6 mb-4">
-                <div class="card border-left-warning shadow h-100 py-2">
-                  <div class="card-body">
-                    <div class="row no-gutters align-items-center">
-                      <div class="col mr-2">
-                        <div
-                          class="text-xs font-weight-bold text-warning text-uppercase mb-1"
-                        >
-                          Active Employee
-                        </div>
-                        <div class="h5 mb-0 font-weight-bold text-gray-800">
-                          18
-                        </div>
-                      </div>
-                      <div class="col-auto">
-                        <img
-                          src="{{ url_for('static', filename='Icons/active.png') }}"
-                          alt="active Icon"
-                          width="40"
-                          height="40"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- InActive Employee -->
-              <div class="col-xl-3 col-md-6 mb-4">
-                <div class="card border-left-warning shadow h-100 py-2">
-                  <div class="card-body">
-                    <div class="row no-gutters align-items-center">
-                      <div class="col mr-2">
-                        <div
-                          class="text-xs font-weight-bold text-warning text-uppercase mb-1"
-                        >
-                          InActive Employee
-                        </div>
-                        <div class="h5 mb-0 font-weight-bold text-gray-800">
-                          12
-                        </div>
-                      </div>
-                      <div class="col-auto">
-                        <img
-                          src="{{ url_for('static', filename='Icons/Inactive.png') }}"
-                          alt="Inactive Icon"
-                          width="40"
-                          height="40"
-                        />
-                      </div>
+                    <div class="col-auto">
+                      <img src="{{ url_for('static', filename='Icons/staff.png') }}" alt="Staff Icon" width="40"
+                        height="40" />
                     </div>
                   </div>
                 </div>
               </div>
             </div>
-            {% endblock %}
-          </div>
-          <!-- /.container-fluid -->
-        </div>
-        <!-- End of Main Content -->
 
-        <!-- Footer -->
-        <footer class="sticky-footer bg-white">
-          <div class="container my-auto">
-            <div class="copyright text-center my-auto">
-              <span>Copyright &copy; https://www.wages.com</span>
+            <!-- Active Employee -->
+            <div class="col-xl-3 col-md-6 mb-4">
+              <div class="card border-left-warning shadow h-100 py-2">
+                <div class="card-body">
+                  <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                      <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                        Active Employee
+                      </div>
+                      <div class="h5 mb-0 font-weight-bold text-gray-800">
+                        18
+                      </div>
+                    </div>
+                    <div class="col-auto">
+                      <img src="{{ url_for('static', filename='Icons/active.png') }}" alt="active Icon" width="40"
+                        height="40" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- InActive Employee -->
+            <div class="col-xl-3 col-md-6 mb-4">
+              <div class="card border-left-warning shadow h-100 py-2">
+                <div class="card-body">
+                  <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                      <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                        InActive Employee
+                      </div>
+                      <div class="h5 mb-0 font-weight-bold text-gray-800">
+                        12
+                      </div>
+                    </div>
+                    <div class="col-auto">
+                      <img src="{{ url_for('static', filename='Icons/Inactive.png') }}" alt="Inactive Icon" width="40"
+                        height="40" />
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
-        </footer>
-        <!-- End of Footer -->
+          {% endblock %}
+        </div>
+        <!-- /.container-fluid -->
       </div>
-      <!-- End of Content Wrapper -->
+      <!-- End of Main Content -->
+
+      <!-- Footer -->
+      <footer class="sticky-footer bg-white">
+        <div class="container my-auto">
+          <div class="copyright text-center my-auto">
+            <span>Copyright &copy; https://www.wages.com</span>
+          </div>
+        </div>
+      </footer>
+      <!-- End of Footer -->
     </div>
-    <!-- End of Page Wrapper -->
+    <!-- End of Content Wrapper -->
+  </div>
+  <!-- End of Page Wrapper -->
 
-    <!-- Scroll to Top Button-->
-    <a class="scroll-to-top rounded" href="#page-top">
-      <i class="fas fa-angle-up"></i>
-    </a>
+  <!-- Scroll to Top Button-->
+  <a class="scroll-to-top rounded" href="#page-top">
+    <i class="fas fa-angle-up"></i>
+  </a>
 
-    <!-- Logout Modal-->
-    <div
-      class="modal fade"
-      id="logoutModal"
-      tabindex="-1"
-      role="dialog"
-      aria-labelledby="exampleModalLabel"
-      aria-hidden="true"
-    >
-      <div class="modal-dialog" role="document">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title" id="exampleModalLabel">Ready to Leave?</h5>
-            <button
-              class="close"
-              type="button"
-              data-dismiss="modal"
-              aria-label="Close"
-            >
-              <span aria-hidden="true">×</span>
-            </button>
-          </div>
-          <div class="modal-body">
-            Select "Logout" below if you are ready to end your current session.
-          </div>
-          <div class="modal-footer">
-            <button
-              class="btn btn-secondary"
-              type="button"
-              data-dismiss="modal"
-            >
-              Cancel
-            </button>
-            <a class="btn btn-primary" href="{{ url_for('auth.logout') }}"
-              >Logout</a
-            >
-          </div>
+  <!-- Logout Modal-->
+  <div class="modal fade" id="logoutModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="exampleModalLabel">Ready to Leave?</h5>
+          <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">×</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          Select "Logout" below if you are ready to end your current session.
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" type="button" data-dismiss="modal">
+            Cancel
+          </button>
+          <a class="btn btn-primary" href="{{ url_for('auth.logout') }}">Logout</a>
         </div>
       </div>
     </div>
+  </div>
 
-    <!-- Bootstrap core JavaScript-->
-    <script
-      type="text/javascript"
-      src="{{ url_for('static',filename='vendor/jquery/jquery.min.js') }}"
-    ></script>
-    <script
-      type="text/javascript"
-      src="{{ url_for('static',filename='vendor/bootstrap/js/bootstrap.bundle.min.js') }}"
-    ></script>
+  <!-- Bootstrap core JavaScript-->
+  <script type="text/javascript" src="{{ url_for('static',filename='vendor/jquery/jquery.min.js') }}"></script>
+  <script type="text/javascript"
+    src="{{ url_for('static',filename='vendor/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
 
-    <!-- Core plugin JavaScript-->
-    <script
-      type="text/javascript"
-      src="{{ url_for('static',filename='vendor/jquery-easing/jquery.easing.min.js') }}"
-    ></script>
+  <!-- Core plugin JavaScript-->
+  <script type="text/javascript"
+    src="{{ url_for('static',filename='vendor/jquery-easing/jquery.easing.min.js') }}"></script>
 
-    <!-- Custom scripts for all pages-->
-    <script
-      type="text/javascript"
-      src="{{ url_for('static',filename='js/sb-admin-2.min.js') }}"
-    ></script>
+  <!-- Custom scripts for all pages-->
+  <script type="text/javascript" src="{{ url_for('static',filename='js/sb-admin-2.min.js') }}"></script>
 
-    <!-- Page level plugins -->
-    <script
-      type="text/javascript"
-      src="{{ url_for('static',filename='vendor/chart.js/Chart.min.js') }}"
-    ></script>
+  <!-- Page level plugins -->
+  <script type="text/javascript" src="{{ url_for('static',filename='vendor/chart.js/Chart.min.js') }}"></script>
 
-    <!-- Page level custom scripts -->
-    <script
-      type="text/javascript"
-      src="{{ url_for('static',filename='js/demo/chart-area-demo.js') }}"
-    ></script>
+  <script type="text/javascript" src="{{ url_for('static',filename='js/jquery.dataTables.min.js') }}"></script>
+  <script type="text/javascript" src="{{ url_for('static',filename='js/dataTables.bootstrap5.min.js') }}"></script>
+  <script type="text/javascript" src="{{ url_for('static',filename='js/table-datatable.js') }}"></script>
+  <!-- Page level custom scripts -->
+  <script type="text/javascript" src="{{ url_for('static',filename='js/script.js') }}"></script>
+  <!-- DataTables CSS and JS -->
+  <script>
+    $(document).ready(function () {
+      $('#example').DataTable();
+    });
+  </script>
+  <script>
+    $(document).ready(function () {
+      var table = $('#example2').DataTable({
+        lengthChange: false,
+        buttons: ['copy', 'excel', 'pdf', 'print']
+      });
 
-    <script
-      type="text/javascript"
-      src="{{ url_for('static',filename='vendor/datatables/jquery.dataTables.min.js') }}"
-    ></script>
-    <script
-      type="text/javascript"
-      src="{{ url_for('static',filename='vendor/datatables/dataTables.bootstrap4.min.js') }}"
-    ></script>
+      table.buttons().container()
+        .appendTo('#example2_wrapper .col-md-6:eq(0)');
+    });
+  </script>
+  <script>
+    $(document).ready(function () {
+      // Filter logic
+      $.fn.dataTable.ext.search.push(function (settings, data, dataIndex) {
+        var showActiveOnly = $("#activeFilter").prop("checked");
 
-    <!-- Page level custom scripts -->
-    <script src="js/script.js"></script>
-    {% block scripts %}{% endblock %}
-  </body>
+        // Status column index (adjust if needed)
+        var statusText = (data[6] || "").trim().toLowerCase();
+
+        if (showActiveOnly) {
+          // Match exactly 'active'
+          return statusText === "active";
+        }
+        return true;
+      });
+
+
+      // Toggle event
+      $("#activeFilter").on("change", function () {
+        table.draw();
+      });
+
+      // Default state
+      $("#activeFilter").prop("checked", false);
+      table.draw();
+    });
+  </script>
+  {% block scripts %}{% endblock %}
+</body>
+
 </html>

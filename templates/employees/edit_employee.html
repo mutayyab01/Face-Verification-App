@@ -17,41 +17,28 @@
                 <h5 class="mb-0"><i class="fas fa-user-edit me-2"></i>Edit Employee Information</h5>
             </div>
             <div class="card-body">
-                <form method="POST" 
-                      action="{{ url_for('employees.edit_employee', employee_id=employee[0]) }}" 
-                      enctype="multipart/form-data"
-                      novalidate>
+                <form method="POST" action="{{ url_for('employees.edit_employee', employee_id=employee[0]) }}"
+                    enctype="multipart/form-data" novalidate>
                     <div class="row">
                         <!-- Nucleus ID -->
                         <div class="col-md-6">
                             <div class="mb-3">
-                                <label for="NucleusId" class="form-label">Nucleus ID *</label>
-                                <input type="text" 
-                                       class="form-control" 
-                                       id="NucleusId" 
-                                       name="NucleusId" 
-                                       value="{{ employee[1] if employee[1] else '' }}"
-                                       required
-                                       pattern="^\d+$"
-                                       title="Only digits are allowed">
+                                <label for="NucleusId" class="form-label">Employee Code *</label>
+                                <input type="text" class="form-control" id="NucleusId" name="NucleusId"
+                                    value="{{ employee[1] if employee[1] else '' }}" required pattern="^\d+$"
+                                    title="Only digits are allowed">
                                 <div class="invalid-feedback">
                                     Please provide a valid numeric Nucleus ID.
                                 </div>
                             </div>
                         </div>
-                        
+
                         <!-- Name -->
                         <div class="col-md-6">
                             <div class="mb-3">
                                 <label for="Name" class="form-label">Name *</label>
-                                <input type="text" 
-                                       class="form-control" 
-                                       id="Name" 
-                                       name="Name" 
-                                       value="{{ employee[2] }}"
-                                       required
-                                       pattern="^[A-Za-z ]+$"
-                                       title="Only alphabets and spaces are allowed">
+                                <input type="text" class="form-control" id="Name" name="Name" value="{{ employee[2] }}"
+                                    required pattern="^[A-Za-z ]+$" title="Only alphabets and spaces are allowed">
                                 <div class="invalid-feedback">
                                     Please provide a valid name (letters and spaces only).
                                 </div>
@@ -64,14 +51,9 @@
                         <div class="col-md-6">
                             <div class="mb-3">
                                 <label for="FatherName" class="form-label">Father Name *</label>
-                                <input type="text" 
-                                       class="form-control" 
-                                       id="FatherName" 
-                                       name="FatherName" 
-                                       value="{{ employee[3] }}"
-                                       required
-                                       pattern="^[A-Za-z ]+$"
-                                       title="Only alphabets and spaces are allowed">
+                                <input type="text" class="form-control" id="FatherName" name="FatherName"
+                                    value="{{ employee[3] }}" required pattern="^[A-Za-z ]+$"
+                                    title="Only alphabets and spaces are allowed">
                                 <div class="invalid-feedback">
                                     Please provide a valid father's name.
                                 </div>
@@ -82,14 +64,9 @@
                         <div class="col-md-6">
                             <div class="mb-3">
                                 <label for="PhoneNumber" class="form-label">Phone Number *</label>
-                                <input type="text" 
-                                       class="form-control" 
-                                       id="PhoneNumber" 
-                                       name="PhoneNumber" 
-                                       value="{{ employee[4] if employee[4] else '' }}"
-                                       required
-                                       pattern="^\d{11}$"
-                                       title="11 digits required">
+                                <input type="text" class="form-control" id="PhoneNumber" name="PhoneNumber"
+                                    value="{{ employee[4] if employee[4] else '' }}" required pattern="^\d{11}$"
+                                    title="11 digits required">
                                 <div class="invalid-feedback">
                                     Please provide a valid 11-digit phone number.
                                 </div>
@@ -102,10 +79,8 @@
                         <div class="col-md-6">
                             <div class="mb-3">
                                 <label for="Address" class="form-label">Address</label>
-                                <textarea class="form-control" 
-                                          id="Address" 
-                                          name="Address" 
-                                          rows="2">{{ employee[5] if employee[5] else '' }}</textarea>
+                                <textarea class="form-control" id="Address" name="Address"
+                                    rows="2">{{ employee[5] if employee[5] else '' }}</textarea>
                             </div>
                         </div>
 
@@ -113,13 +88,11 @@
                         <div class="col-md-6">
                             <div class="mb-3">
                                 <label for="ContractorId" class="form-label">Contractor</label>
-                                <select class="form-control" 
-                                        id="ContractorId" 
-                                        name="ContractorId">
-                                    <option value="">Select Contractor (Optional)</option>
+                                <select class="form-control" id="ContractorId" name="ContractorId">
+                                    <option value="">Select Contractor </option>
                                     {% for contractor in contractors %}
-                                    <option value="{{ contractor[0] }}" 
-                                            {% if contractor[0] == employee[6] %}selected{% endif %}>
+                                    <option value="{{ contractor[0] }}" {% if contractor[0]==employee[6] %}selected{%
+                                        endif %}>
                                         {{ contractor[1] }}
                                     </option>
                                     {% endfor %}
@@ -127,17 +100,27 @@
                             </div>
                         </div>
                     </div>
-
-                    <!-- Image Upload -->
                     <div class="row">
-                        <div class="col-md-12">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="Unit" class="form-label">Select Unit *</label>
+                                <select class="form-control" id="Unit" name="Unit" required>
+                                    <option value="">Select Unit</option>
+                                     {% for unit in units %}
+                                    <option value="{{ unit[0] }}" {% if unit[0]==employee[7] %}selected{% endif %}>
+                                        {{ unit[1] }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                                <div class="invalid-feedback">Please select a Unit.</div>
+                            </div>
+                        </div>
+                        <!-- Image Upload -->
+                        <div class="col-md-6">
                             <div class="mb-3">
                                 <label for="ProfileImage" class="form-label">Employee Image</label>
-                                <input type="file" 
-                                       class="form-control" 
-                                       id="ProfileImage" 
-                                       name="ProfileImage"
-                                       accept="image/*">
+                                <input type="file" class="form-control" id="ProfileImage" name="ProfileImage"
+                                    accept="image/*">
                                 <!-- {% if employee[7] %}
                                 <small class="text-muted mt-2">Current image exists</small>
                                 {% endif %} -->
@@ -147,11 +130,8 @@
 
                     <!-- Active Status -->
                     <div class="mb-3 form-check">
-                        <input type="checkbox" 
-                               class="form-check-input" 
-                               id="IsActive" 
-                               name="IsActive" 
-                               {% if employee[8] %}checked{% endif %}>
+                        <input type="checkbox" class="form-check-input" id="IsActive" name="IsActive" {% if employee[8]
+                            %}checked{% endif %}>
                         <label class="form-check-label" for="IsActive">Active</label>
                     </div>
 
