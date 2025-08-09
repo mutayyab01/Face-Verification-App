@@ -114,3 +114,5 @@ class EmployeeModel:
             "DELETE FROM Employee WHERE Id = ?",
             (employee_id,)
         )
+
+

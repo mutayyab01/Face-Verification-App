@@ -43,3 +43,4 @@ class DatabaseManager:
         finally:
             if conn:
                 conn.close()
+    

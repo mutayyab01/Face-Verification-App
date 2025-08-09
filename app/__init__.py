@@ -45,7 +45,8 @@ def create_app():
     from app.contractors import contractors_bp
     from app.users import users_bp
     from app.finance import finance_bp
-    
+    from app.face import face_bp
+     
     app.register_blueprint(auth_bp)
     app.register_blueprint(admin_bp)
     app.register_blueprint(hr_bp)
@@ -53,6 +54,7 @@ def create_app():
     app.register_blueprint(employees_bp, url_prefix='/admin/employees')
     app.register_blueprint(contractors_bp, url_prefix='/admin/contractors')    
     app.register_blueprint(users_bp, url_prefix='/admin/users')
+    app.register_blueprint(face_bp, url_prefix='/admin/face')
 
     # Register error handlers
     from app.utils import register_error_handlers, inject_user_context

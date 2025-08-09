@@ -1,0 +1,274 @@
+{% extends "master.html" %}
+{% block title %}Face Recognition{% endblock %}
+
+{% block content %}
+<style>
+  .verify-btn {
+    font-weight: 600;
+    padding: 12px 25px;
+    border-radius: 50px;
+    transition: all 0.3s ease-in-out;
+  }
+
+  .verify-btn:hover {
+    transform: translateY(-2px) scale(1.05);
+    box-shadow: 0 8px 15px rgba(0, 128, 0, 0.4);
+  }
+  
+  .camera-container {
+    position: relative;
+  }
+  
+  .camera-status {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 5px 10px;
+    border-radius: 15px;
+    font-size: 12px;
+  }
+  
+  .loading-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    border-radius: 8px;
+  }
+</style>
+
+<main>
+  <div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h3>Face Detection</h3>
+      <div>
+        <button id="stopCameraBtn" class="btn btn-warning" style="margin-right: 10px;">Stop Camera</button>
+        <a href="login.html" class="btn btn-secondary">Back</a>
+      </div>
+    </div>
+
+    <div class="card shadow mb-4">
+      <div class="card-header">
+        <h5>Face Detection</h5>
+      </div>
+      <div class="card-body">
+        <form action="{{ url_for('face.MatchEmpFace') }}" id="faceDetectionForm">
+          <div class="row mb-4">
+            <div class="col-md-6">
+              <label for="employee_id">Employee Code</label>
+              <div class="d-flex align-items-center" style="gap: 10px;">
+                <input type="number" name="employee_id" id="employee_id" class="form-control" required
+                  placeholder="Enter Code" value="{% if employee_id %}{{ employee_id }}{% endif %}">
+                <button type="submit" class="btn btn-info" style="color: white;">Identification</button>
+              </div>
+            </div>
+          </div>
+        </form>
+
+        {% if employee_id %}
+        <div class="row align-items-center text-center">
+          <div class="col-md-5">
+            {% if image_base64 %}
+              <p><strong>Employee Registered</strong></p>
+              <img src="data:image/jpeg;base64,{{ image_base64 }}" alt="Employee Image" 
+                   class="img-thumbnail shadow" style="width: 400px; height: 300px;">
+            {% else %}
+              <p>No image found.</p>
+            {% endif %}
+          </div>
+
+          <div class="col-md-2 d-flex justify-content-center align-items-center">
+            <button type="button" id="verifyBtn" class="btn btn-success btn-lg shadow verify-btn" 
+                    data-employee-id="{{ employee_id }}">
+              <i class="bi bi-check-circle"></i> Verify
+            </button>
+          </div>
+
+          <div class="col-md-5">
+            <p><strong>Live Camera Feed</strong></p>
+            <div class="camera-container" style="position: relative; display: inline-block;">
+              <img id="cameraFeed" 
+                   src="{{ url_for('face.video_feed', employee_id=employee_id) }}" 
+                   class="img-thumbnail shadow" 
+                   style="width: 400px; height: 300px;"
+                   onerror="handleCameraError(this)"
+                   onload="handleCameraLoad(this)">
+              <div class="camera-status" id="cameraStatus">Connecting...</div>
+              <div class="loading-overlay" id="loadingOverlay">
+                <div class="spinner-border text-primary" role="status">
+                  <span class="sr-only">Loading...</span>
+                </div>
+                <p class="mt-2">Starting camera...</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Uploaded Wages Data Grid -->
+    <div class="card mt-4">
+      <div class="card-header">
+        <h6>Uploaded Wages Data</h6>
+      </div>
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table table-bordered" id="dataTable" width="100%">
+            <thead class="thead-dark">
+              <tr>
+                <th>ID</th>
+                <th>Nucleus ID</th>
+                <th>Name</th>
+                <th>Father Name</th>
+                <th>Amount</th>
+                <th>Paid?</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% if upload_data %}
+              {% for row in upload_data %}
+              <tr id="row-{{ row[1] }}">
+                <td>{{ row[0] }}</td>
+                <td>{{ row[1] }}</td>
+                <td>{{ row[2] }}</td>
+                <td>{{ row[3] }}</td>
+                <td>{{ row[4] }}</td>
+                <td class="text-center">
+                  <input type="checkbox" id="paid-{{ row[1] }}" {% if row[5]==1 %}checked{% endif %} disabled>
+                </td>
+              </tr>
+              {% endfor %}
+              {% else %}
+              <tr>
+                <td colspan="6" class="text-center">No uploaded data found.</td>
+              </tr>
+              {% endif %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DataTable Scripts -->
+  <link href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css" rel="stylesheet">
+  <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+  <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+  
+  <script>
+    $(document).ready(function () {
+      $('#dataTable').DataTable();
+      
+      // Hide loading overlay after a delay
+      setTimeout(function() {
+        $('#loadingOverlay').fadeOut();
+        $('#cameraStatus').text('Live');
+      }, 3000);
+    });
+
+    function handleCameraError(img) {
+      console.error('Camera feed error');
+      $('#loadingOverlay').fadeOut();
+      $('#cameraStatus').text('Error').css('background-color', '#dc3545');
+      img.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cmVjdCB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgZmlsbD0iI2Y4ZjlmYSIvPgogIDx0ZXh0IHg9IjIwMCIgeT0iMTUwIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTQiIGZpbGw9IiM2Yzc1N2QiIHRleHQtYW5jaG9yPSJtaWRkbGUiPkNhbWVyYSBFcnJvcjwvdGV4dD4KPC9zdmc+';
+    }
+
+    function handleCameraLoad(img) {
+      $('#loadingOverlay').fadeOut();
+      $('#cameraStatus').text('Live').css('background-color', '#28a745');
+    }
+
+    // Stop camera button functionality
+    $('#stopCameraBtn').click(function() {
+      $.post('{{ url_for("face.stop_camera_endpoint") }}')
+        .done(function(response) {
+          console.log('Camera stopped:', response);
+          $('#cameraStatus').text('Stopped').css('background-color', '#6c757d');
+          // Refresh the page to clear the camera feed
+          window.location.reload();
+        })
+        .fail(function(xhr, status, error) {
+          console.error('Error stopping camera:', error);
+        });
+    });
+
+    // Clear employee ID when going back to search
+    $('#faceDetectionForm').submit(function(e) {
+      // Stop camera before submitting new search
+      $.post('{{ url_for("face.stop_camera_endpoint") }}');
+    });
+
+    // Page unload cleanup
+    $(window).on('beforeunload', function() {
+      $.post('{{ url_for("face.stop_camera_endpoint") }}');
+    });
+
+    // Verify button functionality
+    $('#verifyBtn').click(function() {
+      const employeeId = $(this).data('employee-id');
+      const $btn = $(this);
+      
+      if (!employeeId) {
+        alert('Employee ID not found');
+        return;
+      }
+
+      // Show loading state
+      const originalText = $btn.html();
+      $btn.html('<span class="spinner-border spinner-border-sm" role="status"></span> Verifying...').prop('disabled', true);
+
+      // Send verification request
+      $.ajax({
+        url: '{{ url_for("face.verify_employee") }}',
+        method: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify({
+          employee_id: employeeId
+        }),
+        success: function(response) {
+          if (response.status === 'success') {
+            // Show success message
+            alert(`✅ Verification Successful!\n\nEmployee: ${response.employee_name}\nFather: ${response.father_name}\nNucleus ID: ${response.nucleus_id}\nAmount: ${response.amount}\n\nWages payment confirmed!`);
+            
+            // Update checkbox in table
+            const nucleusId = response.nucleus_id;
+            const checkbox = $(`#paid-${nucleusId}`);
+            if (checkbox.length) {
+              checkbox.prop('checked', true);
+              // Highlight the row briefly
+              $(`#row-${nucleusId}`).addClass('table-success').delay(3000).queue(function() {
+                $(this).removeClass('table-success').dequeue();
+              });
+            }
+            
+          } else if (response.status === 'warning') {
+            alert(`⚠️ ${response.message}\n\nEmployee: ${response.employee_name}\nAmount: ${response.amount}`);
+          } else {
+            alert(`❌ Verification Failed: ${response.message}`);
+          }
+        },
+        error: function(xhr, status, error) {
+          let errorMessage = 'Verification failed';
+          if (xhr.responseJSON && xhr.responseJSON.message) {
+            errorMessage = xhr.responseJSON.message;
+          }
+          alert(`❌ Error: ${errorMessage}`);
+        },
+        complete: function() {
+          // Restore button state
+          $btn.html(originalText).prop('disabled', false);
+        }
+      });
+    });
+  </script>
+</main>
+{% endblock %}

@@ -1,6 +1,5 @@
 {% extends "master.html" %}
-
-{% block title %} Finance Dashboard{% endblock %}
+{% block title %}Upload Employee Wages{% endblock %}
 
 {% block content %}
 <div class="container-fluid">
@@ -12,26 +11,66 @@
         <div class="card-header py-3 d-flex justify-content-between align-items-center">
             <h6 class="m-0 font-weight-bold">Employee DataTables</h6>
         </div>
-        
-        <div class="mb-3 px-3 pt-3">
-            <label for="uploadFile" class="form-label">Upload File</label>
-            <input type="file" class="form-control" id="uploadFile" accept=".xlsx" />
-        </div>
 
-        <div class="table-responsive px-3 pb-3">
-            <table class="table table-bordered">
-                <thead>
+        {% if message %}
+        <div class="alert alert-{{ 'success' if status == 'success' else 'danger' }} mt-3">
+            {{ message }}
+        </div>
+        {% endif %}
+
+        <form action="{{ url_for('finance.wages_upload') }}" method="post" enctype="multipart/form-data">
+            <div class="mb-3">
+                <label for="uploadFile" class="form-label">Select Excel File (.xlsx)</label>
+                <input type="file" class="form-control" name="file" id="uploadFile" accept=".xlsx" required>
+            </div>
+            <button type="submit" class="btn btn-success">Upload File</button>
+        </form>
+    </div>
+</div>
+{% if upload_data %}
+<div class="card mt-4">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold">Uploaded Wages Data</h6>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-bordered table-striped" id="dataTable" width="100%" cellspacing="0">
+                <thead class="thead-dark">
                     <tr>
                         <th>ID</th>
+                        <th>Nucleus ID</th>
                         <th>Name</th>
-                        <th>Email Address</th>
-                        <th>Salary</th>
-                        <th>Paid</th>
+                        <th>Father Name</th>
+                        <th>Amount</th>
+                        <th>Is Paid</th>
                     </tr>
                 </thead>
-                <tbody id="employeeTableBody"></tbody>
+                <tbody>
+                    {% for row in upload_data %}
+                    <tr>
+                        <td>{{ row[0] }}</td>
+                        <td>{{ row[1] }}</td>
+                        <td>{{ row[2] }}</td>
+                        <td>{{ row[3] }}</td>
+                        <td>{{ row[4] }}</td>
+                        <td>{{ 'Yes' if row[5] == 1 else 'No' }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
             </table>
         </div>
     </div>
 </div>
+
+{% endif %}
+<!-- DataTables JS (if not already included) -->
+<link href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css" rel="stylesheet">
+<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+
+<script>
+    $(document).ready(function () {
+        $('#dataTable').DataTable();
+    });
+</script>
 {% endblock %}

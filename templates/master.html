@@ -82,23 +82,46 @@
       <!-- Contractor Management Section -->
       <div class="sidebar-heading">Contractor Management</div>
 
-      <li class="nav-item">
-        <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseContractors"
-          aria-expanded="true" aria-controls="collapseContractors">
-          <i class="fas fa-fw fa-hard-hat"></i>
-          <span>Contractors</span>
-        </a>
-        <div id="collapseContractors" class="collapse" aria-labelledby="headingContractors"
-          data-parent="#accordionSidebar">
-          <div class="bg-white py-2 collapse-inner rounded">
-            <h6 class="collapse-header">Contractor Operations:</h6>
-            <a class="collapse-item" href="{{ url_for('contractors.list_contractors') }}">Manage Contractors</a>
-          </div>
-        </div>
-      </li>
-      {% endif %} {% if session.user_type == 'admin' %}
-      <!-- User Management Section -->
-      <div class="sidebar-heading">User Management</div>
+            <li class="nav-item">
+                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseContractors"
+                    aria-expanded="true" aria-controls="collapseContractors">
+                    <i class="fas fa-fw fa-hard-hat"></i>
+                    <span>Contractors</span>
+                </a>
+                <div id="collapseContractors" class="collapse" aria-labelledby="headingContractors"
+                    data-parent="#accordionSidebar">
+                    <div class="bg-white py-2 collapse-inner rounded">
+                        <h6 class="collapse-header">Contractor Operations:</h6>
+                        <a class="collapse-item" href="{{ url_for('contractors.list_contractors') }}">Manage
+                            Contractors</a>
+                    </div>
+                </div>
+            </li>
+            {% endif %}
+
+            {% if session.user_type == 'admin' %}
+            <!-- Employee Face Detection Section -->
+            <div class="sidebar-heading">Employee Face</div>
+
+            <li class="nav-item">
+                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseEmployeeFace"
+                    aria-expanded="true" aria-controls="collapseEmployeeFace">
+                    <i class="fas fa-fw fa-user"></i>
+                    <span>Employee Detection Face</span>
+                </a>
+                <div id="collapseEmployeeFace" class="collapse" aria-labelledby="headingEmployeeDetector"
+                    data-parent="#accordionSidebar">
+                    <div class="bg-white py-2 collapse-inner rounded">
+                        <h6 class="collapse-header">Employee Face Operations:</h6>
+                        <a class="collapse-item" href="{{ url_for('face.MatchEmpFace') }}">Employee Face</a>
+                    </div>
+                </div>
+            </li>
+            {% endif %}
+
+            {% if session.user_type == 'admin' %}
+            <!-- User Management Section -->
+            <div class="sidebar-heading">User Management</div>
 
       <li class="nav-item">
         <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseUsers" aria-expanded="true"
@@ -117,20 +140,21 @@
       <!-- User Management Section -->
       <div class="sidebar-heading">Finance Management</div>
 
-      <li class="nav-item">
-        <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseUsers" aria-expanded="true"
-          aria-controls="collapseUsers">
-          <i class="fas fa-fw fa-user-shield"></i>
-          <span>Finance </span>
-        </a>
-        <div id="collapseUsers" class="collapse" aria-labelledby="headingUsers" data-parent="#accordionSidebar">
-          <div class="bg-white py-2 collapse-inner rounded">
-            <h6 class="collapse-header">User Operations:</h6>
-            <a class="collapse-item" href="{{ url_for('finance.WagesUpload') }}">Upload Employee Record</a>
-          </div>
-        </div>
-      </li>
-      {% endif %}
+            <li class="nav-item">
+                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseUsers"
+                    aria-expanded="true" aria-controls="collapseUsers">
+                    <i class="fas fa-fw fa-user-shield"></i>
+                    <span>Finance </span>
+                </a>
+                <div id="collapseUsers" class="collapse" aria-labelledby="headingUsers" data-parent="#accordionSidebar">
+                    <div class="bg-white py-2 collapse-inner rounded">
+                        <h6 class="collapse-header">User Operations:</h6>
+                        <a class="collapse-item" href="{{ url_for('finance.wages_upload') }}">Upload Employee Record</a>
+                    </div>
+                </div>
+            </li>
+            {% endif %}
+
 
       <!-- Divider -->
       <hr class="sidebar-divider d-none d-md-block" />
