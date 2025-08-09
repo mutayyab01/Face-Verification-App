@@ -1,6 +1,17 @@
 {% extends "master.html" %} {% block title %}Contractor Management{% endblock %}
 {% block content %}
 <div class="row">
+<<<<<<< HEAD
+  <div class="col-12">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h2><i class="fas fa-users me-2"></i>Contractor Management</h2>
+      <a
+        href="{{ url_for('admin.dashboard' if session.user_type == 'admin' else 'hr.dashboard') }}"
+        class="btn btn-secondary"
+      >
+        <i class="fas fa-arrow-left me-1"></i> Back
+      </a>
+=======
     <div class="col-12">
         <div class="d-flex justify-content-between align-items-center mb-3">
             <h2><i class="fas fa-users me-2"></i>Contractor Management</h2>
@@ -15,6 +26,146 @@
                 background-color: #0bc5e6 !important;
                 color: white !important;
             }
+
+            table.dataTable>thead>tr>th {
+                background-color: #0bc5e6 !important;
+                color: white !important;
+            }
+        </style>
+
+
+        <!-- Add Contractor Form -->
+        <div class="card shadow">
+            <div class="card-header text-white">
+                <h5 class="mb-0"><i class="fas fa-plus me-2"></i>Add New Contractor</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('contractors.add_contractor') }}" enctype="multipart/form-data">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="Name" class="form-label">Name *</label>
+                                <input type="text" class="form-control" id="Name" name="Name" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="FatherName" class="form-label">Father Name *</label>
+                                <input type="text" class="form-control" id="FatherName" name="FatherName" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="PhoneNumber" class="form-label">Phone Number</label>
+                                <input type="text" class="form-control" id="PhoneNumber" name="PhoneNumber"
+                                    pattern="[0-9]{11}" title="Phone number should be 10-15 digits" required>
+                                <div class="invalid-feedback">Please provide a valid phone number (11 digits).</div>
+                            </div>
+                        </div>
+
+                        <!-- Unit -->
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="Unit" class="form-label">Select Unit *</label>
+                                <select class="form-control" id="Unit" name="Unit" required>
+                                    <option value="">Select Unit</option>
+                                    {% for unit in units %}
+                                    <option value="{{ unit[0] }}">
+                                        {{ unit[1] }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                                <div class="invalid-feedback">Please select a Unit.</div>
+                            </div>
+                        </div>
+
+                        <!-- File Upload -->
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="ProfileImage" class="form-label">Upload Image *</label>
+                                <input class="form-control form-control-lg" id="ProfileImage" name="ProfileImage"
+                                    type="file" required accept="image/*" />
+                                <div class="invalid-feedback">Please upload an image file.</div>
+                            </div>
+                        </div>
+
+
+                    </div>
+                    <div class="mb-3">
+                        <label for="Address" class="form-label">Address</label>
+                        <textarea class="form-control" id="Address" name="Address" rows="2" required></textarea>
+                    </div>
+
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" class="form-check-input" id="IsActive" name="IsActive" checked>
+                        <label class="form-check-label" for="IsActive">Active</label>
+                    </div>
+                    <button type="submit" class="btn"
+                        style="background-color: #0bc5e6 !important; border-color: #0bc5e6 !important; color: white;">
+                        <i class="fas fa-plus me-1"></i>Add Contractor
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Contractor List -->
+        <div class="card mt-4 shadow">
+            <div class="card-header text-white">
+                <h5 class="mb-0"><i class="fas fa-list me-2"></i>Contractor List</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead class="table" style="background-color: #0bc5e6 !important; color: white !important;">
+                            <tr>
+                                <th>ID</th>
+                                <th>Name</th>
+                                <th>Father Name</th>
+                                <th>Phone Number</th>
+                                <th>Address</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for contractor in contractors %}
+                            <tr>
+                                <td>{{ contractor[0] }}</td>
+                                <td>{{ contractor[1] }}</td>
+                                <td>{{ contractor[2] }}</td>
+                                <td>{{ contractor[3] or '-' }}</td>
+                                <td>
+                                    {{ (contractor[4][:50] + '...') if contractor[4] and contractor[4]|length > 50 else
+                                    (contractor[4] or '-') }}
+                                </td> <!-- Address -->
+                                <td>
+                                    <span class="badge bg-{{ 'success' if contractor[5] else 'secondary' }}">
+                                        {{ 'Active' if contractor[5] else 'Inactive' }}
+                                    </span>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="6" class="text-center text-muted">
+                                    <i class="fas fa-inbox fa-2x mb-2"></i><br>
+                                    No contractors found
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+
+>>>>>>> 271c11e312b4b7af795a63337c8f46a5152281b6
+    </div>
+    <style>
+      /* Bootstrap + DataTables override */
+      table.dataTable > thead {
+        background-color: #0bc5e6 !important;
+        color: white !important;
+      }
 
       table.dataTable > thead > tr > th {
         background-color: #0bc5e6 !important;
