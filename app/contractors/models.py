@@ -4,28 +4,63 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+
 class ContractorModel:
     @staticmethod
     def get_all():
-        """Get all contractors"""
-        return DatabaseManager.execute_query("""
-            SELECT c.Id, c.Name, c.FatherName, c.PhoneNo, c.Address, c.IsActive,
-                u1.Email as CreatedByEmail, c.CreatedAt,
-                u2.Email as UpdatedByEmail, c.UpdatedAt
-            FROM Contractor c
-            LEFT JOIN [User] u1 ON c.CreatedBy = u1.Id
-            LEFT JOIN [User] u2 ON c.UpdatedBy = u2.Id
-            ORDER BY c.Name
-        """, fetch_all=True)
-    
-    @staticmethod
-    def get_active():
-        """Get active contractors for dropdown"""
-        return DatabaseManager.execute_query(
-            "SELECT Id, Name FROM Contractor WHERE IsActive = 1 ORDER BY Name",
-            fetch_all=True
-        )
-    
+        """Get all contractors with base64-encoded profile image"""
+        try:
+            raw_contractors = DatabaseManager.execute_query("""
+                SELECT c.Id, c.Name, c.FatherName, c.PhoneNo, c.Unit,
+                    c.Image, c.Address, c.IsActive,
+                    u1.Email as CreatedByEmail, c.CreatedAt,
+                    u2.Email as UpdatedByEmail, c.UpdatedAt
+                FROM Contractor c
+                LEFT JOIN [User] u1 ON c.CreatedBy = u1.Id
+                LEFT JOIN [User] u2 ON c.UpdatedBy = u2.Id
+                ORDER BY c.Name
+            """, fetch_all=True)
+            
+            contractors = []
+            for con in raw_contractors:
+                image_data = None
+                # Check if image exists and handle potential None/NULL values
+                if con[5] is not None and len(con[5]) > 0:
+                    try:
+                        # Ensure the image data is in bytes format
+                        if isinstance(con[5], str):
+                            # If it's already a string, assume it's base64
+                            image_data = "data:image/jpeg;base64," + con[5]
+                        else:
+                            # If it's bytes, encode it
+                            image_data = "data:image/jpeg;base64," + base64.b64encode(con[5]).decode('utf-8')
+                    except Exception as img_error:
+                        print(f"Error processing image for contractor {con[0]}: {img_error}")
+                        image_data = None
+                
+                contractors.append((
+                    con[0],  # Id
+                    con[1],  # Name
+                    con[2],  # FatherName
+                    con[3],  # PhoneNo
+                    con[4],  # Unit
+                    image_data,  # Base64 Profile Image
+                    con[6],  # Address
+                    con[7],  # IsActive
+                    con[8],  # CreatedByEmail
+                    con[9],  # CreatedAt
+                    con[10], # UpdatedByEmail
+                    con[11], # UpdatedAt
+                ))
+            
+            return contractors
+            
+        except Exception as e:
+            print(f"Error in get_all(): {e}")
+            return []
+        
+     
+        
     @staticmethod
     def get_by_id(contractor_id):
         """Get contractor by ID"""
