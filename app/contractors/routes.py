@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 
 @contractors_bp.route('/')
 @require_auth
-@require_role(['admin'])
+@require_role(['admin','hr'])
 def list_contractors():
     """List all contractors"""
     try:
@@ -25,7 +25,7 @@ def list_contractors():
 
 @contractors_bp.route('/add', methods=['POST'])
 @require_auth
-@require_role(['admin'])
+@require_role(['admin','hr'])
 def add_contractor():
     """Add new contractor"""
     try:

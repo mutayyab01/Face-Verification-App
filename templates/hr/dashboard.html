@@ -12,7 +12,7 @@
 
 <!-- Statistics Cards -->
 <div class="row mb-4">
-    <div class="col-md-6">
+    <div class="col-md-4">
         <div class="card bg-primary text-white shadow">
             <div class="card-body">
                 <div class="d-flex justify-content-between">
@@ -27,7 +27,7 @@
             </div>
         </div>
     </div>
-    <div class="col-md-6">
+    <div class="col-md-4">
         <div class="card bg-success text-white shadow">
             <div class="card-body">
                 <div class="d-flex justify-content-between">
@@ -42,23 +42,9 @@
             </div>
         </div>
     </div>
-</div>
 
-<!-- Employee Management -->
-<div class="row">
-    <div class="col-md-8">
-        <div class="card shadow">
-            <div class="card-body">
-                <h5 class="card-title">
-                    <i class="fas fa-users me-2"></i>Employee Management
-                </h5>
-                <p class="card-text">Perform complete CRUD operations on employee records including adding, viewing, editing, and deleting employee information.</p>
-                <a href="{{ url_for('employees.list_employees') }}" class="btn btn-primary">
-                    <i class="fas fa-cogs me-2"></i>Manage Employees
-                </a>
-            </div>
-        </div>
-    </div>
+<!-- HR Management -->
+
     <div class="col-md-4">
         <div class="card shadow">
             <div class="card-header">
@@ -82,4 +68,5 @@
         </div>
     </div>
 </div>
+
 {% endblock %}
