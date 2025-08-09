@@ -51,3 +51,70 @@ def add_contractor():
         flash('An unexpected error occurred.', 'error')
     
     return redirect(url_for('contractors.list_contractors'))
+
+
+@contractors_bp.route('/delete/<int:contractor_id>')
+@require_auth
+@require_role(['admin', 'hr'])
+def delete_contractor(contractor_id):
+    """Delete Contractor"""
+    try:
+        success = ContractorModel.delete(contractor_id)
+        
+        if success:
+            flash('Employee deleted successfully.', 'success')
+            logger.info(f"Employee ID {contractor_id} deleted by user {session['email']}")
+        else:
+            flash('Error deleting employee. Please try again.', 'error')
+            
+    except Exception as e:
+        logger.error(f"Error deleting employee: {e}")
+        flash('An unexpected error occurred.', 'error')
+    
+    return redirect(url_for('contractors.list_contractors'))
+
+
+
+@contractors_bp.route('/edit/<int:contractor_id>', methods=['GET', 'POST'])
+@require_auth
+@require_role(['admin', 'hr'])
+def edit_contractor(contractor_id):
+    """Edit contractor"""
+    if request.method == 'POST':
+        try:
+            # Prepare data from form & file inputs
+            data = ContractorForm.prepare_data(request.form, request.files)
+
+            # Update contractor
+            success = ContractorModel.update(contractor_id, data, session['user_id'])
+            
+            if success:
+                flash('Contractor updated successfully.', 'success')
+                logger.info(f"Contractor ID {contractor_id} updated by user {session['email']}")
+                return redirect(url_for('contractors.list_contractors'))
+            else:
+                flash('Error updating contractor. Please try again.', 'error')
+
+        except Exception as e:
+            logger.error(f"Error updating contractor: {e}")
+            flash('An unexpected error occurred.', 'error')
+    
+    # GET request - show edit form
+    try:
+        contractor = ContractorModel.get_by_id(contractor_id)
+        units = ContractorModel.get_unit()       
+
+        if not contractor:
+            flash('Contractor not found.', 'error')
+            return redirect(url_for('contractors.list_contractors'))
+        
+        return render_template(
+            'contractors/edit_contractor.html',
+            contractor=contractor,
+            units=units
+        )
+    
+    except Exception as e:
+        logger.error(f"Error in edit_contractor: {e}")
+        flash('Error loading contractor data.', 'error')
+        return redirect(url_for('contractors.list_contractors'))

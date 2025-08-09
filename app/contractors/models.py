@@ -109,17 +109,37 @@ class ContractorModel:
     
     @staticmethod
     def update(contractor_id, data, updated_by):
-        """Update contractor"""
-        return DatabaseManager.execute_query("""
-            UPDATE Contractor 
-            SET Name = ?, FatherName = ?, Address = ?, IsActive = ?, 
-                UpdatedBy = ?, UpdatedAt = ?
-            WHERE Id = ?
-        """, (
-            data['name'], data['father_name'], data.get('address'),
-            data['is_active'], updated_by, datetime.now(), contractor_id
-        ))
-    
+        """Update contractor with optional image"""
+         
+        logger.info(f"Update data: {data}")
+        logger.info(f"Contractor ID: {contractor_id}")
+
+        if data['ProfileImage']:  # If a new image is provided
+            return DatabaseManager.execute_query("""
+                UPDATE Contractor
+                SET ContractorId = ?, Name = ?, FatherName = ?, 
+                    PhoneNo = ?, UnitId = ?, Image = ?, Address = ?, 
+                    IsActive = ?, UpdatedBy = ?, UpdatedAt = ?
+                WHERE Id = ?
+            """, (
+                data['ContractorId'], data['Name'], data['FatherName'], data['PhoneNumber'],
+                data['Unit'], data['ProfileImage'], data['Address'],
+                data['IsActive'], updated_by, datetime.now(), contractor_id
+            ))
+        else:  # Keep the existing image
+            return DatabaseManager.execute_query("""
+                UPDATE Contractor
+                SET ContractorId = ?, Name = ?, FatherName = ?, 
+                    PhoneNo = ?, UnitId = ?, Address = ?, 
+                    IsActive = ?, UpdatedBy = ?, UpdatedAt = ?
+                WHERE Id = ?
+            """, (
+                data['ContractorId'], data['Name'], data['FatherName'], data['PhoneNumber'],
+                data['Unit'], data['Address'],
+                data['IsActive'], updated_by, datetime.now(), contractor_id
+            ))
+
+        
     @staticmethod
     def delete(contractor_id):
         """Delete contractor"""
