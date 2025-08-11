@@ -10,7 +10,7 @@ class EmployeeModel:
     def get_all():
         """Get all employees with contractor information, including base64 image"""
         raw_employees = DatabaseManager.execute_query("""
-            SELECT e.Id, e.Name, e.FatherName, e.PhoneNo, e.Address, 
+            SELECT e.NucleusId, e.Name, e.FatherName, e.PhoneNo, e.Address, 
                 c.Name as ContractorName, e.Image, e.IsActive,
                 u1.Email as CreatedByEmail, e.CreatedAt,
                 u2.Email as UpdatedByEmail, e.UpdatedAt
@@ -29,7 +29,7 @@ class EmployeeModel:
 
             # Create a new tuple with base64 image
             emp_with_image = (
-                emp[0],  # Id
+                emp[0],  # NucleusId
                 emp[1],  # Name
                 emp[2],  # FatherName
                 emp[3],  # PhoneNo

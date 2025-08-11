@@ -19,7 +19,7 @@ class ContractorModel:
         """Get all contractors with base64-encoded profile image"""
         try:
             raw_contractors = DatabaseManager.execute_query("""
-                SELECT c.Id, c.Name, c.FatherName, c.PhoneNo, c.UnitId,
+                SELECT c.ContractorId, c.Name, c.FatherName, c.PhoneNo, c.UnitId,
                     c.Image, c.Address, c.IsActive,
                     u1.Email as CreatedByEmail, c.CreatedAt,
                     u2.Email as UpdatedByEmail, c.UpdatedAt
@@ -47,7 +47,7 @@ class ContractorModel:
                         image_data = None
                 
                 contractors.append((
-                    con[0],  # Id
+                    con[0],  # ContractorId
                     con[1],  # Name
                     con[2],  # FatherName
                     con[3],  # PhoneNo
