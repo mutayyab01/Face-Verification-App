@@ -1,5 +1,10 @@
-{% extends "master.html" %} {% block title %}Add Employee{% endblock %}
+{% extends "master.html" %} 
+{% block title %}Add Employee{% endblock %}
+
 {% block content %}
+<!-- Add validation styles -->
+
+
 <div class="row">
   <div class="col-12">
     <div class="d-flex justify-content-between align-items-center mb-3">
@@ -18,14 +23,14 @@
         </h5>
       </div>
       <div class="card-body">
-        <form method="POST" action="{{ url_for('employees.add_employee') }}" id="employeeForm"
-          enctype="multipart/form-data" novalidate>
+       <form method="POST" action="{{ url_for('employees.add_employee') }}" id="employeeForm" 
+      enctype="multipart/form-data" novalidate>
           <div class="row">
             <!-- Nucleus ID -->
             <div class="col-md-6">
               <div class="mb-3">
                 <label for="NucleusId" class="form-label">Employee Code *</label>
-                <input type="text" class="form-control" id="NucleusId" name="NucleusId" required pattern="^\d+$"
+                <input type="text" class="form-control"  id="NucleusId" name="NucleusId" required pattern="^\d+$"
                   title="Only digits are allowed (e.g., 123456)" />
                 <div class="invalid-feedback">
                   Only digits are allowed. This field is required.
@@ -66,7 +71,7 @@
                 <input type="text" class="form-control" id="PhoneNumber" name="PhoneNumber" required pattern="^\d{11}$"
                   title="Enter 11 digits only" />
                 <div class="invalid-feedback">
-                  Phone number must be 10 digits. No text allowed.
+                  Phone number must be 11 digits. No text allowed.
                 </div>
               </div>
             </div>
@@ -76,8 +81,11 @@
             <!-- Address -->
             <div class="col-md-6">
               <div class="mb-3">
-                <label for="Address" class="form-label">Address</label>
+                <label for="Address" class="form-label">Address *</label>
                 <textarea class="form-control" id="Address" name="Address" rows="2" required></textarea>
+                <div class="invalid-feedback">
+                  Address is required.
+                </div>
               </div>
             </div>
 
@@ -85,7 +93,7 @@
             <div class="col-md-6">
               <div class="mb-3">
                 <label for="ContractorId" class="form-label">Contractor *</label>
-                <select class="form-control" id="ContractorId" name="ContractorId" required>
+                <select class="form-select" id="ContractorId" name="ContractorId" required>
                   <option value="">Select Contractor</option>
                   {% for contractor in contractors %}
                   <option value="{{ contractor[0] }}">
@@ -103,7 +111,7 @@
             <div class="col-md-6">
               <div class="mb-3">
                 <label for="Unit" class="form-label">Select Unit *</label>
-                <select class="form-control" id="Unit" name="Unit" required>
+                <select class="form-select" id="Unit" name="Unit" required>
                   <option value="">Select Unit</option>
                   {% for unit in units %}
                   <option value="{{ unit[0] }}">
@@ -336,4 +344,78 @@
   </div>
 </div>
 {% endif %}
+
+<!-- Form Validation Script -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('employeeForm');
+    let formSubmitted = false; // Track if form has been submitted at least once
+
+    // Prevent default HTML5 validation popups
+    form.addEventListener('invalid', function(e) {
+        e.preventDefault();
+        // Custom validation handling will be done in our submit handler
+    }, true);
+
+    // Form submit handler
+    form.addEventListener('submit', function(event) {
+        // First submission - validate all fields
+        if (!formSubmitted) {
+            event.preventDefault();
+            formSubmitted = true;
+            
+            // Validate all fields
+            const inputs = form.querySelectorAll('input, select, textarea');
+            let isValid = true;
+            
+            inputs.forEach(input => {
+                input.classList.remove('is-invalid', 'is-valid');
+                
+                if (!input.checkValidity()) {
+                    input.classList.add('is-invalid');
+                    isValid = false;
+                    
+                    // Focus on first invalid field
+                    if (isValid === false) {
+                        input.focus();
+                        isValid = null; // Only focus first invalid field
+                    }
+                } else {
+                    input.classList.add('is-valid');
+                }
+            });
+            
+            // If form is invalid, prevent submission
+            if (!isValid) {
+                return false;
+            }
+        }
+        
+        // If we get here, form is valid or this is a subsequent submission attempt
+        // Allow form to submit if valid
+        if (!form.checkValidity()) {
+            event.preventDefault();
+            return false;
+        }
+        
+        // Form is valid, allow submission
+        return true;
+    });
+
+    // Add real-time validation after first submission attempt
+    form.addEventListener('input', function(event) {
+        if (formSubmitted) {
+            const input = event.target;
+            input.classList.remove('is-invalid', 'is-valid');
+            
+            if (input.checkValidity()) {
+                input.classList.add('is-valid');
+            } else {
+                input.classList.add('is-invalid');
+            }
+        }
+    });
+});
+</script>
+
 {% endblock %}
