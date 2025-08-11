@@ -159,25 +159,25 @@
             <tbody>
               {% for contractor in contractors %}
               <tr>
-                <td>{{ contractor[0] }}</td>
                 <td>{{ contractor[1] }}</td>
                 <td>{{ contractor[2] }}</td>
-                <td>{{ contractor[3] or '-' }}</td>
+                <td>{{ contractor[3] }}</td>
                 <td>{{ contractor[4] or '-' }}</td>
+                <td>{{ contractor[5] or '-' }}</td>
                 <td>
-                  {% if contractor[5] %}
-                  <img src="{{ contractor[5] }}" alt="Profile" width="50" height="50" class="rounded-circle border" />
+                  {% if contractor[6] %}
+                  <img src="{{ contractor[6] }}" alt="Profile" width="50" height="50" class="rounded-circle border" />
                   {% else %}
                   <span class="text-muted">No image</span>
                   {% endif %}
                 </td>
                 <td>
-                  {{ (contractor[6][:50] + '...') if contractor[6] and contractor[6]|length > 50 else (contractor[6] or
+                  {{ (contractor[7][:50] + '...') if contractor[7] and contractor[7]|length > 50 else (contractor[7] or
                   '-') }}
                 </td>
                 <td>
-                  <span class="badge bg-{{ 'success' if contractor[7] else 'secondary' }}">
-                    {{ 'Active' if contractor[7] else 'Inactive' }}
+                  <span class="badge bg-{{ 'success' if contractor[8] else 'secondary' }}">
+                    {{ 'Active' if contractor[8] else 'Inactive' }}
                   </span>
                 </td>
                 <td class="action-buttons">

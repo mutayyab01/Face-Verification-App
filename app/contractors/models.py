@@ -19,7 +19,7 @@ class ContractorModel:
         """Get all contractors with base64-encoded profile image"""
         try:
             raw_contractors = DatabaseManager.execute_query("""
-                SELECT c.Id, c.Name, c.FatherName, c.PhoneNo, c.UnitId,
+                SELECT c.Id, c.ContractorId, c.Name, c.FatherName, c.PhoneNo, c.UnitId,
                     c.Image, c.Address, c.IsActive,
                     u1.Email as CreatedByEmail, c.CreatedAt,
                     u2.Email as UpdatedByEmail, c.UpdatedAt
@@ -33,32 +33,33 @@ class ContractorModel:
             for con in raw_contractors:
                 image_data = None
                 # Check if image exists and handle potential None/NULL values
-                if con[5] is not None and len(con[5]) > 0:
+                if con[6] is not None and len(con[6]) > 0:
                     try:
                         # Ensure the image data is in bytes format
-                        if isinstance(con[5], str):
+                        if isinstance(con[6], str):
                             # If it's already a string, assume it's base64
-                            image_data = "data:image/jpeg;base64," + con[5]
+                            image_data = "data:image/jpeg;base64," + con[6]
                         else:
                             # If it's bytes, encode it
-                            image_data = "data:image/jpeg;base64," + base64.b64encode(con[5]).decode('utf-8')
+                            image_data = "data:image/jpeg;base64," + base64.b64encode(con[6]).decode('utf-8')
                     except Exception as img_error:
                         print(f"Error processing image for contractor {con[0]}: {img_error}")
                         image_data = None
                 
                 contractors.append((
                     con[0],  # Id
-                    con[1],  # Name
-                    con[2],  # FatherName
-                    con[3],  # PhoneNo
-                    con[4],  # Unit
+                    con[1],  # ContractorId
+                    con[2],  # Name
+                    con[3],  # FatherName
+                    con[4],  # PhoneNo
+                    con[5],  # Unit
                     image_data,  # Base64 Profile Image
-                    con[6],  # Address
-                    con[7],  # IsActive
-                    con[8],  # CreatedByEmail
-                    con[9],  # CreatedAt
-                    con[10], # UpdatedByEmail
-                    con[11], # UpdatedAt
+                    con[7],  # Address
+                    con[8],  # IsActive
+                    con[9],  # CreatedByEmail
+                    con[10],  # CreatedAt
+                    con[11], # UpdatedByEmail
+                    con[12], # UpdatedAt
                 ))
             
             return contractors
