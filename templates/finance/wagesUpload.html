@@ -18,13 +18,47 @@
         </div>
         {% endif %}
 
+        <style>
+            /* Dropdown ko file input ke height ke equal banane ke liye */
+            .custom-select-sm {
+                height: calc(2.25rem + 2px);
+                /* Bootstrap file input height match */
+
+                padding: 0.375rem 0.75rem;
+                font-size: 0.9rem;
+
+            }
+        </style>
         <form action="{{ url_for('finance.wages_upload') }}" method="post" enctype="multipart/form-data">
-            <div class="mb-3">
-                <label for="uploadFile" class="form-label">Select Excel File (.xlsx)</label>
-                <input type="file" class="form-control" name="file" id="uploadFile" accept=".xlsx" required>
+            <div class="row g-3 align-items-end">
+
+                <!-- File Input -->
+                <div class="col-md-5">
+                    <label for="uploadFile" class="form-label">Select Excel File (.xlsx)</label>
+                    <input type="file" class="form-control" name="file" id="uploadFile" accept=".xlsx" required>
+                </div>
+
+                <!-- Unit Dropdown -->
+                <div class="col-md-4">
+                    <label for="Unit" class="form-label">Select Unit *</label>
+                    <select class="form-control" id="Unit" name="Unit" required>
+                        <option value="">Select Unit</option>
+                        {% for unit in units %}
+                        <option value="{{ unit[0] }}">{{ unit[1] }}</option>
+                        {% endfor %}
+                    </select>
+                    <div class="invalid-feedback">Please select a Unit.</div>
+                </div>
+
+                <!-- Submit Button -->
+                <div class="col-md-3">
+                    <button type="submit" class="btn btn-success w-100">
+                        <i class="fas fa-upload me-1"></i> Upload File
+                    </button>
+                </div>
             </div>
-            <button type="submit" class="btn btn-success">Upload File</button>
         </form>
+
     </div>
 </div>
 {% if upload_data %}
@@ -69,8 +103,10 @@
 <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
 
 <script>
+    let table; // declare in outer/global scope
     $(document).ready(function () {
-        $('#dataTable').DataTable();
+        table = $('#dataTable').DataTable();
     });
+</script>
 </script>
 {% endblock %}

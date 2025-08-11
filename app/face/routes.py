@@ -343,12 +343,12 @@ def MatchEmpFace():
         conn = DatabaseManager.get_connection()
         if conn:
             cursor = conn.cursor()
-            cursor.execute("SELECT Id, NucleusId, Name, FatherName, Amount, IsPaid FROM uploadata")
+            cursor.execute("SELECT Id, NucleusId, Name, FatherName, Amount, IsPaid FROM WagesUpload")
             upload_data = cursor.fetchall()
-            print(f"✅ Fetched {len(upload_data)} rows from uploadata table.")
+            print(f"✅ Fetched {len(upload_data)} rows from WagesUpload table.")
     except Exception as e:
         logger.error(f"❌ Failed to fetch uploadata: {e}")
-        print(f"❌ Failed to fetch uploadata: {e}")
+        print(f"❌ Failed to fetch uWagesUpload: {e}")
 
     if not employee_id:
         # Stop camera when no employee is selected
@@ -504,7 +504,7 @@ def verify_employee():
         # Check if wages record exists for this NucleusId
         cursor.execute("""
             SELECT Id, Name, FatherName, Amount, IsPaid 
-            FROM uploadata 
+            FROM WagesUpload 
             WHERE NucleusId = ?
         """, (nucleus_id,))
         
@@ -528,7 +528,7 @@ def verify_employee():
         
         # Update wages payment status to paid
         cursor.execute("""
-            UPDATE uploadata 
+            UPDATE WagesUpload
             SET IsPaid = 1 
             WHERE NucleusId = ?
         """, (nucleus_id,))
