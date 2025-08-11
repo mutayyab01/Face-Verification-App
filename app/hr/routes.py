@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 @require_auth
 @require_role(['hr'])
 def dashboard():
-    """HR dashboard with employee management"""
+    """dashboard with employee management"""
     try:
         stats = {
             'total_employees': DatabaseManager.execute_query("SELECT COUNT(*) FROM Employee", fetch_one=True),
@@ -22,6 +22,6 @@ def dashboard():
         return render_template('hr/dashboard.html', stats=stats)
     
     except Exception as e:
-        logger.error(f"Error in HR dashboard: {e}")
+        logger.error(f"Error in dashboard: {e}")
         flash('Error loading dashboard data.', 'error')
         return render_template('hr/dashboard.html', stats={'total_employees': 0, 'active_employees': 0})
