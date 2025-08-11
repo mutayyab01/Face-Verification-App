@@ -2,6 +2,74 @@
 {% block title %}Contractor Management{% endblock %}
 
 {% block content %}
+<style>
+  /* Bootstrap validation styling enhancements */
+  .was-validated .form-control:invalid,
+  .was-validated .form-select:invalid {
+      border-color: #dc3545;
+      background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23dc3545'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath stroke-linejoin='round' d='M5.8 3.6h.4L6 6.5z'/%3e%3ccircle cx='6' cy='8.2' r='.6' fill='%23dc3545' stroke='none'/%3e%3c/svg%3e");
+      background-repeat: no-repeat;
+      background-position: right calc(.375em + .1875rem) center;
+      background-size: calc(.75em + .375rem) calc(.75em + .375rem);
+  }
+
+  .was-validated .form-control:valid,
+  .was-validated .form-select:valid {
+      border-color: #198754;
+      background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3e%3cpath fill='%23198754' d='m2.3 6.73.8-.77-.8-.77-.8.77.8.77zm1.54.32L1.08 4.29l.77-.77 1.99 2.77L6.61 3.52l.77.77-3.77 2.77z'/%3e%3c/svg%3e");
+      background-repeat: no-repeat;
+      background-position: right calc(.375em + .1875rem) center;
+      background-size: calc(.75em + .375rem) calc(.75em + .375rem);
+  }
+
+  /* Real-time validation styling */
+  .is-invalid {
+      border-color: #dc3545 !important;
+  }
+
+  .is-valid {
+      border-color: #198754 !important;
+  }
+
+  /* Make invalid feedback more visible */
+  .invalid-feedback {
+      display: none;
+      width: 100%;
+      margin-top: 0.25rem;
+      font-size: 0.875em;
+      color: #dc3545;
+  }
+
+  .was-validated .form-control:invalid ~ .invalid-feedback,
+  .was-validated .form-select:invalid ~ .invalid-feedback,
+  .is-invalid ~ .invalid-feedback {
+      display: block;
+  }
+
+  /* Bootstrap + DataTables override */
+  table.dataTable>thead {
+    background-color: #0bc5e6 !important;
+    color: white !important;
+  }
+
+  table.dataTable>thead>tr>th {
+    background-color: #0bc5e6 !important;
+    color: white !important;
+  }
+
+  .card-header {
+    background-color: #0bc5e6 !important;
+  }
+
+  .action-buttons .btn {
+    margin-right: 5px;
+  }
+
+  .action-buttons .btn:last-child {
+    margin-right: 0;
+  }
+</style>
+
 <div class="row">
   <div class="col-12">
     <div class="d-flex justify-content-between align-items-center mb-3">
@@ -11,31 +79,6 @@
         <i class="fas fa-arrow-left me-1"></i> Back
       </a>
     </div>
-
-    <style>
-      /* Bootstrap + DataTables override */
-      table.dataTable>thead {
-        background-color: #0bc5e6 !important;
-        color: white !important;
-      }
-
-      table.dataTable>thead>tr>th {
-        background-color: #0bc5e6 !important;
-        color: white !important;
-      }
-
-      .card-header {
-        background-color: #0bc5e6 !important;
-      }
-
-      .action-buttons .btn {
-        margin-right: 5px;
-      }
-
-      .action-buttons .btn:last-child {
-        margin-right: 0;
-      }
-    </style>
 
     <!-- Add/Edit Contractor Form -->
     <div class="card shadow mb-4">
@@ -47,7 +90,7 @@
       </div>
       <div class="card-body">
         <form method="POST" action="{{ url_for('contractors.add_contractor') }}" enctype="multipart/form-data"
-          id="contractorForm">
+          id="contractorForm" novalidate>
           <!-- Hidden field for edit mode -->
           <input type="hidden" id="editMode" name="editMode" value="false">
           <input type="hidden" id="editContractorId" name="editContractorId" value="">
@@ -66,28 +109,38 @@
             <div class="col-md-6">
               <div class="mb-3">
                 <label for="Name" class="form-label">Name *</label>
-                <input type="text" class="form-control" id="Name" name="Name" required>
+                <input type="text" class="form-control" id="Name" name="Name" required pattern="^[A-Za-z ]+$"
+                  title="Only alphabets and spaces are allowed">
+                <div class="invalid-feedback">
+                  Only letters and spaces allowed. This field is required.
+                </div>
               </div>
             </div>
             <div class="col-md-6">
               <div class="mb-3">
                 <label for="FatherName" class="form-label">Father Name *</label>
-                <input type="text" class="form-control" id="FatherName" name="FatherName" required>
+                <input type="text" class="form-control" id="FatherName" name="FatherName" required pattern="^[A-Za-z ]+$"
+                  title="Only alphabets and spaces are allowed">
+                <div class="invalid-feedback">
+                  Only letters and spaces allowed. This field is required.
+                </div>
               </div>
             </div>
             <div class="col-md-6">
               <div class="mb-3">
                 <label for="PhoneNumber" class="form-label">Phone Number *</label>
-                <input type="text" class="form-control" id="PhoneNumber" name="PhoneNumber" pattern="[0-9]{11}"
-                  title="Phone number should be 11 digits" required>
-                <div class="invalid-feedback">Please provide a valid phone number (11 digits).</div>
+                <input type="text" class="form-control" id="PhoneNumber" name="PhoneNumber" required pattern="^\d{11}$"
+                  title="Enter 11 digits only">
+                <div class="invalid-feedback">
+                  Phone number must be 11 digits. No text allowed.
+                </div>
               </div>
             </div>
             <!-- Unit -->
             <div class="col-md-6">
               <div class="mb-3">
                 <label for="Unit" class="form-label">Select Unit *</label>
-                <select class="form-control" id="Unit" name="Unit" required>
+                <select class="form-select" id="Unit" name="Unit" required>
                   <option value="">Select Unit</option>
                   {% for unit in units %}
                   <option value="{{ unit[0] }}">{{ unit[1] }}</option>
@@ -100,7 +153,7 @@
             <div class="col-md-6">
               <div class="mb-3">
                 <label for="ProfileImage" class="form-label">Upload Image *</label>
-                <input class="form-control form-control-lg" id="ProfileImage" name="ProfileImage" type="file"
+                <input class="form-control form-control-lg" id="ProfileImage" name="ProfileImage" type="file" required
                   accept="image/*" />
                 <div class="invalid-feedback">Please upload an image file.</div>
                 <small class="text-muted" id="current-image-info" style="display: none;">
@@ -113,6 +166,9 @@
           <div class="mb-3">
             <label for="Address" class="form-label">Address *</label>
             <textarea class="form-control" id="Address" name="Address" rows="2" required></textarea>
+            <div class="invalid-feedback">
+              Address is required.
+            </div>
           </div>
 
           <div class="mb-3 form-check">
@@ -191,7 +247,6 @@
                     onclick="return confirm('Are you sure you want to delete this contractor?')">
                     <i class="fas fa-trash"></i>
                   </a>
-
                 </td>
               </tr>
               {% else %}
@@ -209,4 +264,108 @@
     </div>
   </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('contractorForm');
+    let formSubmitted = false; // Track if form has been submitted at least once
+
+    // Prevent default HTML5 validation popups
+    form.addEventListener('invalid', function(e) {
+        e.preventDefault();
+        // Custom validation handling will be done in our submit handler
+    }, true);
+
+    // Form submit handler
+    form.addEventListener('submit', function(event) {
+        // First submission - validate all fields
+        if (!formSubmitted) {
+            event.preventDefault();
+            formSubmitted = true;
+            
+            // Validate all fields
+            const inputs = form.querySelectorAll('input, select, textarea');
+            let isValid = true;
+            
+            inputs.forEach(input => {
+                input.classList.remove('is-invalid', 'is-valid');
+                
+                if (!input.checkValidity()) {
+                    input.classList.add('is-invalid');
+                    isValid = false;
+                    
+                    // Focus on first invalid field
+                    if (isValid === false) {
+                        input.focus();
+                        isValid = null; // Only focus first invalid field
+                    }
+                } else {
+                    input.classList.add('is-valid');
+                }
+            });
+            
+            // If form is invalid, prevent submission
+            if (!isValid) {
+                return false;
+            }
+        }
+        
+        // If we get here, form is valid or this is a subsequent submission attempt
+        // Allow form to submit if valid
+        if (!form.checkValidity()) {
+            event.preventDefault();
+            return false;
+        }
+        
+        // Form is valid, allow submission
+        return true;
+    });
+
+    // Add real-time validation after first submission attempt
+    form.addEventListener('input', function(event) {
+        if (formSubmitted) {
+            const input = event.target;
+            input.classList.remove('is-invalid', 'is-valid');
+            
+            if (input.checkValidity()) {
+                input.classList.add('is-valid');
+            } else {
+                input.classList.add('is-invalid');
+            }
+        }
+    });
+
+    // Handle edit mode if URL has edit parameter
+    if (window.location.pathname.includes('/edit/')) {
+        // This would be filled by your backend when loading an edit page
+        document.getElementById('editMode').value = 'true';
+        document.getElementById('form-title').textContent = 'Edit Contractor';
+        document.getElementById('submit-text').textContent = 'Update Contractor';
+        document.getElementById('submit-icon').className = 'fas fa-edit me-1';
+        document.getElementById('cancel-btn').style.display = 'block';
+    }
+});
+
+function cancelEdit() {
+    // Reset form and switch back to add mode
+    const form = document.getElementById('contractorForm');
+    form.reset();
+    document.getElementById('editMode').value = 'false';
+    document.getElementById('editContractorId').value = '';
+    document.getElementById('form-title').textContent = 'Add New Contractor';
+    document.getElementById('submit-text').textContent = 'Add Contractor';
+    document.getElementById('submit-icon').className = 'fas fa-plus me-1';
+    document.getElementById('cancel-btn').style.display = 'none';
+    document.getElementById('current-image-info').style.display = 'none';
+    
+    // Reset validation states
+    const inputs = form.querySelectorAll('input, select, textarea');
+    inputs.forEach(input => {
+        input.classList.remove('is-invalid', 'is-valid');
+    });
+    
+    formSubmitted = false;
+}
+</script>
+
 {% endblock %}
