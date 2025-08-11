@@ -83,26 +83,26 @@ class EmployeeModel:
         if data['image']:
             return DatabaseManager.execute_query("""
                 UPDATE Employee 
-                SET NucleusId = ?, Name = ?, FatherName = ?, 
+                SET Name = ?, FatherName = ?, 
                     PhoneNo = ?, Address = ?, 
                     ContractorId = ?, UnitId = ?, Image = ?, IsActive = ?, 
                     UpdatedBy = ?, UpdatedAt = ?
                 WHERE Id = ?
             """, (
-                data['NucleusId'], data['Name'], data['FatherName'], data['PhoneNumber'],
+                data['Name'], data['FatherName'], data['PhoneNumber'],
                 data['Address'], data['ContractorId'], data['Unit'], data['image'],
                 data['IsActive'], updated_by, datetime.now(), employee_id
             ))
         else:
             return DatabaseManager.execute_query("""
                 UPDATE Employee 
-                SET NucleusId = ?, Name = ?, FatherName = ?, 
+                SET Name = ?, FatherName = ?, 
                     PhoneNo = ?, Address = ?, 
                     ContractorId = ?, UnitId = ?, IsActive = ?, 
                     UpdatedBy = ?, UpdatedAt = ?
                 WHERE Id = ?
             """, (
-                data['NucleusId'], data['Name'], data['FatherName'], data['PhoneNumber'],
+                data['Name'], data['FatherName'], data['PhoneNumber'],
                 data['Address'], data['ContractorId'], data['Unit'],
                 data['IsActive'], updated_by, datetime.now(), employee_id
             ))

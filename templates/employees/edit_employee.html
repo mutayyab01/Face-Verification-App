@@ -20,19 +20,6 @@
                 <form method="POST" action="{{ url_for('employees.edit_employee', employee_id=employee[0]) }}"
                     enctype="multipart/form-data" novalidate>
                     <div class="row">
-                        <!-- Nucleus ID -->
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="NucleusId" class="form-label">Employee Code *</label>
-                                <input type="text" class="form-control" id="NucleusId" name="NucleusId"
-                                    value="{{ employee[1] if employee[1] else '' }}" required pattern="^\d+$"
-                                    title="Only digits are allowed">
-                                <div class="invalid-feedback">
-                                    Please provide a valid numeric Nucleus ID.
-                                </div>
-                            </div>
-                        </div>
-
                         <!-- Name -->
                         <div class="col-md-6">
                             <div class="mb-3">
@@ -44,9 +31,7 @@
                                 </div>
                             </div>
                         </div>
-                    </div>
 
-                    <div class="row">
                         <!-- Father Name -->
                         <div class="col-md-6">
                             <div class="mb-3">
@@ -59,6 +44,8 @@
                                 </div>
                             </div>
                         </div>
+                    </div>
+                    <div class="row">
 
                         <!-- Phone Number -->
                         <div class="col-md-6">
@@ -70,17 +57,6 @@
                                 <div class="invalid-feedback">
                                     Please provide a valid 11-digit phone number.
                                 </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="row">
-                        <!-- Address -->
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="Address" class="form-label">Address</label>
-                                <textarea class="form-control" id="Address" name="Address"
-                                    rows="2">{{ employee[5] if employee[5] else '' }}</textarea>
                             </div>
                         </div>
 
@@ -106,7 +82,7 @@
                                 <label for="Unit" class="form-label">Select Unit *</label>
                                 <select class="form-control" id="Unit" name="Unit" required>
                                     <option value="">Select Unit</option>
-                                     {% for unit in units %}
+                                    {% for unit in units %}
                                     <option value="{{ unit[0] }}" {% if unit[0]==employee[7] %}selected{% endif %}>
                                         {{ unit[1] }}
                                     </option>
@@ -127,10 +103,20 @@
                             </div>
                         </div>
                     </div>
+                    <div class="row">
+                        <!-- Address -->
+                        <div class="col-md-12">
+                            <div class="mb-3">
+                                <label for="Address" class="form-label">Address</label>
+                                <textarea class="form-control" id="Address" name="Address"
+                                    rows="2">{{ employee[5] if employee[5] else '' }}</textarea>
+                            </div>
+                        </div>
+                    </div>
 
                     <!-- Active Status -->
                     <div class="mb-3 form-check">
-                        <input type="checkbox" class="form-check-input" id="IsActive" name="IsActive" {% if employee[8]
+                        <input type="checkbox" class="form-check-input" id="IsActive" name="IsActive" {% if employee[9]
                             %}checked{% endif %}>
                         <label class="form-check-label" for="IsActive">Active</label>
                     </div>

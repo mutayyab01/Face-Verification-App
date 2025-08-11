@@ -63,18 +63,18 @@
 
       {% if session.user_type == 'admin' or session.user_type == 'hr' %}
       <!-- Employee Management Section -->
-      <div class="sidebar-heading">Employee Management</div>
+      <div class="sidebar-heading">Labours Management</div>
 
       <li class="nav-item">
         <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseEmployee"
           aria-expanded="true" aria-controls="collapseEmployee">
           <i class="fas fa-fw fa-users"></i>
-          <span>Employees</span>
+          <span>Labours</span>
         </a>
         <div id="collapseEmployee" class="collapse" aria-labelledby="headingEmployee" data-parent="#accordionSidebar">
           <div class="bg-white py-2 collapse-inner rounded">
-            <h6 class="collapse-header">Employee Operations:</h6>
-            <a class="collapse-item" href="{{ url_for('employees.list_employees') }}">Manage Employees</a>
+            <h6 class="collapse-header">Labour Operations:</h6>
+            <a class="collapse-item" href="{{ url_for('employees.list_employees') }}">Manage Labours</a>
           </div>
         </div>
       </li>
@@ -397,7 +397,7 @@
                   <div class="row no-gutters align-items-center">
                     <div class="col mr-2">
                       <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
-                        Total Employee
+                        Total Labour
                       </div>
                       <div class="row no-gutters align-items-center">
                         <div class="col-auto">
@@ -429,7 +429,7 @@
                   <div class="row no-gutters align-items-center">
                     <div class="col mr-2">
                       <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
-                        Active Employee
+                        Active Labour
                       </div>
                       <div class="h5 mb-0 font-weight-bold text-gray-800">
                         18
@@ -451,7 +451,7 @@
                   <div class="row no-gutters align-items-center">
                     <div class="col mr-2">
                       <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
-                        InActive Employee
+                        InActive Labour
                       </div>
                       <div class="h5 mb-0 font-weight-bold text-gray-800">
                         12

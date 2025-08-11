@@ -60,19 +60,22 @@ def delete_contractor(contractor_id):
     """Delete Contractor"""
     try:
         success = ContractorModel.delete(contractor_id)
-        
         if success:
-            flash('Employee deleted successfully.', 'success')
-            logger.info(f"Employee ID {contractor_id} deleted by user {session['email']}")
+            flash('Contractor deleted successfully.', 'success')
+            logger.info(f"Contractor ID {contractor_id} deleted by user {session['email']}")
         else:
-            flash('Error deleting employee. Please try again.', 'error')
+            flash('Error deleting contractor. Please try again.', 'error')
+            
             
     except Exception as e:
-        logger.error(f"Error deleting employee: {e}")
-        flash('An unexpected error occurred.', 'error')
+        if 'FK_Employee_Contractor' in str(e):
+            flash('Cannot delete this contractor because they are linked to employee records.', 'error')
+            logger.warning(f"Failed to delete contractor {contractor_id} due to foreign key constraint")
+        else:
+            flash('An unexpected error occurred.', 'error')
+            logger.error(f"Error deleting contractor: {e}")
     
     return redirect(url_for('contractors.list_contractors'))
-
 
 
 @contractors_bp.route('/edit/<int:contractor_id>', methods=['GET', 'POST'])

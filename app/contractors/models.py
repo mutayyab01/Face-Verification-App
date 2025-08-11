@@ -117,24 +117,24 @@ class ContractorModel:
         if data['ProfileImage']:  # If a new image is provided
             return DatabaseManager.execute_query("""
                 UPDATE Contractor
-                SET ContractorId = ?, Name = ?, FatherName = ?, 
+                SET Name = ?, FatherName = ?, 
                     PhoneNo = ?, UnitId = ?, Image = ?, Address = ?, 
                     IsActive = ?, UpdatedBy = ?, UpdatedAt = ?
                 WHERE Id = ?
             """, (
-                data['ContractorId'], data['Name'], data['FatherName'], data['PhoneNumber'],
+                data['Name'], data['FatherName'], data['PhoneNumber'],
                 data['Unit'], data['ProfileImage'], data['Address'],
                 data['IsActive'], updated_by, datetime.now(), contractor_id
             ))
         else:  # Keep the existing image
             return DatabaseManager.execute_query("""
                 UPDATE Contractor
-                SET ContractorId = ?, Name = ?, FatherName = ?, 
+                SET Name = ?, FatherName = ?, 
                     PhoneNo = ?, UnitId = ?, Address = ?, 
                     IsActive = ?, UpdatedBy = ?, UpdatedAt = ?
                 WHERE Id = ?
             """, (
-                data['ContractorId'], data['Name'], data['FatherName'], data['PhoneNumber'],
+                data['Name'], data['FatherName'], data['PhoneNumber'],
                 data['Unit'], data['Address'],
                 data['IsActive'], updated_by, datetime.now(), contractor_id
             ))
