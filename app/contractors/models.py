@@ -73,7 +73,7 @@ class ContractorModel:
     def get_active_contractors():
         """Get active contractors for dropdown"""
         return DatabaseManager.execute_query(
-            "SELECT ContractorId, Name FROM Contractor WHERE IsActive = 1 ORDER BY Name",
+            "SELECT ContractorId, Name, FatherName FROM Contractor WHERE IsActive = 1 ORDER BY Name",
             fetch_all=True
         )
 

@@ -69,7 +69,7 @@
                                     {% for contractor in contractors %}
                                     <option value="{{ contractor[0] }}" {% if contractor[0]==employee[6] %}selected{%
                                         endif %}>
-                                        {{ contractor[1] }}
+                                        {{ contractor[1] }} {{ contractor[2] }}
                                     </option>
                                     {% endfor %}
                                 </select>

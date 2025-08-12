@@ -93,11 +93,11 @@
             <div class="col-md-6">
               <div class="mb-3">
                 <label for="ContractorId" class="form-label">Contractor *</label>
-                <select class="form-select" id="ContractorId" name="ContractorId" required>
+                <select class="form-select single-select" id="ContractorId" name="ContractorId" required>
                   <option value="">Select Contractor</option>
                   {% for contractor in contractors %}
                   <option value="{{ contractor[0] }}">
-                    {{ contractor[1] }}
+                    {{ contractor[1] }} {{ contractor[2] }}
                   </option>
                   {% endfor %}
                 </select>
