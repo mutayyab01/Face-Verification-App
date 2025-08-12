@@ -19,11 +19,12 @@ class ContractorModel:
         """Get all contractors with base64-encoded profile image"""
         try:
             raw_contractors = DatabaseManager.execute_query("""
-                SELECT c.Id, c.ContractorId, c.Name, c.FatherName, c.PhoneNo, c.UnitId,
+                  SELECT c.Id, c.ContractorId, c.Name, c.FatherName, c.PhoneNo, u.Name,
                     c.Image, c.Address, c.IsActive,
                     u1.Email as CreatedByEmail, c.CreatedAt,
                     u2.Email as UpdatedByEmail, c.UpdatedAt
                 FROM Contractor c
+                LEFT JOIN [Unit] u ON c.UnitId = u.Id
                 LEFT JOIN [User] u1 ON c.CreatedBy = u1.Id
                 LEFT JOIN [User] u2 ON c.UpdatedBy = u2.Id
                 ORDER BY c.Name
