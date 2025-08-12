@@ -10,12 +10,13 @@ class EmployeeModel:
     def get_all():
         """Get all employees with contractor information, including base64 image"""
         raw_employees = DatabaseManager.execute_query("""
-            SELECT e.Id, e.NucleusId, e.Name, e.FatherName, e.PhoneNo, e.Address, 
-                c.Name as ContractorName, e.Image, e.IsActive,
+              SELECT e.Id, e.NucleusId, e.Name, e.FatherName, e.PhoneNo, e.Address, 
+                (c.Name + ' ' + c.FatherName) as ContractorName, u.Name as UnitName, e.Image, e.IsActive,
                 u1.Email as CreatedByEmail, e.CreatedAt,
                 u2.Email as UpdatedByEmail, e.UpdatedAt
             FROM Employee e
             LEFT JOIN Contractor c ON e.ContractorId = c.ContractorId
+            LEFT JOIN Unit u ON e.UnitId = u.Id
             LEFT JOIN [User] u1 ON e.CreatedBy = u1.Id
             LEFT JOIN [User] u2 ON e.UpdatedBy = u2.Id
             ORDER BY e.Id DESC
@@ -24,8 +25,8 @@ class EmployeeModel:
         employees = []
         for emp in raw_employees:
             image_data = None
-            if emp[7]:  # e.Image (binary blob)
-                image_data = "data:image/jpeg;base64," + base64.b64encode(emp[7]).decode('utf-8')
+            if emp[8]:  # e.Image (binary blob)
+                image_data = "data:image/jpeg;base64," + base64.b64encode(emp[8]).decode('utf-8')
 
             # Create a new tuple with base64 image
             emp_with_image = (
@@ -36,12 +37,13 @@ class EmployeeModel:
                 emp[4],  # PhoneNo
                 emp[5],  # Address
                 emp[6],  # ContractorName
+                emp[7],  # UnitName
                 image_data,  # 🔁 Converted to base64 string
-                emp[8],  # IsActive
-                emp[9],  # CreatedByEmail
-                emp[10],  # CreatedAt
-                emp[11], # UpdatedByEmail
-                emp[12], # UpdatedAt
+                emp[9],  # IsActive
+                emp[10],  # CreatedByEmail
+                emp[11],  # CreatedAt
+                emp[12], # UpdatedByEmail
+                emp[13], # UpdatedAt
             )
             employees.append(emp_with_image)
 

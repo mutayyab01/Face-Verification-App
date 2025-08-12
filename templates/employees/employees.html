@@ -169,7 +169,8 @@
                 <th>Father Name</th>
                 <th>Phone</th>
                 <th>Address</th>
-                <th>Contractor</th>
+                <th>Contractor Name</th>
+                <th>Unit Name</th>
                 <th>Status</th>
                 <th>Image</th>
                 <th>Created By</th>
@@ -182,7 +183,7 @@
 
             <tbody>
               {% for employee in employees %}
-              <tr class="{% if not employee[8] %}table-danger inactive-employee{% endif %}">
+              <tr class="{% if not employee[9] %}table-danger inactive-employee{% endif %}">
                 <!-- NucleusId -->
                 <td>{{ employee[1] }}</td>
 
@@ -226,10 +227,21 @@
                   <span class="text-muted">No contractor</span>
                   {% endif %}
                 </td>
+                <!-- Unit -->
+                <td>
+                  {% if employee[7] %}
+                  <span class="">
+                    <i class="fas fa-building me-1"></i>
+                    {{ employee[7] }}
+                  </span>
+                  {% else %}
+                  <span class="text-muted">No Unit</span>
+                  {% endif %}
+                </td>
 
                 <!-- Status (IsActive is at index 7) -->
                 <td>
-                  {% if employee[8] %}
+                  {% if employee[9] %}
                   <span class="badge bg-success">
                     <i class="fas fa-check-circle me-1"></i>
                     Active
@@ -244,24 +256,24 @@
 
                 <!-- Profile Image (Base64 image is at index 6) -->
                 <td>
-                  {% if employee[7] %}
-                  <img src="{{ employee[7] }}" alt="Profile" width="50" height="50" class="rounded-circle border" />
+                  {% if employee[8] %}
+                  <img src="{{ employee[8] }}" alt="Profile" width="50" height="50" class="rounded-circle border" />
                   {% else %}
                   <span class="text-muted">No image</span>
                   {% endif %}
                 </td>
 
-                <!-- Created By Email (index 8) -->
-                <td>{{ employee[9] }}</td>
-
-                <!-- Created At (index 9) -->
+                <!-- Created By Email  -->
                 <td>{{ employee[10] }}</td>
 
-                <!-- Updated By Email (index 10) -->
-                <td>{{ employee[11] if employee[11] else 'N/A' }}</td>
+                <!-- Created At  -->
+                <td>{{ employee[11] }}</td>
 
-                <!-- Updated At (index 11) -->
-                <td>{{ employee[12] if employee[12] else 'N/A' }}</td>
+                <!-- Updated By Email -->
+                <td>{{ employee[12] if employee[11] else 'N/A' }}</td>
+
+                <!-- Updated At  -->
+                <td>{{ employee[13] if employee[12] else 'N/A' }}</td>
 
                 <!-- Actions -->
                 <td>
