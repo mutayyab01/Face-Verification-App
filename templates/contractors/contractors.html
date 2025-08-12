@@ -244,7 +244,7 @@
 
                   <a href="{{ url_for('contractors.delete_contractor', contractor_id=contractor[0]) }}"
                     class="btn btn-sm btn-outline-danger" title="Delete Contractor"
-                    onclick="return confirm('Are you sure you want to delete this contractor?')">
+                    onclick="return confirmDelete('{{ contractor[0] }}', '{{ contractor[2] }}')">
                     <i class="fas fa-trash"></i>
                   </a>
                 </td>
@@ -268,65 +268,79 @@
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const form = document.getElementById('contractorForm');
-    let formSubmitted = false; // Track if form has been submitted at least once
+    const submitBtn = document.getElementById('submit-btn');
+    let isSubmitting = false; // Prevent double submission
 
-    // Prevent default HTML5 validation popups
-    form.addEventListener('invalid', function(e) {
-        e.preventDefault();
-        // Custom validation handling will be done in our submit handler
-    }, true);
-
-    // Form submit handler
+    // Form submit handler - FIXED VERSION
     form.addEventListener('submit', function(event) {
-        // First submission - validate all fields
-        if (!formSubmitted) {
-            event.preventDefault();
-            formSubmitted = true;
-            
-            // Validate all fields
-            const inputs = form.querySelectorAll('input, select, textarea');
-            let isValid = true;
-            
-            inputs.forEach(input => {
-                input.classList.remove('is-invalid', 'is-valid');
-                
-                if (!input.checkValidity()) {
-                    input.classList.add('is-invalid');
-                    isValid = false;
-                    
-                    // Focus on first invalid field
-                    if (isValid === false) {
-                        input.focus();
-                        isValid = null; // Only focus first invalid field
-                    }
-                } else {
-                    input.classList.add('is-valid');
-                }
-            });
-            
-            // If form is invalid, prevent submission
-            if (!isValid) {
-                return false;
-            }
-        }
-        
-        // If we get here, form is valid or this is a subsequent submission attempt
-        // Allow form to submit if valid
-        if (!form.checkValidity()) {
+        // Prevent double submission
+        if (isSubmitting) {
             event.preventDefault();
             return false;
         }
+
+        // Always add was-validated class to trigger Bootstrap validation
+        form.classList.add('was-validated');
         
-        // Form is valid, allow submission
+        // Check if form is valid
+        if (!form.checkValidity()) {
+            event.preventDefault();
+            event.stopPropagation();
+            
+            // Focus on first invalid field
+            const firstInvalidField = form.querySelector(':invalid');
+            if (firstInvalidField) {
+                firstInvalidField.focus();
+            }
+            
+            return false;
+        }
+        
+        // Form is valid - prevent double submission
+        isSubmitting = true;
+        submitBtn.disabled = true;
+        
+        // Show loading state
+        const originalText = submitBtn.innerHTML;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Processing...';
+        
+        // Re-enable button after 3 seconds (in case of server error)
+        setTimeout(function() {
+            isSubmitting = false;
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalText;
+        }, 3000);
+        
+        // Allow form to submit
         return true;
     });
 
-    // Add real-time validation after first submission attempt
+    // Real-time validation on input (only after form has been validated once)
     form.addEventListener('input', function(event) {
-        if (formSubmitted) {
+        if (form.classList.contains('was-validated')) {
             const input = event.target;
+            
+            // Remove previous validation classes
             input.classList.remove('is-invalid', 'is-valid');
             
+            // Add appropriate validation class
+            if (input.checkValidity()) {
+                input.classList.add('is-valid');
+            } else {
+                input.classList.add('is-invalid');
+            }
+        }
+    });
+
+    // Handle change events for select elements
+    form.addEventListener('change', function(event) {
+        if (form.classList.contains('was-validated')) {
+            const input = event.target;
+            
+            // Remove previous validation classes
+            input.classList.remove('is-invalid', 'is-valid');
+            
+            // Add appropriate validation class
             if (input.checkValidity()) {
                 input.classList.add('is-valid');
             } else {
@@ -337,19 +351,26 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Handle edit mode if URL has edit parameter
     if (window.location.pathname.includes('/edit/')) {
-        // This would be filled by your backend when loading an edit page
         document.getElementById('editMode').value = 'true';
         document.getElementById('form-title').textContent = 'Edit Contractor';
         document.getElementById('submit-text').textContent = 'Update Contractor';
         document.getElementById('submit-icon').className = 'fas fa-edit me-1';
         document.getElementById('cancel-btn').style.display = 'block';
+        
+        // Make file upload optional in edit mode
+        document.getElementById('ProfileImage').removeAttribute('required');
+        document.getElementById('current-image-info').style.display = 'block';
     }
 });
 
 function cancelEdit() {
     // Reset form and switch back to add mode
     const form = document.getElementById('contractorForm');
+    const submitBtn = document.getElementById('submit-btn');
+    
     form.reset();
+    form.classList.remove('was-validated');
+    
     document.getElementById('editMode').value = 'false';
     document.getElementById('editContractorId').value = '';
     document.getElementById('form-title').textContent = 'Add New Contractor';
@@ -358,13 +379,34 @@ function cancelEdit() {
     document.getElementById('cancel-btn').style.display = 'none';
     document.getElementById('current-image-info').style.display = 'none';
     
+    // Make file upload required again
+    document.getElementById('ProfileImage').setAttribute('required', 'required');
+    
     // Reset validation states
     const inputs = form.querySelectorAll('input, select, textarea');
     inputs.forEach(input => {
         input.classList.remove('is-invalid', 'is-valid');
     });
     
-    formSubmitted = false;
+    // Reset submit button state
+    submitBtn.disabled = false;
+    submitBtn.innerHTML = '<i class="fas fa-plus me-1"></i>Add Contractor';
+}
+
+// Improved delete confirmation
+function confirmDelete(contractorId, contractorName) {
+    if (confirm(`Are you sure you want to delete contractor "${contractorName}"? This action cannot be undone.`)) {
+        // Show loading indicator
+        const deleteBtn = event.target.closest('a');
+        const originalContent = deleteBtn.innerHTML;
+        deleteBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+        deleteBtn.style.pointerEvents = 'none';
+        
+        // Navigate to delete URL
+        window.location.href = deleteBtn.href;
+        return true;
+    }
+    return false;
 }
 </script>
 

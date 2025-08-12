@@ -4,7 +4,6 @@
 {% block content %}
 <!-- Add validation styles -->
 
-
 <div class="row">
   <div class="col-12">
     <div class="d-flex justify-content-between align-items-center mb-3">
@@ -140,8 +139,8 @@
             <label class="form-check-label" for="IsActive">Active</label>
           </div>
 
-          <!-- Submit -->
-          <button type="submit" class="btn"
+          <!-- Submit Button - FIXED -->
+          <button type="submit" id="submitBtn" class="btn"
             style="background-color: #0bc5e6 !important; border-color: #0bc5e6 !important; color: white;">
             <i class="fas fa-plus me-1"></i> Add Employee
           </button>
@@ -298,7 +297,7 @@
 {% if employees %}
 <div class="row mt-4">
   <div class="col-md-4">
-    <div class="card text-white">
+    <div class="card text-black">
       <div class="card-body">
         <div class="d-flex justify-content-between">
           <div>
@@ -313,7 +312,7 @@
     </div>
   </div>
   <div class="col-md-4">
-    <div class="card bg-success text-white">
+    <div class="card bg-success text-black">
       <div class="card-body">
         <div class="d-flex justify-content-between">
           <div>
@@ -345,20 +344,45 @@
 </div>
 {% endif %}
 
-<!-- Form Validation Script -->
+<!-- Form Validation and Double-Click Prevention Script -->
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const form = document.getElementById('employeeForm');
-    let formSubmitted = false; // Track if form has been submitted at least once
+    const submitBtn = document.getElementById('submitBtn');
+    let isSubmitting = false;
+    let formSubmitted = false;
 
-    // Prevent default HTML5 validation popups
-    form.addEventListener('invalid', function(e) {
-        e.preventDefault();
-        // Custom validation handling will be done in our submit handler
-    }, true);
+    // Double-click prevention function
+    function preventDoubleSubmit() {
+        if (isSubmitting) {
+            return false;
+        }
+        
+        isSubmitting = true;
+        submitBtn.disabled = true;
+        
+        // Store original button content
+        const originalContent = submitBtn.innerHTML;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Processing...';
+        
+        // Re-enable after 3 seconds as fallback
+        setTimeout(function() {
+            isSubmitting = false;
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalContent;
+        }, 3000);
+        
+        return true;
+    }
 
     // Form submit handler
     form.addEventListener('submit', function(event) {
+        // Prevent double submission
+        if (!preventDoubleSubmit()) {
+            event.preventDefault();
+            return false;
+        }
+        
         // First submission - validate all fields
         if (!formSubmitted) {
             event.preventDefault();
@@ -367,34 +391,59 @@ document.addEventListener('DOMContentLoaded', function() {
             // Validate all fields
             const inputs = form.querySelectorAll('input, select, textarea');
             let isValid = true;
+            let firstInvalidField = null;
             
             inputs.forEach(input => {
                 input.classList.remove('is-invalid', 'is-valid');
                 
                 if (!input.checkValidity()) {
                     input.classList.add('is-invalid');
-                    isValid = false;
-                    
-                    // Focus on first invalid field
-                    if (isValid === false) {
-                        input.focus();
-                        isValid = null; // Only focus first invalid field
+                    if (isValid && !firstInvalidField) {
+                        firstInvalidField = input;
                     }
+                    isValid = false;
                 } else {
                     input.classList.add('is-valid');
                 }
             });
             
-            // If form is invalid, prevent submission
+            // If form is invalid, reset and focus on first invalid field
             if (!isValid) {
+                isSubmitting = false;
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fas fa-plus me-1"></i> Add Employee';
+                
+                if (firstInvalidField) {
+                    firstInvalidField.focus();
+                    firstInvalidField.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+                
+                // Show error message
+                showAlert('Please correct the highlighted errors before submitting.', 'error');
                 return false;
             }
+            
+            // Reset submit state and allow submission
+            isSubmitting = false;
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<i class="fas fa-plus me-1"></i> Add Employee';
+            
+            // Trigger submit again after validation passes
+            setTimeout(function() {
+                if (!isSubmitting) {
+                    form.submit();
+                }
+            }, 100);
+            
+            return false;
         }
         
-        // If we get here, form is valid or this is a subsequent submission attempt
-        // Allow form to submit if valid
+        // Subsequent submissions - just check validity
         if (!form.checkValidity()) {
             event.preventDefault();
+            isSubmitting = false;
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<i class="fas fa-plus me-1"></i> Add Employee';
             return false;
         }
         
@@ -402,7 +451,7 @@ document.addEventListener('DOMContentLoaded', function() {
         return true;
     });
 
-    // Add real-time validation after first submission attempt
+    // Real-time validation after first submission attempt
     form.addEventListener('input', function(event) {
         if (formSubmitted) {
             const input = event.target;
@@ -415,7 +464,78 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
     });
+
+    // Show alert function
+    function showAlert(message, type = 'info') {
+        // Remove existing alerts
+        document.querySelectorAll('.custom-alert').forEach(alert => alert.remove());
+        
+        const alertClass = type === 'error' ? 'alert-danger' : 
+                          type === 'success' ? 'alert-success' : 
+                          type === 'warning' ? 'alert-warning' : 'alert-info';
+        
+        const alertHtml = `
+            <div class="alert ${alertClass} alert-dismissible fade show custom-alert" role="alert">
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        `;
+        
+        // Insert at the top of the form card body
+        const cardBody = document.querySelector('.card-body');
+        cardBody.insertAdjacentHTML('afterbegin', alertHtml);
+        
+        // Auto-hide after 5 seconds
+        setTimeout(function() {
+            const alert = document.querySelector('.custom-alert');
+            if (alert) {
+                alert.style.transition = 'opacity 0.5s';
+                alert.style.opacity = '0';
+                setTimeout(() => alert.remove(), 500);
+            }
+        }, 5000);
+    }
+
+    // Additional protection: prevent multiple rapid clicks
+    submitBtn.addEventListener('click', function(event) {
+        if (isSubmitting) {
+            event.preventDefault();
+            event.stopPropagation();
+            return false;
+        }
+    });
+
+    // Reset form state on page load/refresh
+    window.addEventListener('pageshow', function() {
+        isSubmitting = false;
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<i class="fas fa-plus me-1"></i> Add Employee';
+    });
 });
+
+// Additional CSS for better visual feedback
+const style = document.createElement('style');
+style.textContent = `
+    .btn:disabled {
+        opacity: 0.7 !important;
+        cursor: not-allowed !important;
+    }
+    
+    .fa-spinner {
+        animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    
+    .custom-alert {
+        margin-bottom: 1rem;
+        z-index: 1050;
+    }
+`;
+document.head.appendChild(style);
 </script>
 
 {% endblock %}
