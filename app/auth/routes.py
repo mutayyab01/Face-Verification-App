@@ -44,6 +44,8 @@ def login():
                 return redirect(url_for('hr.dashboard'))
             elif user_type == 'finance':
                 return redirect(url_for('finance.dashboard'))
+            elif user_type == 'cashier':
+                return redirect(url_for('face.dashboard'))
             else:
                 session.clear()
                 flash(f'Invalid user role: {user_type}', 'error')

@@ -26,6 +26,22 @@ current_employee_id = None
 _working_camera_index = None  # Cache the working camera index
 _camera_initialized = False
 
+@face_bp.route('/cashier/dashboard')
+@require_auth
+@require_role(['cashier'])
+def dashboard():
+    """dashboard with employee management"""
+    try:
+       
+        
+        return render_template('FaceRecognition/face_dashboard.html')
+    
+    except Exception as e:
+        logger.error(f"Error in dashboard: {e}")
+        flash('Error loading dashboard data.', 'error')
+        return render_template('FaceRecognition/face_dashboard.html')
+
+
 def find_working_camera():
     global _working_camera_index
     
@@ -332,9 +348,9 @@ def gen_frames(employee_id):
 
     print("Frame generation ended")
 
-@face_bp.route('/matchFace', methods=['GET'])
+@face_bp.route('/cashier/matchFace', methods=['GET'])
 @require_auth
-@require_role(['admin', 'hr'])
+@require_role(['admin', 'cashier'])
 def MatchEmpFace():
     employee_id = request.args.get('employee_id', type=int)
 
@@ -408,7 +424,7 @@ def MatchEmpFace():
     
 @face_bp.route('/video_feed')
 @require_auth
-@require_role(['admin', 'hr'])
+@require_role(['admin', 'cashier'])
 def video_feed():
     employee_id = request.args.get('employee_id', type=int)
     if not employee_id:
@@ -446,7 +462,7 @@ def preload_camera():
 
 @face_bp.route('/preload_camera', methods=['POST'])
 @require_auth 
-@require_role(['admin', 'hr'])
+@require_role(['admin', 'cashier'])
 def preload_camera_endpoint():
     """Endpoint to preload camera"""
     try:
@@ -458,7 +474,7 @@ def preload_camera_endpoint():
 
 @face_bp.route('/stop_camera', methods=['POST'])
 @require_auth
-@require_role(['admin', 'hr'])
+@require_role(['admin', 'cashier'])
 def stop_camera_endpoint():
     """Endpoint to manually stop the camera"""
     try:
@@ -470,7 +486,7 @@ def stop_camera_endpoint():
 
 @face_bp.route('/verify_employee', methods=['POST'])
 @require_auth
-@require_role(['admin', 'hr'])
+@require_role(['admin', 'cashier'])
 def verify_employee():
     """Verify employee face match and update wages payment status"""
     try:

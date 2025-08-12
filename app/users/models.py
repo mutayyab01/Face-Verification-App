@@ -28,3 +28,15 @@ class UserModel:
             "INSERT INTO [User] (FirstName, LastName, Email, Password, Type, IsActive) VALUES (?, ?, ?, ?, ?, ?)",
             (UserData['FirstName'], UserData['LastName'], UserData['Email'], UserData['Password'], UserData['UserType'], UserData['IsActive'])
         )
+        
+  # In your UserModel class (users/models.py)
+
+
+    @staticmethod
+    def delete(user_id):
+            """Delete user by ID"""
+            rows_affected = DatabaseManager.execute_query(
+                "DELETE FROM [User] WHERE Id = ?",
+                (user_id,)
+            )
+            return rows_affected > 0

@@ -4,7 +4,6 @@
 {% block content %}
 <!-- Add validation styles -->
 
-
 <div class="row">
   <div class="col-12">
     <div class="d-flex justify-content-between align-items-center mb-3">
@@ -93,11 +92,11 @@
             <div class="col-md-6">
               <div class="mb-3">
                 <label for="ContractorId" class="form-label">Contractor *</label>
-                <select class="form-select" id="ContractorId" name="ContractorId" required>
+                <select class="form-select single-select" id="ContractorId" name="ContractorId" required>
                   <option value="">Select Contractor</option>
                   {% for contractor in contractors %}
                   <option value="{{ contractor[0] }}">
-                    {{ contractor[1] }}
+                    {{ contractor[1] }} {{ contractor[2] }}
                   </option>
                   {% endfor %}
                 </select>
@@ -140,8 +139,8 @@
             <label class="form-check-label" for="IsActive">Active</label>
           </div>
 
-          <!-- Submit -->
-          <button type="submit" class="btn"
+          <!-- Submit Button - FIXED -->
+          <button type="submit" id="submitBtn" class="btn"
             style="background-color: #0bc5e6 !important; border-color: #0bc5e6 !important; color: white;">
             <i class="fas fa-plus me-1"></i> Add Employee
           </button>
@@ -169,7 +168,8 @@
                 <th>Father Name</th>
                 <th>Phone</th>
                 <th>Address</th>
-                <th>Contractor</th>
+                <th>Contractor Name</th>
+                <th>Unit Name</th>
                 <th>Status</th>
                 <th>Image</th>
                 <th>Created By</th>
@@ -182,7 +182,7 @@
 
             <tbody>
               {% for employee in employees %}
-              <tr class="{% if not employee[8] %}table-danger inactive-employee{% endif %}">
+              <tr class="{% if not employee[9] %}table-danger inactive-employee{% endif %}">
                 <!-- NucleusId -->
                 <td>{{ employee[1] }}</td>
 
@@ -226,10 +226,21 @@
                   <span class="text-muted">No contractor</span>
                   {% endif %}
                 </td>
+                <!-- Unit -->
+                <td>
+                  {% if employee[7] %}
+                  <span class="">
+                    <i class="fas fa-building me-1"></i>
+                    {{ employee[7] }}
+                  </span>
+                  {% else %}
+                  <span class="text-muted">No Unit</span>
+                  {% endif %}
+                </td>
 
                 <!-- Status (IsActive is at index 7) -->
                 <td>
-                  {% if employee[8] %}
+                  {% if employee[9] %}
                   <span class="badge bg-success">
                     <i class="fas fa-check-circle me-1"></i>
                     Active
@@ -244,24 +255,24 @@
 
                 <!-- Profile Image (Base64 image is at index 6) -->
                 <td>
-                  {% if employee[7] %}
-                  <img src="{{ employee[7] }}" alt="Profile" width="50" height="50" class="rounded-circle border" />
+                  {% if employee[8] %}
+                  <img src="{{ employee[8] }}" alt="Profile" width="50" height="50" class="rounded-circle border" />
                   {% else %}
                   <span class="text-muted">No image</span>
                   {% endif %}
                 </td>
 
-                <!-- Created By Email (index 8) -->
-                <td>{{ employee[9] }}</td>
-
-                <!-- Created At (index 9) -->
+                <!-- Created By Email  -->
                 <td>{{ employee[10] }}</td>
 
-                <!-- Updated By Email (index 10) -->
-                <td>{{ employee[11] if employee[11] else 'N/A' }}</td>
+                <!-- Created At  -->
+                <td>{{ employee[11] }}</td>
 
-                <!-- Updated At (index 11) -->
-                <td>{{ employee[12] if employee[12] else 'N/A' }}</td>
+                <!-- Updated By Email -->
+                <td>{{ employee[12] if employee[11] else 'N/A' }}</td>
+
+                <!-- Updated At  -->
+                <td>{{ employee[13] if employee[12] else 'N/A' }}</td>
 
                 <!-- Actions -->
                 <td>
@@ -298,7 +309,7 @@
 {% if employees %}
 <div class="row mt-4">
   <div class="col-md-4">
-    <div class="card text-white">
+    <div class="card text-black">
       <div class="card-body">
         <div class="d-flex justify-content-between">
           <div>
@@ -313,7 +324,7 @@
     </div>
   </div>
   <div class="col-md-4">
-    <div class="card bg-success text-white">
+    <div class="card bg-success text-black">
       <div class="card-body">
         <div class="d-flex justify-content-between">
           <div>
@@ -345,20 +356,45 @@
 </div>
 {% endif %}
 
-<!-- Form Validation Script -->
+<!-- Form Validation and Double-Click Prevention Script -->
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const form = document.getElementById('employeeForm');
-    let formSubmitted = false; // Track if form has been submitted at least once
+    const submitBtn = document.getElementById('submitBtn');
+    let isSubmitting = false;
+    let formSubmitted = false;
 
-    // Prevent default HTML5 validation popups
-    form.addEventListener('invalid', function(e) {
-        e.preventDefault();
-        // Custom validation handling will be done in our submit handler
-    }, true);
+    // Double-click prevention function
+    function preventDoubleSubmit() {
+        if (isSubmitting) {
+            return false;
+        }
+        
+        isSubmitting = true;
+        submitBtn.disabled = true;
+        
+        // Store original button content
+        const originalContent = submitBtn.innerHTML;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Processing...';
+        
+        // Re-enable after 3 seconds as fallback
+        setTimeout(function() {
+            isSubmitting = false;
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalContent;
+        }, 3000);
+        
+        return true;
+    }
 
     // Form submit handler
     form.addEventListener('submit', function(event) {
+        // Prevent double submission
+        if (!preventDoubleSubmit()) {
+            event.preventDefault();
+            return false;
+        }
+        
         // First submission - validate all fields
         if (!formSubmitted) {
             event.preventDefault();
@@ -367,34 +403,59 @@ document.addEventListener('DOMContentLoaded', function() {
             // Validate all fields
             const inputs = form.querySelectorAll('input, select, textarea');
             let isValid = true;
+            let firstInvalidField = null;
             
             inputs.forEach(input => {
                 input.classList.remove('is-invalid', 'is-valid');
                 
                 if (!input.checkValidity()) {
                     input.classList.add('is-invalid');
-                    isValid = false;
-                    
-                    // Focus on first invalid field
-                    if (isValid === false) {
-                        input.focus();
-                        isValid = null; // Only focus first invalid field
+                    if (isValid && !firstInvalidField) {
+                        firstInvalidField = input;
                     }
+                    isValid = false;
                 } else {
                     input.classList.add('is-valid');
                 }
             });
             
-            // If form is invalid, prevent submission
+            // If form is invalid, reset and focus on first invalid field
             if (!isValid) {
+                isSubmitting = false;
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fas fa-plus me-1"></i> Add Employee';
+                
+                if (firstInvalidField) {
+                    firstInvalidField.focus();
+                    firstInvalidField.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+                
+                // Show error message
+                showAlert('Please correct the highlighted errors before submitting.', 'error');
                 return false;
             }
+            
+            // Reset submit state and allow submission
+            isSubmitting = false;
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<i class="fas fa-plus me-1"></i> Add Employee';
+            
+            // Trigger submit again after validation passes
+            setTimeout(function() {
+                if (!isSubmitting) {
+                    form.submit();
+                }
+            }, 100);
+            
+            return false;
         }
         
-        // If we get here, form is valid or this is a subsequent submission attempt
-        // Allow form to submit if valid
+        // Subsequent submissions - just check validity
         if (!form.checkValidity()) {
             event.preventDefault();
+            isSubmitting = false;
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<i class="fas fa-plus me-1"></i> Add Employee';
             return false;
         }
         
@@ -402,7 +463,7 @@ document.addEventListener('DOMContentLoaded', function() {
         return true;
     });
 
-    // Add real-time validation after first submission attempt
+    // Real-time validation after first submission attempt
     form.addEventListener('input', function(event) {
         if (formSubmitted) {
             const input = event.target;
@@ -415,7 +476,78 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
     });
+
+    // Show alert function
+    function showAlert(message, type = 'info') {
+        // Remove existing alerts
+        document.querySelectorAll('.custom-alert').forEach(alert => alert.remove());
+        
+        const alertClass = type === 'error' ? 'alert-danger' : 
+                          type === 'success' ? 'alert-success' : 
+                          type === 'warning' ? 'alert-warning' : 'alert-info';
+        
+        const alertHtml = `
+            <div class="alert ${alertClass} alert-dismissible fade show custom-alert" role="alert">
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        `;
+        
+        // Insert at the top of the form card body
+        const cardBody = document.querySelector('.card-body');
+        cardBody.insertAdjacentHTML('afterbegin', alertHtml);
+        
+        // Auto-hide after 5 seconds
+        setTimeout(function() {
+            const alert = document.querySelector('.custom-alert');
+            if (alert) {
+                alert.style.transition = 'opacity 0.5s';
+                alert.style.opacity = '0';
+                setTimeout(() => alert.remove(), 500);
+            }
+        }, 5000);
+    }
+
+    // Additional protection: prevent multiple rapid clicks
+    submitBtn.addEventListener('click', function(event) {
+        if (isSubmitting) {
+            event.preventDefault();
+            event.stopPropagation();
+            return false;
+        }
+    });
+
+    // Reset form state on page load/refresh
+    window.addEventListener('pageshow', function() {
+        isSubmitting = false;
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<i class="fas fa-plus me-1"></i> Add Employee';
+    });
 });
+
+// Additional CSS for better visual feedback
+const style = document.createElement('style');
+style.textContent = `
+    .btn:disabled {
+        opacity: 0.7 !important;
+        cursor: not-allowed !important;
+    }
+    
+    .fa-spinner {
+        animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    
+    .custom-alert {
+        margin-bottom: 1rem;
+        z-index: 1050;
+    }
+`;
+document.head.appendChild(style);
 </script>
 
 {% endblock %}

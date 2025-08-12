@@ -55,3 +55,22 @@ def add_user():
         flash('An unexpected error occurred.', 'error')
     
     return redirect(url_for('users.list_users'))
+
+
+@users_bp.route('/delete/<int:user_id>')
+@require_auth
+@require_role(['admin'])
+def delete_user(user_id):
+    """Delete User"""
+    try:
+        success = UserModel.delete(user_id)
+
+        if success:
+            flash('User deleted successfully.', 'success')
+        else:
+            flash('Error deleting User. Please try again.', 'error')
+
+    except Exception as e:
+        flash('An unexpected error occurred.', 'error')
+    return redirect(url_for('users.list_users'))
+

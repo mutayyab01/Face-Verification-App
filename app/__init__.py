@@ -54,7 +54,7 @@ def create_app():
     app.register_blueprint(employees_bp, url_prefix='/admin/employees')
     app.register_blueprint(contractors_bp, url_prefix='/admin/contractors')    
     app.register_blueprint(users_bp, url_prefix='/admin/users')
-    app.register_blueprint(face_bp, url_prefix='/admin/face')
+    app.register_blueprint(face_bp)
 
     # Register error handlers
     from app.utils import register_error_handlers, inject_user_context
@@ -73,6 +73,8 @@ def create_app():
                 return redirect(url_for('hr.dashboard'))
             elif user_type == 'finance':
                 return redirect(url_for('finance.dashboard'))
+            elif user_type == 'cashier':
+                return redirect(url_for('face.dashboard'))
         return redirect(url_for('auth.login'))
     
     return app
