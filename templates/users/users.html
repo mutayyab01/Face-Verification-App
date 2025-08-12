@@ -1,130 +1,322 @@
-{% extends "master.html" %}
+{% extends "master.html" %} {% block title %}User Management{% endblock %} {%
+block content %}
+<style>
+  /* Validation styling */
+  .was-validated .form-control:invalid,
+  .was-validated .form-select:invalid {
+    border-color: #dc3545;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23dc3545'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath stroke-linejoin='round' d='M5.8 3.6h.4L6 6.5z'/%3e%3ccircle cx='6' cy='8.2' r='.6' fill='%23dc3545' stroke='none'/%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right calc(0.375em + 0.1875rem) center;
+    background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
+  }
 
-{% block title %}User Management{% endblock %}
+  .was-validated .form-control:valid,
+  .was-validated .form-select:valid {
+    border-color: #198754;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3e%3cpath fill='%23198754' d='m2.3 6.73.8-.77-.8-.77-.8.77.8.77zm1.54.32L1.08 4.29l.77-.77 1.99 2.77L6.61 3.52l.77.77-3.77 2.77z'/%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right calc(0.375em + 0.1875rem) center;
+    background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
+  }
 
-{% block content %}
+  .is-invalid {
+    border-color: #dc3545 !important;
+  }
+
+  .is-valid {
+    border-color: #198754 !important;
+  }
+
+  .invalid-feedback {
+    display: none;
+    width: 100%;
+    margin-top: 0.25rem;
+    font-size: 0.875em;
+    color: #dc3545;
+  }
+
+  .was-validated .form-control:invalid ~ .invalid-feedback,
+  .was-validated .form-select:invalid ~ .invalid-feedback,
+  .is-invalid ~ .invalid-feedback {
+    display: block;
+  }
+
+  /* Table styling */
+  table.dataTable > thead {
+    background-color: #343a40 !important;
+    color: white !important;
+  }
+
+  .action-buttons .btn {
+    margin-right: 5px;
+  }
+</style>
+
 <div class="row">
-    <div class="col-12">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-            <h2><i class="fas fa-users me-2"></i>User Management</h2>
-            <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary">
-                <i class="fas fa-arrow-left me-1"></i> Back </a>
-        </div>
-
-        <!-- Add User Form -->
-        <div class="card shadow">
-            <div class="card-header text-white">
-                <h5 class="mb-0"><i class="fas fa-plus me-2"></i>Add New User</h5>
-            </div>
-            <div class="card-body">
-                <form method="POST" action="{{ url_for('users.add_user') }}">
-                    <div class="row">
-                        <div class="col-md-4">
-                            <div class="mb-3">
-                                <label for="FirstName" class="form-label">First Name *</label>
-                                <input type="FirstName" class="form-control" id="FirstName" name="FirstName" required>
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="mb-3">
-                                <label for="LastName" class="form-label">First Name *</label>
-                                <input type="LastName" class="form-control" id="LastName" name="LastName" required>
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="mb-3">
-                                <label for="email" class="form-label">Email *</label>
-                                <input type="email" class="form-control" id="email" name="email" required>
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="mb-3">
-                                <label for="password" class="form-label">Password *</label>
-                                <input type="password" class="form-control" id="password" name="password" required>
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="mb-3">
-                                <label for="type" class="form-label">User Type *</label>
-                                <select class="form-control" id="type" name="type" required>
-                                    <option value="">Select User Type</option>
-                                    <option value="admin">Admin</option>
-                                    <option value="hr">HR</option>
-                                    <option value="finance">FINANCE</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- Active Status -->
-                    <div class="col-md-4">
-                        <div class="mb-3">
-                            <input type="checkbox" class="form-check-input" id="IsActive" name="IsActive" checked />
-                            <label class="form-check-label" for="IsActive">Active</label>
-                        </div>
-                    </div>
-                    <button type="submit" class="btn btn-success">
-                        <i class="fas fa-plus me-1"></i>Add User
-                    </button>
-                </form>
-            </div>
-        </div>
-
-        <!-- User List -->
-        <div class="card mt-4 shadow">
-            <div class="card-header text-white">
-                <h5 class="mb-0"><i class="fas fa-list me-2"></i>User List</h5>
-            </div>
-            <div class="card-body">
-                <div class="table-responsive">
-                    <table class="table table-striped table-hover" id="example" >
-                        <thead class="table-dark">
-                            <tr>
-                                <th>ID</th>
-                                <th>First Name</th>
-                                <th>Last Name</th>
-                                <th>Email</th>
-                                <th>Type</th>
-                                <th>IsActive</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for user in users %}
-                            <tr>
-                                <td>{{ user[0] }}</td>
-                                <td>{{ user[1] }}</td>
-                                <td>{{ user[2] }}</td>
-                                <td>{{ user[3] }}</td>
-                                <td>
-                                    <span class="badge bg-{{ 'primary' if user[4] == 'admin' else 'info' }}">
-                                        <i
-                                            class="fas fa-{{ 'user-shield' if user[4] == 'admin' else 'user-tie' }} me-1"></i>
-                                        {{ user[4]|title }}
-                                    </span>
-                                </td>
-                                <td>
-                                    {% if user[5] %}
-                                    <span class="badge bg-success"><i class="fas fa-check-circle me-1"></i>
-                                        Active</span>
-                                    {% else %}
-                                    <span class="badge bg-danger"><i class="fas fa-times-circle me-1"></i>
-                                        Inactive</span>
-                                    {% endif %}
-                                </td>
-                            </tr>
-                            {% else %}
-                            <tr>
-                                <td colspan="6" class="text-center text-muted">
-                                    <i class="fas fa-inbox fa-2x mb-2"></i><br>
-                                    No users found
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-        </div>
+  <div class="col-12">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h2><i class="fas fa-users me-2"></i>User Management</h2>
+      <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left me-1"></i> Back
+      </a>
     </div>
+
+    <!-- Add User Form -->
+    <div class="card shadow">
+      <div class="card-header text-white">
+        <h5 class="mb-0"><i class="fas fa-plus me-2"></i>Add New User</h5>
+      </div>
+      <div class="card-body">
+        <form
+          method="POST"
+          action="{{ url_for('users.add_user') }}"
+          id="userForm"
+          novalidate
+        >
+          <div class="row">
+            <div class="col-md-4">
+              <div class="mb-3">
+                <label for="FirstName" class="form-label">First Name *</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="FirstName"
+                  name="FirstName"
+                  required
+                  pattern="^[A-Za-z ]+$"
+                  title="Only alphabets and spaces are allowed"
+                />
+                <div class="invalid-feedback">
+                  Only letters and spaces allowed. This field is required.
+                </div>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="mb-3">
+                <label for="LastName" class="form-label">Last Name *</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="LastName"
+                  name="LastName"
+                  required
+                  pattern="^[A-Za-z ]+$"
+                  title="Only alphabets and spaces are allowed"
+                />
+                <div class="invalid-feedback">
+                  Only letters and spaces allowed. This field is required.
+                </div>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="mb-3">
+                <label for="email" class="form-label">Email *</label>
+                <input
+                  type="email"
+                  class="form-control"
+                  id="email"
+                  name="email"
+                  required
+                />
+                <div class="invalid-feedback">
+                  Please provide a valid email address.
+                </div>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="mb-3">
+                <label for="password" class="form-label">Password *</label>
+                <input
+                  type="password"
+                  class="form-control"
+                  id="password"
+                  name="password"
+                  required
+                  minlength="8"
+                  pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$"
+                  title="Must contain at least 8 characters, one uppercase, one lowercase, one number and one special character"
+                />
+                <div class="invalid-feedback">
+                  Password must be at least 8 characters and contain at least
+                  one uppercase letter, one lowercase letter, one number and one
+                  special character.
+                </div>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="mb-3">
+                <label for="type" class="form-label">User Type *</label>
+                <select class="form-control" id="type" name="type" required>
+                  <option value="">Select User Type</option>
+                  <option value="admin">Admin</option>
+                  <option value="hr">HR</option>
+                  <option value="finance">FINANCE</option>
+                </select>
+                <div class="invalid-feedback">Please select a user type.</div>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="mb-3 form-check pt-4">
+                <input
+                  type="checkbox"
+                  class="form-check-input"
+                  id="IsActive"
+                  name="IsActive"
+                  checked
+                />
+                <label class="form-check-label" for="IsActive">Active</label>
+              </div>
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-success">
+            <i class="fas fa-plus me-1"></i>Add User
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- User List -->
+    <div class="card mt-4 shadow">
+      <div class="card-header text-white">
+        <h5 class="mb-0"><i class="fas fa-list me-2"></i>User List</h5>
+      </div>
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table table-striped table-hover" id="example">
+            <thead class="table-dark">
+              <tr>
+                <th>ID</th>
+                <th>First Name</th>
+                <th>Last Name</th>
+                <th>Email</th>
+                <th>Type</th>
+                <th>IsActive</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for user in users %}
+              <tr>
+                <td>{{ user[0] }}</td>
+                <td>{{ user[1] }}</td>
+                <td>{{ user[2] }}</td>
+                <td>{{ user[3] }}</td>
+                <td>
+                  <span
+                    class="badge bg-{{ 'primary' if user[4] == 'admin' else 'info' }}"
+                  >
+                    <i
+                      class="fas fa-{{ 'user-shield' if user[4] == 'admin' else 'user-tie' }} me-1"
+                    ></i>
+                    {{ user[4]|title }}
+                  </span>
+                </td>
+                <td>
+                  {% if user[5] %}
+                  <span class="badge bg-success"
+                    ><i class="fas fa-check-circle me-1"></i>Active</span
+                  >
+                  {% else %}
+                  <span class="badge bg-danger"
+                    ><i class="fas fa-times-circle me-1"></i>Inactive</span
+                  >
+                  {% endif %}
+                </td>
+                <td class="action-buttons">
+                  <a
+                    href="{{ url_for('users.delete_user', user_id=user[0]) }}"
+                    class="btn btn-sm btn-outline-danger"
+                    title="Delete User"
+                    onclick="return confirm('Are you sure you want to delete this user?')"
+                  >
+                    <i class="fas fa-trash"></i>
+                  </a>
+                </td>
+              </tr>
+              {% else %}
+              <tr>
+                <td colspan="7" class="text-center text-muted">
+                  <i class="fas fa-inbox fa-2x mb-2"></i><br />
+                  No users found
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const form = document.getElementById("userForm");
+    let formSubmitted = false;
+
+    // Prevent default HTML5 validation popups
+    form.addEventListener(
+      "invalid",
+      function (e) {
+        e.preventDefault();
+      },
+      true
+    );
+
+    // Form submit handler
+    form.addEventListener("submit", function (event) {
+      if (!formSubmitted) {
+        event.preventDefault();
+        formSubmitted = true;
+
+        const inputs = form.querySelectorAll("input, select, textarea");
+        let isValid = true;
+
+        inputs.forEach((input) => {
+          input.classList.remove("is-invalid", "is-valid");
+
+          if (!input.checkValidity()) {
+            input.classList.add("is-invalid");
+            isValid = false;
+
+            if (isValid === false) {
+              input.focus();
+              isValid = null;
+            }
+          } else {
+            input.classList.add("is-valid");
+          }
+        });
+
+        if (!isValid) {
+          return false;
+        }
+      }
+
+      if (!form.checkValidity()) {
+        event.preventDefault();
+        return false;
+      }
+
+      return true;
+    });
+
+    // Real-time validation after first submission
+    form.addEventListener("input", function (event) {
+      if (formSubmitted) {
+        const input = event.target;
+        input.classList.remove("is-invalid", "is-valid");
+
+        if (input.checkValidity()) {
+          input.classList.add("is-valid");
+        } else {
+          input.classList.add("is-invalid");
+        }
+      }
+    });
+  });
+</script>
+
 {% endblock %}
