@@ -159,10 +159,9 @@
       <!-- Divider -->
       <hr class="sidebar-divider d-none d-md-block" />
 
-      <!-- Sidebar Toggler (Sidebar) -->
-      <div class="text-center d-none d-md-inline">
-        <button class="rounded-circle border-0" id="sidebarToggle"></button>
-      </div>
+    <div class="text-center d-none d-md-inline">
+      <button id="sidebarToggle" class="rounded-circle border-0" title="Toggle Sidebar"></button>
+    </div>
     </ul>
     <!-- End of Sidebar -->
 
@@ -578,6 +577,35 @@
       $("#activeFilter").prop("checked", false);
       table.draw();
     });
+
+
+   //Side bar button code
+  document.addEventListener('DOMContentLoaded', function () {
+      const sidebarToggle = document.getElementById('sidebarToggle');
+      const sidebarToggleTop = document.getElementById('sidebarToggleTop');
+      const sidebar = document.getElementById('accordionSidebar');
+      const body = document.body;
+
+      function toggleSidebar() {
+        body.classList.toggle('sidebar-toggled');
+        sidebar.classList.toggle('toggled');
+      }
+
+      if (sidebarToggle) {
+        sidebarToggle.addEventListener('click', function (e) {
+          e.preventDefault();
+          toggleSidebar();
+        });
+      }
+
+      if (sidebarToggleTop) {
+        sidebarToggleTop.addEventListener('click', function (e) {
+          e.preventDefault();
+          toggleSidebar();
+        });
+      }
+    });
+
   </script>
   {% block scripts %}{% endblock %}
 </body>
