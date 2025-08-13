@@ -9,16 +9,13 @@
     border-radius: 50px;
     transition: all 0.3s ease-in-out;
   }
-
   .verify-btn:hover {
     transform: translateY(-2px) scale(1.05);
     box-shadow: 0 8px 15px rgba(0, 128, 0, 0.4);
   }
-  
   .camera-container {
     position: relative;
   }
-  
   .camera-status {
     position: absolute;
     top: 10px;
@@ -29,7 +26,6 @@
     border-radius: 15px;
     font-size: 12px;
   }
-  
   .loading-overlay {
     position: absolute;
     top: 0;
@@ -136,7 +132,7 @@
             <tbody>
               {% if upload_data %}
               {% for row in upload_data %}
-              <tr id="row-{{ row[1] }}">
+              <tr id="row-{{ row[1] }}" class="{% if row[5]==1 %}table-success{% endif %}">
                 <td>{{ row[0] }}</td>
                 <td>{{ row[1] }}</td>
                 <td>{{ row[2] }}</td>
@@ -159,16 +155,16 @@
     </div>
   </div>
 
-  <!-- DataTable Scripts -->
+  <!-- DataTable & SweetAlert2 -->
   <link href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css" rel="stylesheet">
   <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
   <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   
   <script>
     $(document).ready(function () {
       $('#dataTable').DataTable();
       
-      // Hide loading overlay after a delay
       setTimeout(function() {
         $('#loadingOverlay').fadeOut();
         $('#cameraStatus').text('Live');
@@ -176,10 +172,9 @@
     });
 
     function handleCameraError(img) {
-      console.error('Camera feed error');
       $('#loadingOverlay').fadeOut();
       $('#cameraStatus').text('Error').css('background-color', '#dc3545');
-      img.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cmVjdCB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgZmlsbD0iI2Y4ZjlmYSIvPgogIDx0ZXh0IHg9IjIwMCIgeT0iMTUwIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTQiIGZpbGw9IiM2Yzc1N2QiIHRleHQtYW5jaG9yPSJtaWRkbGUiPkNhbWVyYSBFcnJvcjwvdGV4dD4KPC9zdmc+';
+      img.src = 'data:image/svg+xml;base64,...';
     }
 
     function handleCameraLoad(img) {
@@ -187,87 +182,101 @@
       $('#cameraStatus').text('Live').css('background-color', '#28a745');
     }
 
-    // Stop camera button functionality
     $('#stopCameraBtn').click(function() {
       $.post('{{ url_for("face.stop_camera_endpoint") }}')
         .done(function(response) {
-          console.log('Camera stopped:', response);
           $('#cameraStatus').text('Stopped').css('background-color', '#6c757d');
-          // Refresh the page to clear the camera feed
           window.location.reload();
-        })
-        .fail(function(xhr, status, error) {
-          console.error('Error stopping camera:', error);
         });
     });
 
-    // Clear employee ID when going back to search
     $('#faceDetectionForm').submit(function(e) {
-      // Stop camera before submitting new search
       $.post('{{ url_for("face.stop_camera_endpoint") }}');
     });
 
-    // Page unload cleanup
     $(window).on('beforeunload', function() {
       $.post('{{ url_for("face.stop_camera_endpoint") }}');
     });
 
-    // Verify button functionality
     $('#verifyBtn').click(function() {
       const employeeId = $(this).data('employee-id');
       const $btn = $(this);
       
       if (!employeeId) {
-        alert('Employee ID not found');
+        Swal.fire({ icon: 'error', title: 'Error', text: 'Employee ID not found' });
         return;
       }
 
-      // Show loading state
       const originalText = $btn.html();
       $btn.html('<span class="spinner-border spinner-border-sm" role="status"></span> Verifying...').prop('disabled', true);
 
-      // Send verification request
       $.ajax({
         url: '{{ url_for("face.verify_employee") }}',
         method: 'POST',
         contentType: 'application/json',
-        data: JSON.stringify({
-          employee_id: employeeId
-        }),
+        data: JSON.stringify({ employee_id: employeeId }),
         success: function(response) {
           if (response.status === 'success') {
-            // Show success message
-            alert(`✅ Verification Successful!\n\nEmployee: ${response.employee_name}\nFather: ${response.father_name}\nNucleus ID: ${response.nucleus_id}\nAmount: ${response.amount}\n\nWages payment confirmed!`);
-            
-            // Update checkbox in table
-            const nucleusId = response.nucleus_id;
-            const checkbox = $(`#paid-${nucleusId}`);
+            Swal.fire({
+              icon: 'success',
+              title: '✅ Verification Successful!',
+              html: `
+                <strong>Employee:</strong> ${response.employee_name}<br>
+                <strong>Father:</strong> ${response.father_name}<br>
+                <strong>Nucleus ID:</strong> ${response.nucleus_id}<br>
+                <strong>Amount:</strong> ${response.amount}<br>
+                <span style="color:green;font-weight:bold;">Wages payment confirmed!</span>
+              `,
+              confirmButtonColor: '#28a745'
+            });
+
+            const checkbox = $(`#paid-${response.nucleus_id}`);
             if (checkbox.length) {
               checkbox.prop('checked', true);
-              // Highlight the row briefly
-              $(`#row-${nucleusId}`).addClass('table-success').delay(3000).queue(function() {
-                $(this).removeClass('table-success').dequeue();
-              });
+              $(`#row-${response.nucleus_id}`).addClass('table-success'); // Keep green permanently
             }
-            
+
           } else if (response.status === 'warning') {
-            alert(`⚠️ ${response.message}\n\nEmployee: ${response.employee_name}\nAmount: ${response.amount}`);
+            Swal.fire({
+              icon: 'warning',
+              title: '⚠️ Warning',
+              html: `
+                ${response.message}<br>
+                <strong>Employee:</strong> ${response.employee_name}<br>
+                <strong>Amount:</strong> ${response.amount}
+              `,
+              confirmButtonColor: '#ffc107'
+            });
           } else {
-            alert(`❌ Verification Failed: ${response.message}`);
+            Swal.fire({
+              icon: 'error',
+              title: '❌ Verification Failed',
+              text: response.message,
+              confirmButtonColor: '#dc3545'
+            });
           }
         },
-        error: function(xhr, status, error) {
+        error: function(xhr) {
           let errorMessage = 'Verification failed';
           if (xhr.responseJSON && xhr.responseJSON.message) {
             errorMessage = xhr.responseJSON.message;
           }
-          alert(`❌ Error: ${errorMessage}`);
+          Swal.fire({ icon: 'error', title: '❌ Error', text: errorMessage, confirmButtonColor: '#dc3545' });
         },
         complete: function() {
-          // Restore button state
           $btn.html(originalText).prop('disabled', false);
         }
       });
+    });
+
+    // Optional: Make rows green instantly if checkbox becomes editable in the future
+    $('input[type=checkbox]').on('change', function() {
+      const row = $(this).closest('tr');
+      if ($(this).is(':checked')) {
+        row.addClass('table-success');
+      } else {
+        row.removeClass('table-success');
+      }
     });
   </script>
 </main>

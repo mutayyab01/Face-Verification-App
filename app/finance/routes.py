@@ -78,7 +78,7 @@ def wages_upload():
             cursor = conn.cursor()
 
             # Clear old data
-            cursor.execute("TRUNCATE TABLE WagesUpload")
+            # cursor.execute("TRUNCATE TABLE WagesUpload")
 
             inserted_rows = 0
             skipped_rows = 0
@@ -149,7 +149,14 @@ def wages_upload():
         conn = DatabaseManager.get_connection()
         if conn:
             cursor = conn.cursor()
-            cursor.execute("SELECT Id, NucleusId, Name, FatherName, Amount, IsPaid FROM WagesUpload")
+            cursor.execute("""
+                SELECT *
+FROM WagesUpload
+WHERE CONVERT(VARCHAR(19), CreatedAt, 120) = (
+    SELECT CONVERT(VARCHAR(19), MAX(CreatedAt), 120)
+    FROM WagesUpload
+)
+            """)
             upload_data = cursor.fetchall()
             units = ContractorModel.get_unit()
     except Exception as e:
