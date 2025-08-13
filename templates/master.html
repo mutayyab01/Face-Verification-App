@@ -124,7 +124,13 @@
           data-parent="#accordionSidebar">
           <div class="bg-white py-2 collapse-inner rounded">
             <h6 class="collapse-header">Labour Face Operations:</h6>
-            <a class="collapse-item" href="{{ url_for('face.MatchEmpFace') }}">Labours Face</a>
+            <a class="collapse-item" href="{{ url_for('face.MatchEmpFace') }}">Verify By Labour Face</a>
+          </div>
+        </div>
+        <div id="collapseEmployeeFace" class="collapse" aria-labelledby="headingEmployeeDetector"
+          data-parent="#accordionSidebar">
+          <div class="bg-white py-2 collapse-inner rounded">
+            <a class="collapse-item" href="{{ url_for('face.VerifyByCode') }}">Verify By Labour Code</a>
           </div>
         </div>
       </li>

@@ -28,6 +28,19 @@ def dashboard():
         logger.error(f"Dashboard error: {e}")
         flash('Error loading dashboard.', 'error')
         return render_template('FaceRecognition/face_dashboard.html')
+    
+@face_bp.route('/cashier/VerifyByCode')
+@require_auth
+@require_role(['admin', 'cashier'])
+def VerifyByCode():
+    """Verify Face By Entering the Code"""
+    try:
+        return render_template('FaceRecognition/VerifyByCode.html')
+    except Exception as e:
+        logger.error(f"Dashboard error: {e}")
+        flash('Error loading dashboard.', 'error')
+        return render_template('FaceRecognition/VerifyByCode.html')
+
 
 @face_bp.route('/cashier/matchFace', methods=['GET'])
 @require_auth

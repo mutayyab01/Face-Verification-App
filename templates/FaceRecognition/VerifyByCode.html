@@ -1,0 +1,245 @@
+{% extends "master.html" %}
+{% block title %}Face Recognition{% endblock %}
+
+{% block content %}
+<main>
+  <div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h3>Face Detection</h3>
+      <div>
+        <button id="stopCameraBtn" class="btn btn-warning" style="margin-right: 10px;">Stop Camera</button>
+        <a href="login.html" class="btn btn-secondary">Back</a>
+      </div>
+    </div>
+
+    <div class="card shadow mb-4">
+      <div class="card-header">
+        <h5>Face Detection</h5>
+      </div>
+      <div class="card-body">
+        <form action="{{ url_for('face.MatchEmpFace') }}" id="faceDetectionForm">
+          <div class="row mb-4">
+            <div class="col-md-6">
+              <label for="employee_id">Employee Code</label>
+              <div class="d-flex align-items-center" style="gap: 10px;">
+                <input type="number" name="employee_id" id="employee_id" class="form-control" required
+                  placeholder="Enter Code" value="{% if employee_id %}{{ employee_id }}{% endif %}">
+                <button type="submit" class="btn btn-info" style="color: white;">Identification</button>
+              </div>
+            </div>
+          </div>
+        </form>
+
+        {% if employee_id %}
+        <div class="row align-items-center text-center">
+          <div class="col-md-5">
+            {% if image_base64 %}
+              <p><strong>Employee Registered</strong></p>
+              <img src="data:image/jpeg;base64,{{ image_base64 }}" alt="Employee Image" 
+                   class="img-thumbnail shadow" style="width: 400px; height: 300px;">
+            {% else %}
+              <p>No image found.</p>
+            {% endif %}
+          </div>
+
+          <div class="col-md-2 d-flex justify-content-center align-items-center">
+            <button type="button" id="verifyBtn" class="btn btn-success btn-lg shadow verify-btn" 
+                    data-employee-id="{{ employee_id }}">
+              <i class="bi bi-check-circle"></i> Verify
+            </button>
+          </div>
+
+          <div class="col-md-5">
+            <p><strong>Live Camera Feed</strong></p>
+            <div class="camera-container" style="position: relative; display: inline-block;">
+              <img id="cameraFeed" 
+                   src="{{ url_for('face.video_feed', employee_id=employee_id) }}" 
+                   class="img-thumbnail shadow" 
+                   style="width: 400px; height: 300px;"
+                   onerror="handleCameraError(this)"
+                   onload="handleCameraLoad(this)">
+              <div class="camera-status" id="cameraStatus">Connecting...</div>
+              <div class="loading-overlay" id="loadingOverlay">
+                <div class="spinner-border text-primary" role="status">
+                  <span class="sr-only">Loading...</span>
+                </div>
+                <p class="mt-2">Starting camera...</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Uploaded Wages Data Grid -->
+    <div class="card mt-4">
+      <div class="card-header">
+        <h6>Uploaded Wages Data</h6>
+      </div>
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table table-bordered" id="dataTable" width="100%">
+            <thead class="thead-dark">
+              <tr>
+                <th>ID</th>
+                <th>Employee Code</th>
+                <th>Name</th>
+                <th>Father Name</th>
+                <th>Amount</th>
+                <th>Paid?</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% if upload_data %}
+              {% for row in upload_data %}
+              <tr id="row-{{ row[1] }}" class="{% if row[5]==1 %}table-success{% endif %}">
+                <td>{{ row[0] }}</td>
+                <td>{{ row[1] }}</td>
+                <td>{{ row[2] }}</td>
+                <td>{{ row[3] }}</td>
+                <td>{{ row[4] }}</td>
+                <td class="text-center">
+                  <input type="checkbox" id="paid-{{ row[1] }}" {% if row[5]==1 %}checked{% endif %} disabled>
+                </td>
+              </tr>
+              {% endfor %}
+              {% else %}
+              <tr>
+                <td colspan="6" class="text-center">No uploaded data found.</td>
+              </tr>
+              {% endif %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DataTable & SweetAlert2 -->
+  <link href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css" rel="stylesheet">
+  <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+  <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  
+  <script>
+    $(document).ready(function () {
+      $('#dataTable').DataTable();
+      
+      setTimeout(function() {
+        $('#loadingOverlay').fadeOut();
+        $('#cameraStatus').text('Live');
+      }, 3000);
+    });
+
+    function handleCameraError(img) {
+      $('#loadingOverlay').fadeOut();
+      $('#cameraStatus').text('Error').css('background-color', '#dc3545');
+      img.src = 'data:image/svg+xml;base64,...';
+    }
+
+    function handleCameraLoad(img) {
+      $('#loadingOverlay').fadeOut();
+      $('#cameraStatus').text('Live').css('background-color', '#28a745');
+    }
+
+    $('#stopCameraBtn').click(function() {
+      $.post('{{ url_for("face.stop_camera_endpoint") }}')
+        .done(function(response) {
+          $('#cameraStatus').text('Stopped').css('background-color', '#6c757d');
+          window.location.reload();
+        });
+    });
+
+    $('#faceDetectionForm').submit(function(e) {
+      $.post('{{ url_for("face.stop_camera_endpoint") }}');
+    });
+
+    $(window).on('beforeunload', function() {
+      $.post('{{ url_for("face.stop_camera_endpoint") }}');
+    });
+
+    $('#verifyBtn').click(function() {
+      const employeeId = $(this).data('employee-id');
+      const $btn = $(this);
+      
+      if (!employeeId) {
+        Swal.fire({ icon: 'error', title: 'Error', text: 'Employee ID not found' });
+        return;
+      }
+
+      const originalText = $btn.html();
+      $btn.html('<span class="spinner-border spinner-border-sm" role="status"></span> Verifying...').prop('disabled', true);
+
+      $.ajax({
+        url: '{{ url_for("face.verify_employee") }}',
+        method: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify({ employee_id: employeeId }),
+        success: function(response) {
+          if (response.status === 'success') {
+            Swal.fire({
+              icon: 'success',
+              title: '✅ Verification Successful!',
+              html: `
+                <strong>Employee:</strong> ${response.employee_name}<br>
+                <strong>Father:</strong> ${response.father_name}<br>
+                <strong>Nucleus ID:</strong> ${response.nucleus_id}<br>
+                <strong>Amount:</strong> ${response.amount}<br>
+                <span style="color:green;font-weight:bold;">Wages payment confirmed!</span>
+              `,
+              confirmButtonColor: '#28a745'
+            });
+
+            const checkbox = $(`#paid-${response.nucleus_id}`);
+            if (checkbox.length) {
+              checkbox.prop('checked', true);
+              $(`#row-${response.nucleus_id}`).addClass('table-success'); // Keep green permanently
+            }
+
+          } else if (response.status === 'warning') {
+            Swal.fire({
+              icon: 'warning',
+              title: '⚠️ Warning',
+              html: `
+                ${response.message}<br>
+                <strong>Employee:</strong> ${response.employee_name}<br>
+                <strong>Amount:</strong> ${response.amount}
+              `,
+              confirmButtonColor: '#ffc107'
+            });
+          } else {
+            Swal.fire({
+              icon: 'error',
+              title: '❌ Verification Failed',
+              text: response.message,
+              confirmButtonColor: '#dc3545'
+            });
+          }
+        },
+        error: function(xhr) {
+          let errorMessage = 'Verification failed';
+          if (xhr.responseJSON && xhr.responseJSON.message) {
+            errorMessage = xhr.responseJSON.message;
+          }
+          Swal.fire({ icon: 'error', title: '❌ Error', text: errorMessage, confirmButtonColor: '#dc3545' });
+        },
+        complete: function() {
+          $btn.html(originalText).prop('disabled', false);
+        }
+      });
+    });
+
+    // Optional: Make rows green instantly if checkbox becomes editable in the future
+    $('input[type=checkbox]').on('change', function() {
+      const row = $(this).closest('tr');
+      if ($(this).is(':checked')) {
+        row.addClass('table-success');
+      } else {
+        row.removeClass('table-success');
+      }
+    });
+  </script>
+</main>
+
+{% endblock %}
