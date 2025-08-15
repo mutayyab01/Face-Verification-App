@@ -34,38 +34,19 @@
         <div class="row align-items-center text-center">
           <div class="col-md-5">
             {% if image_base64 %}
-              <p><strong>Employee Registered</strong></p>
-              <img src="data:image/jpeg;base64,{{ image_base64 }}" alt="Employee Image" 
-                   class="img-thumbnail shadow" style="width: 400px; height: 300px;">
+            <p><strong>Employee Registered</strong></p>
+            <img src="data:image/jpeg;base64,{{ image_base64 }}" alt="Employee Image" class="img-thumbnail shadow"
+              style="width: 400px; height: 300px;">
             {% else %}
-              <p>No image found.</p>
+            <p>No image found.</p>
             {% endif %}
           </div>
 
           <div class="col-md-2 d-flex justify-content-center align-items-center">
-            <button type="button" id="verifyBtn" class="btn btn-success btn-lg shadow verify-btn" 
-                    data-employee-id="{{ employee_id }}">
+            <button type="button" id="verifyBtn" class="btn btn-success btn-lg shadow verify-btn"
+              data-employee-id="{{ employee_id }}">
               <i class="bi bi-check-circle"></i> Verify
             </button>
-          </div>
-
-          <div class="col-md-5">
-            <p><strong>Live Camera Feed</strong></p>
-            <div class="camera-container" style="position: relative; display: inline-block;">
-              <img id="cameraFeed" 
-                   src="{{ url_for('face.video_feed', employee_id=employee_id) }}" 
-                   class="img-thumbnail shadow" 
-                   style="width: 400px; height: 300px;"
-                   onerror="handleCameraError(this)"
-                   onload="handleCameraLoad(this)">
-              <div class="camera-status" id="cameraStatus">Connecting...</div>
-              <div class="loading-overlay" id="loadingOverlay">
-                <div class="spinner-border text-primary" role="status">
-                  <span class="sr-only">Loading...</span>
-                </div>
-                <p class="mt-2">Starting camera...</p>
-              </div>
-            </div>
           </div>
         </div>
         {% endif %}
@@ -121,12 +102,12 @@
   <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
   <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-  
+
   <script>
     $(document).ready(function () {
       $('#dataTable').DataTable();
-      
-      setTimeout(function() {
+
+      setTimeout(function () {
         $('#loadingOverlay').fadeOut();
         $('#cameraStatus').text('Live');
       }, 3000);
@@ -143,26 +124,26 @@
       $('#cameraStatus').text('Live').css('background-color', '#28a745');
     }
 
-    $('#stopCameraBtn').click(function() {
+    $('#stopCameraBtn').click(function () {
       $.post('{{ url_for("face.stop_camera_endpoint") }}')
-        .done(function(response) {
+        .done(function (response) {
           $('#cameraStatus').text('Stopped').css('background-color', '#6c757d');
           window.location.reload();
         });
     });
 
-    $('#faceDetectionForm').submit(function(e) {
+    $('#faceDetectionForm').submit(function (e) {
       $.post('{{ url_for("face.stop_camera_endpoint") }}');
     });
 
-    $(window).on('beforeunload', function() {
+    $(window).on('beforeunload', function () {
       $.post('{{ url_for("face.stop_camera_endpoint") }}');
     });
 
-    $('#verifyBtn').click(function() {
+    $('#verifyBtn').click(function () {
       const employeeId = $(this).data('employee-id');
       const $btn = $(this);
-      
+
       if (!employeeId) {
         Swal.fire({ icon: 'error', title: 'Error', text: 'Employee ID not found' });
         return;
@@ -176,7 +157,7 @@
         method: 'POST',
         contentType: 'application/json',
         data: JSON.stringify({ employee_id: employeeId }),
-        success: function(response) {
+        success: function (response) {
           if (response.status === 'success') {
             Swal.fire({
               icon: 'success',
@@ -217,21 +198,21 @@
             });
           }
         },
-        error: function(xhr) {
+        error: function (xhr) {
           let errorMessage = 'Verification failed';
           if (xhr.responseJSON && xhr.responseJSON.message) {
             errorMessage = xhr.responseJSON.message;
           }
           Swal.fire({ icon: 'error', title: '❌ Error', text: errorMessage, confirmButtonColor: '#dc3545' });
         },
-        complete: function() {
+        complete: function () {
           $btn.html(originalText).prop('disabled', false);
         }
       });
     });
 
     // Optional: Make rows green instantly if checkbox becomes editable in the future
-    $('input[type=checkbox]').on('change', function() {
+    $('input[type=checkbox]').on('change', function () {
       const row = $(this).closest('tr');
       if ($(this).is(':checked')) {
         row.addClass('table-success');
