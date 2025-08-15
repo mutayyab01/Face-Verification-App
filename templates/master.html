@@ -290,7 +290,7 @@
                 </a>
                 <a class="dropdown-item d-flex align-items-center" href="#">
                   <div class="dropdown-list-image mr-3">
-                    <img class="rounded-circle" src="img/undraw_profile_2.svg" alt="..." />
+                    <img class="rounded-circle" src="{{ url_for('static',filename='img/undraw_profile_2.svg') }}" alt="..." />
                     <div class="status-indicator"></div>
                   </div>
                   <div>
@@ -303,7 +303,7 @@
                 </a>
                 <a class="dropdown-item d-flex align-items-center" href="#">
                   <div class="dropdown-list-image mr-3">
-                    <img class="rounded-circle" src="img/undraw_profile_3.svg" alt="..." />
+                    <img class="rounded-circle" src="{{ url_for('static',filename='img/undraw_profile_3.svg') }}" alt="..." />
                     <div class="status-indicator bg-warning"></div>
                   </div>
                   <div>
@@ -542,9 +542,6 @@
 
   <!-- Custom scripts for all pages-->
   <script type="text/javascript" src="{{ url_for('static',filename='js/sb-admin-2.min.js') }}"></script>
-
-  <!-- Page level plugins -->
-  <script type="text/javascript" src="{{ url_for('static',filename='vendor/chart.js/Chart.min.js') }}"></script>
 
   <script type="text/javascript" src="{{ url_for('static',filename='js/jquery.dataTables.min.js') }}"></script>
   <script type="text/javascript" src="{{ url_for('static',filename='js/dataTables.bootstrap5.min.js') }}"></script>
