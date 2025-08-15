@@ -113,8 +113,6 @@ class ContractorModel:
     def update(contractor_id, data, updated_by):
         """Update contractor with optional image"""
          
-        logger.info(f"Update data: {data}")
-        logger.info(f"Contractor ID: {contractor_id}")
 
         if data['ProfileImage']:  # If a new image is provided
             return DatabaseManager.execute_query("""

@@ -74,10 +74,7 @@ def edit_employee(employee_id):
             
             # Prepare data
             data = EmployeeForm.prepare_data(request.form, request.files)
-            # Update employee
-            logger.info(data)
             success = EmployeeModel.update(employee_id, data, session['user_id'])
-            logger.info(success)
             
             if success:
                 flash('Employee updated successfully.', 'success')

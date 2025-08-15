@@ -15,7 +15,6 @@ def list_contractors():
     try:
         contractors = ContractorModel.get_all()
         units = ContractorModel.get_unit()
-        logger.info(contractors)
         return render_template('contractors/contractors.html', contractors=contractors ,units=units)
     
     except Exception as e:

@@ -23,7 +23,6 @@ def login():
             fetch_one=True
         )
         
-        logger.info(user)
 
         if user and user[4] == password:
             session.clear()
