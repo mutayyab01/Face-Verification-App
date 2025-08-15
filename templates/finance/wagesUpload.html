@@ -11,12 +11,19 @@
         <div class="card-header py-3 d-flex justify-content-between align-items-center">
             <h6 class="m-0 font-weight-bold">Employee DataTables</h6>
         </div>
-
-        {% if message %}
-        <div class="alert alert-{{ 'success' if status == 'success' else 'danger' }} mt-3">
-            {{ message }}
-        </div>
-        {% endif %}
+{% if message %}
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        Swal.fire({
+            icon: "{{ 'success' if status == 'success' else 'error' }}",
+            title: "{{ 'Success' if status == 'success' else 'Error' }}",
+            text: "{{ message }}",
+            confirmButtonColor: "#3085d6",
+            confirmButtonText: "OK"
+        });
+    });
+</script>
+{% endif %}
         <form action="{{ url_for('finance.wages_upload') }}" method="post" enctype="multipart/form-data">
             <div class="row g-3 align-items-end">
 
@@ -75,7 +82,7 @@
                         <td>{{ row[2] }}</td>
                         <td>{{ row[3] }}</td>
                         <td>{{ row[4] }}</td>
-                        <td>{{ 'Yes' if row[5] == 1 else 'No' }}</td>
+                        <td>{{ row[5] }}</td>
                     </tr>
                     {% endfor %}
                 </tbody>

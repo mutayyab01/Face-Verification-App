@@ -5,26 +5,26 @@
 <main>
   <div class="container">
     <div class="d-flex justify-content-between align-items-center mb-4">
-      <h3>Face Detection</h3>
-      <div>
-        <button id="stopCameraBtn" class="btn btn-warning" style="margin-right: 10px;">Stop Camera</button>
-        <a href="login.html" class="btn btn-secondary">Back</a>
+      <h3>Verify Employee by Code</h3>
+      <div>  
+        <a href="{{ url_for('auth.login') }}" class="btn btn-secondary">Back</a>
       </div>
     </div>
 
+    <!-- Face Detection Card -->
     <div class="card shadow mb-4">
       <div class="card-header">
         <h5>Face Detection</h5>
       </div>
       <div class="card-body">
-        <form action="{{ url_for('face.MatchEmpFace') }}" id="faceDetectionForm">
+        <form id="faceDetectionForm" action="{{ url_for('face.MatchbyCode') }}">
           <div class="row mb-4">
             <div class="col-md-6">
               <label for="employee_id">Employee Code</label>
               <div class="d-flex align-items-center" style="gap: 10px;">
                 <input type="number" name="employee_id" id="employee_id" class="form-control" required
-                  placeholder="Enter Code" value="{% if employee_id %}{{ employee_id }}{% endif %}">
-                <button type="submit" class="btn btn-info" style="color: white;">Identification</button>
+                  placeholder="Enter Code" value="{{ employee_id if employee_id else '' }}">
+                <button type="submit" class="btn btn-info text-white">Identification</button>
               </div>
             </div>
           </div>
@@ -43,8 +43,7 @@
           </div>
 
           <div class="col-md-2 d-flex justify-content-center align-items-center">
-            <button type="button" id="verifyBtn" class="btn btn-success btn-lg shadow verify-btn"
-              data-employee-id="{{ employee_id }}">
+            <button type="button" id="verifyBtn" class="btn btn-success btn-lg shadow">
               <i class="bi bi-check-circle"></i> Verify
             </button>
           </div>
@@ -97,7 +96,7 @@
     </div>
   </div>
 
-  <!-- DataTable & SweetAlert2 -->
+  <!-- Scripts -->
   <link href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css" rel="stylesheet">
   <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
   <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
@@ -107,120 +106,75 @@
     $(document).ready(function () {
       $('#dataTable').DataTable();
 
-      setTimeout(function () {
-        $('#loadingOverlay').fadeOut();
-        $('#cameraStatus').text('Live');
-      }, 3000);
-    });
+      $('#verifyBtn').click(function (e) {
+        e.preventDefault();
 
-    function handleCameraError(img) {
-      $('#loadingOverlay').fadeOut();
-      $('#cameraStatus').text('Error').css('background-color', '#dc3545');
-      img.src = 'data:image/svg+xml;base64,...';
-    }
+        // Always take Employee ID from input field
+        const employeeId = $('#employee_id').val().trim();
+        console.log("Sending employee_id:", employeeId);
 
-    function handleCameraLoad(img) {
-      $('#loadingOverlay').fadeOut();
-      $('#cameraStatus').text('Live').css('background-color', '#28a745');
-    }
-
-    $('#stopCameraBtn').click(function () {
-      $.post('{{ url_for("face.stop_camera_endpoint") }}')
-        .done(function (response) {
-          $('#cameraStatus').text('Stopped').css('background-color', '#6c757d');
-          window.location.reload();
-        });
-    });
-
-    $('#faceDetectionForm').submit(function (e) {
-      $.post('{{ url_for("face.stop_camera_endpoint") }}');
-    });
-
-    $(window).on('beforeunload', function () {
-      $.post('{{ url_for("face.stop_camera_endpoint") }}');
-    });
-
-    $('#verifyBtn').click(function () {
-      const employeeId = $(this).data('employee-id');
-      const $btn = $(this);
-
-      if (!employeeId) {
-        Swal.fire({ icon: 'error', title: 'Error', text: 'Employee ID not found' });
-        return;
-      }
-
-      const originalText = $btn.html();
-      $btn.html('<span class="spinner-border spinner-border-sm" role="status"></span> Verifying...').prop('disabled', true);
-
-      $.ajax({
-        url: '{{ url_for("face.verify_employee") }}',
-        method: 'POST',
-        contentType: 'application/json',
-        data: JSON.stringify({ employee_id: employeeId }),
-        success: function (response) {
-          if (response.status === 'success') {
-            Swal.fire({
-              icon: 'success',
-              title: '✅ Verification Successful!',
-              html: `
-                <strong>Employee:</strong> ${response.employee_name}<br>
-                <strong>Father:</strong> ${response.father_name}<br>
-                <strong>Nucleus ID:</strong> ${response.nucleus_id}<br>
-                <strong>Amount:</strong> ${response.amount}<br>
-                <span style="color:green;font-weight:bold;">Wages payment confirmed!</span>
-              `,
-              confirmButtonColor: '#28a745'
-            });
-
-            const checkbox = $(`#paid-${response.nucleus_id}`);
-            if (checkbox.length) {
-              checkbox.prop('checked', true);
-              $(`#row-${response.nucleus_id}`).addClass('table-success'); // Keep green permanently
-            }
-
-          } else if (response.status === 'warning') {
-            Swal.fire({
-              icon: 'warning',
-              title: '⚠️ Warning',
-              html: `
-                ${response.message}<br>
-                <strong>Employee:</strong> ${response.employee_name}<br>
-                <strong>Amount:</strong> ${response.amount}
-              `,
-              confirmButtonColor: '#ffc107'
-            });
-          } else {
-            Swal.fire({
-              icon: 'error',
-              title: '❌ Verification Failed',
-              text: response.message,
-              confirmButtonColor: '#dc3545'
-            });
-          }
-        },
-        error: function (xhr) {
-          let errorMessage = 'Verification failed';
-          if (xhr.responseJSON && xhr.responseJSON.message) {
-            errorMessage = xhr.responseJSON.message;
-          }
-          Swal.fire({ icon: 'error', title: '❌ Error', text: errorMessage, confirmButtonColor: '#dc3545' });
-        },
-        complete: function () {
-          $btn.html(originalText).prop('disabled', false);
+        if (!employeeId) {
+          Swal.fire({ icon: 'error', title: 'Error', text: 'Please enter Employee ID' });
+          return;
         }
-      });
-    });
 
-    // Optional: Make rows green instantly if checkbox becomes editable in the future
-    $('input[type=checkbox]').on('change', function () {
-      const row = $(this).closest('tr');
-      if ($(this).is(':checked')) {
-        row.addClass('table-success');
-      } else {
-        row.removeClass('table-success');
-      }
+        const $btn = $(this);
+        const originalText = $btn.html();
+        $btn.html('<span class="spinner-border spinner-border-sm"></span> Verifying...')
+            .prop('disabled', true);
+
+        $.ajax({
+          url: '{{ url_for("face.verify_employeebyCode") }}',
+          method: 'POST',
+          contentType: 'application/json',
+          data: JSON.stringify({ employee_id: employeeId }),
+          success: function (response) {
+            console.log("Server response:", response);
+
+            if (response.status === 'success') {
+              Swal.fire({
+                icon: 'success',
+                title: '✅ Verification Successful!',
+                html: `
+                  <strong>Employee:</strong> ${response.employee_name}<br>
+                  <strong>Father:</strong> ${response.father_name}<br>
+                  <strong>Nucleus ID:</strong> ${response.nucleus_id}<br>
+                  <strong>Amount:</strong> ${response.amount}<br>
+                  <span style="color:green;font-weight:bold;">Wages payment confirmed!</span>
+                `
+              });
+              $(`#row-${response.nucleus_id}`).addClass('table-success');
+              $(`#paid-${response.nucleus_id}`).prop('checked', true);
+
+            } else if (response.status === 'warning') {
+              Swal.fire({
+                icon: 'warning',
+                title: '⚠️ Already Paid',
+                html: `
+                  ${response.message}<br>
+                  <strong>Employee:</strong> ${response.employee_name}<br>
+                  <strong>Amount:</strong> ${response.amount}
+                `
+              });
+
+            } else {
+              Swal.fire({
+                icon: 'error',
+                title: '❌ Verification Failed',
+                text: response.message
+              });
+            }
+          },
+          error: function (xhr) {
+            let errorMessage = xhr.responseJSON?.message || 'Verification failed';
+            Swal.fire({ icon: 'error', title: '❌ Error', text: errorMessage });
+          },
+          complete: function () {
+            $btn.html(originalText).prop('disabled', false);
+          }
+        });
+      });
     });
   </script>
 </main>
-
 {% endblock %}

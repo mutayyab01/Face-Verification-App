@@ -1,6 +1,5 @@
-from flask import render_template, flash, request,session
+from flask import render_template, flash, request, session
 import logging
-from datetime import datetime
 from datetime import datetime
 import pandas as pd
 from . import finance_bp
@@ -44,7 +43,6 @@ def wages_upload():
         if pd.isna(value):
             return None
         try:
-            # If string, clean it
             if isinstance(value, str):
                 val = value.strip()
                 if val.lower() in ['', 'nan', 'none', 'null']:
@@ -77,9 +75,6 @@ def wages_upload():
                 return render_template('finance/wagesUpload.html', message="Database connection failed.", status="error")
             cursor = conn.cursor()
 
-            # Clear old data
-            # cursor.execute("TRUNCATE TABLE WagesUpload")
-
             inserted_rows = 0
             skipped_rows = 0
 
@@ -88,7 +83,6 @@ def wages_upload():
                     contractor_id = parse_contractor_id(row['ContractorId'])
                     print(f"Row {index} - Parsed ContractorId: {contractor_id}")
 
-                    # Validate ContractorId exists and active if not None
                     if contractor_id is not None:
                         cursor.execute("SELECT Id FROM Contractor WHERE Id = ? AND IsActive = 1", (contractor_id,))
                         if not cursor.fetchone():
@@ -96,7 +90,6 @@ def wages_upload():
                             skipped_rows += 1
                             continue
 
-                    # Validate NucleusId
                     try:
                         nucleus_id = int(row['NucleusId'])
                     except Exception:
@@ -109,8 +102,8 @@ def wages_upload():
                         skipped_rows += 1
                         continue
 
-                    # Prepare IsPaid flag
                     is_paid = 1 if str(row['IsPaid']).strip().upper() == 'TRUE' else 0
+                    is_paid = int(is_paid)
 
                     cursor.execute("""
                         INSERT INTO WagesUpload (
@@ -150,14 +143,24 @@ def wages_upload():
         if conn:
             cursor = conn.cursor()
             cursor.execute("""
-                SELECT *
-FROM WagesUpload
-WHERE CONVERT(VARCHAR(19), CreatedAt, 120) = (
-    SELECT CONVERT(VARCHAR(19), MAX(CreatedAt), 120)
-    FROM WagesUpload
-)
+                SELECT 
+                    NucleusId,
+                    ContractorId,
+                    Name,
+                    FatherName,
+                    Amount,
+                    CASE WHEN IsPaid = 1 THEN 'Yes' ELSE 'No' END AS IsPaid,
+                    UnitId,
+                    CreatedBy,
+                    CreatedAt
+                FROM WagesUpload
+                WHERE CONVERT(VARCHAR(19), CreatedAt, 120) = (
+                    SELECT CONVERT(VARCHAR(19), MAX(CreatedAt), 120)
+                    FROM WagesUpload
+                )
             """)
             upload_data = cursor.fetchall()
+            print("data table : ", upload_data)
             units = ContractorModel.get_unit()
     except Exception as e:
         logger.error(f"Failed to fetch WagesUpload data: {e}")
