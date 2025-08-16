@@ -160,7 +160,6 @@ def wages_upload():
                 )
             """)
             upload_data = cursor.fetchall()
-            print("data table : ", upload_data)
             units = ContractorModel.get_unit()
     except Exception as e:
         logger.error(f"Failed to fetch WagesUpload data: {e}")

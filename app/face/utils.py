@@ -10,6 +10,8 @@ from .config import CameraConfig
 
 logger = logging.getLogger(__name__)
 
+def 
+
 def get_upload_data() -> List[Dict[str, Any]]:
     """Fetch upload data from database"""
     try:
@@ -17,8 +19,23 @@ def get_upload_data() -> List[Dict[str, Any]]:
         if conn:
             cursor = conn.cursor()
             cursor.execute("""
-                SELECT Id, NucleusId, Name, FatherName, Amount, IsPaid 
-                FROM WagesUpload
+                SELECT 
+    NucleusId,         
+    ContractorId,      
+    Name,              
+    FatherName,        
+    Amount,            
+    CASE WHEN IsPaid = 1 THEN 1 ELSE 0 END AS IsPaid,   -- force into 0/1
+    CASE WHEN IsPaid = 1 THEN 'Yes' ELSE 'No' END AS IsPaidText, 
+    UnitId,
+    CreatedBy,
+    CreatedAt
+FROM WagesUpload
+WHERE CONVERT(VARCHAR(19), CreatedAt, 120) = (
+    SELECT CONVERT(VARCHAR(19), MAX(CreatedAt), 120)
+    FROM WagesUpload
+);
+
             """)
             return cursor.fetchall()
     except Exception as e:

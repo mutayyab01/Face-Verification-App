@@ -120,90 +120,64 @@ def MatchbyCode():
 @require_auth
 @require_role(['admin', 'cashier'])
 def verify_employeebyCode():
-    """Verify employee face match AND employee code before marking wages paid"""
     try:
-        data = request.get_json()
-        employee_id = data.get('employee_id')
-        print(employee_id,"this is employee id")
+        data = request.get_json(silent=True) or {}
+        employee_id = data.get("employee_id")
 
         if not employee_id:
-            return {"status": "error", "message": "Employee ID is required"}, 400
+            return jsonify({"status": "error", "message": "Employee ID is required"}), 400
 
-        # 2️⃣ Database operations
         conn = DatabaseManager.get_connection()
-        if not conn:
-            return {"status": "error", "message": "Database connection failed"}, 500
-
         cursor = conn.cursor()
 
-        # Get employee details
+        # Get latest row for employee
         cursor.execute("""
-            SELECT NucleusId, Name, FatherName 
-            FROM Employee 
-            WHERE NucleusId = ? AND IsActive = 1
-        """, (employee_id,))
-        
-        employee = cursor.fetchone()
-        if not employee:
-            return {"status": "error", "message": "Employee not found or inactive"}, 404
-
-        nucleus_id = employee[0]
-        employee_name = employee[1]
-        father_name = employee[2]
-
-        # Get wages record
-        cursor.execute("""
-            SELECT Id, Name, FatherName, Amount, IsPaid 
-            FROM WagesUpload 
+            SELECT TOP 1 NucleusId, Name, FatherName, Amount, IsPaid
+            FROM WagesUpload
             WHERE NucleusId = ?
-        """, (nucleus_id,))
-        
-        wage_record = cursor.fetchone()
-        if not wage_record:
-            return {
-                "status": "error", 
-                "message": f"No wages record found for Employee NucleusId: {nucleus_id}"
-            }, 404
+            ORDER BY CreatedAt DESC
+        """, (employee_id,))
+        row = cursor.fetchone()
 
-        wage_id = wage_record[0]
-        is_already_paid = wage_record[4]
+        if not row:
+            return jsonify({"status": "error", "message": "Employee not found"})
 
-        if is_already_paid:
-            return {
-                "status": "warning", 
-                "message": "Wages already paid for this employee",
-                "employee_name": employee_name,
-                "amount": wage_record[3]
-            }, 200
+        nucleus_id, name, father_name, amount, is_paid = row
 
-        # Mark wages as paid
+        if is_paid == 1:
+            return jsonify({
+                "status": "warning",
+                "message": "Already paid!",
+                "employee_name": name,
+                "father_name": father_name,
+                "nucleus_id": nucleus_id,
+                "amount": amount
+            })
+
         cursor.execute("""
             UPDATE WagesUpload
-            SET IsPaid = 1 
+            SET IsPaid = 1
             WHERE NucleusId = ?
-        """, (nucleus_id,))
+              AND CreatedAt = (
+                  SELECT MAX(CreatedAt)
+                  FROM WagesUpload
+                  WHERE NucleusId = ?
+              )
+        """, (employee_id, employee_id))
         conn.commit()
 
-        return {
-            "status": "success", 
-            "message": "✅ Face and Employee Code matched! Wages payment confirmed.",
-            "employee_name": employee_name,
+        return jsonify({
+            "status": "success",
+            "message": "Verification successful",
+            "employee_name": name,
             "father_name": father_name,
             "nucleus_id": nucleus_id,
-            "amount": wage_record[3],
-            "wage_id": wage_id
-        }, 200
+            "amount": amount
+        })
 
     except Exception as e:
-        logger.error(f"Error in verify_employee: {e}")
-        return {"status": "error", "message": "Verification failed"}, 500
-    finally:
-        if 'conn' in locals():
-            conn.close()
-
-
-
-
+        logger.error(f"Verification failed: {e}")
+        return jsonify({"status": "error", "message": str(e)}), 500
 
 @face_bp.route('/cashier/matchFace', methods=['GET'])
 @require_auth
@@ -285,7 +259,7 @@ def verify_employee():
     try:
         data = request.get_json()
         employee_id = data.get('employee_id')
-        print(employee_id,"this is employee id")
+        print(employee_id, "this is employee id")
 
         if not employee_id:
             return {"status": "error", "message": "Employee ID is required"}, 400
@@ -297,14 +271,14 @@ def verify_employee():
                 "message": "Face does not match the stored employee image. Please try again."
             }, 400
 
-        # 2️⃣ Database operations
+        # 2️⃣ Database connection
         conn = DatabaseManager.get_connection()
         if not conn:
             return {"status": "error", "message": "Database connection failed"}, 500
 
         cursor = conn.cursor()
 
-        # Get employee details
+        # 3️⃣ Get employee details
         cursor.execute("""
             SELECT NucleusId, Name, FatherName 
             FROM Employee 
@@ -315,15 +289,14 @@ def verify_employee():
         if not employee:
             return {"status": "error", "message": "Employee not found or inactive"}, 404
 
-        nucleus_id = employee[0]
-        employee_name = employee[1]
-        father_name = employee[2]
+        nucleus_id, employee_name, father_name = employee
 
-        # Get wages record
+        # 4️⃣ Get LATEST wages record
         cursor.execute("""
-            SELECT Id, Name, FatherName, Amount, IsPaid 
+            SELECT TOP 1 Id, Name, FatherName, Amount, IsPaid, CreatedAt
             FROM WagesUpload 
             WHERE NucleusId = ?
+            ORDER BY CreatedAt DESC
         """, (nucleus_id,))
         
         wage_record = cursor.fetchone()
@@ -333,23 +306,26 @@ def verify_employee():
                 "message": f"No wages record found for Employee NucleusId: {nucleus_id}"
             }, 404
 
-        wage_id = wage_record[0]
-        is_already_paid = wage_record[4]
+        wage_id, wage_name, wage_father, amount, is_already_paid, created_at = wage_record
 
-        if is_already_paid:
+        # 5️⃣ If already paid
+        if is_already_paid == 1:
             return {
                 "status": "warning", 
                 "message": "Wages already paid for this employee",
                 "employee_name": employee_name,
-                "amount": wage_record[3]
+                "father_name": father_name,
+                "nucleus_id": nucleus_id,
+                "amount": amount,
+                "wage_id": wage_id
             }, 200
 
-        # Mark wages as paid
+        # 6️⃣ Update only the latest record for this employee
         cursor.execute("""
             UPDATE WagesUpload
-            SET IsPaid = 1 
-            WHERE NucleusId = ?
-        """, (nucleus_id,))
+            SET IsPaid = 1
+            WHERE Id = ?
+        """, (wage_id,))
         conn.commit()
 
         return {
@@ -358,7 +334,7 @@ def verify_employee():
             "employee_name": employee_name,
             "father_name": father_name,
             "nucleus_id": nucleus_id,
-            "amount": wage_record[3],
+            "amount": amount,
             "wage_id": wage_id
         }, 200
 
@@ -368,6 +344,7 @@ def verify_employee():
     finally:
         if 'conn' in locals():
             conn.close()
+
 @face_bp.route('/stop_camera', methods=['POST'])
 @require_auth
 @require_role(['admin', 'cashier'])
