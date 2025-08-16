@@ -49,9 +49,6 @@ class Config:
     # Application Configuration
     MAX_CONTENT_LENGTH = 16 * 1024 * 1024  # 16MB max file upload
     
-    # Logging Configuration
-    LOG_LEVEL = os.environ.get('LOG_LEVEL', 'INFO')
-    LOG_FILE = os.environ.get('LOG_FILE', 'logs/app.txt')
 
 class DevelopmentConfig(Config):
     DEBUG = True
