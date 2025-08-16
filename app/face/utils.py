@@ -10,8 +10,6 @@ from .config import CameraConfig
 
 logger = logging.getLogger(__name__)
 
-def 
-
 def get_upload_data() -> List[Dict[str, Any]]:
     """Fetch upload data from database"""
     try:
@@ -62,10 +60,8 @@ def generate_video_frames(camera_service: CameraService,
             
             no_frame_count = 0
             
-            # Process frame with face recognition
             processed = face_service.process_frame(frame, employee_id)
             
-            # Encode frame
             ret, buffer = cv2.imencode('.jpg', processed.frame, 
                                      [cv2.IMWRITE_JPEG_QUALITY, config.JPEG_QUALITY])
             if not ret:

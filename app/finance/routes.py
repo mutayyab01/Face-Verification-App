@@ -25,7 +25,7 @@ def dashboard():
 
     except Exception as e:
         logger.error(f"Error in finance dashboard: {e}")
-        print(f"❌ Error loading dashboard: {e}")
+        print(f"Error loading dashboard: {e}")
         flash("Error loading dashboard.", "error")
         return render_template('finance/finance_dashboard.html', stats={'total_employees': 0, 'active_employees': 0})
 

@@ -50,10 +50,8 @@ def VerifyByCode():
             camera_service.stop()
             return render_template('FaceRecognition/VerifyByCode.html', upload_data=upload_data)
         
-        # Load face encoding
         face_service.load_employee_encoding(employee_id, employee.Image)
         
-        # Prepare image for display
         import base64
         image_base64 = base64.b64encode(employee.Image).decode('utf-8')
         
@@ -92,10 +90,8 @@ def MatchbyCode():
             camera_service.stop()
             return render_template('FaceRecognition/VerifyByCode.html', upload_data=upload_data)
         
-        # Load face encoding
         face_service.load_employee_encoding(employee_id, employee.Image)
         
-        # Prepare image for display
         import base64
         image_base64 = base64.b64encode(employee.Image).decode('utf-8')
         
@@ -130,7 +126,6 @@ def verify_employeebyCode():
         conn = DatabaseManager.get_connection()
         cursor = conn.cursor()
 
-        # Get latest row for employee
         cursor.execute("""
             SELECT TOP 1 NucleusId, Name, FatherName, Amount, IsPaid
             FROM WagesUpload
@@ -197,11 +192,8 @@ def MatchEmpFace():
             flash("Employee not found or no image available.", "error")
             camera_service.stop()
             return render_template('FaceRecognition/face.html', upload_data=upload_data)
-        
-        # Load face encoding
         face_service.load_employee_encoding(employee_id, employee.Image)
-        
-        # Prepare image for display
+
         import base64
         image_base64 = base64.b64encode(employee.Image).decode('utf-8')
         
@@ -264,21 +256,18 @@ def verify_employee():
         if not employee_id:
             return {"status": "error", "message": "Employee ID is required"}, 400
 
-        # 1️⃣ Check if face verification was successful
         if not face_service._is_face_verified():
             return {
                 "status": "error",
                 "message": "Face does not match the stored employee image. Please try again."
             }, 400
 
-        # 2️⃣ Database connection
         conn = DatabaseManager.get_connection()
         if not conn:
             return {"status": "error", "message": "Database connection failed"}, 500
 
         cursor = conn.cursor()
 
-        # 3️⃣ Get employee details
         cursor.execute("""
             SELECT NucleusId, Name, FatherName 
             FROM Employee 
@@ -290,8 +279,6 @@ def verify_employee():
             return {"status": "error", "message": "Employee not found or inactive"}, 404
 
         nucleus_id, employee_name, father_name = employee
-
-        # 4️⃣ Get LATEST wages record
         cursor.execute("""
             SELECT TOP 1 Id, Name, FatherName, Amount, IsPaid, CreatedAt
             FROM WagesUpload 
@@ -307,8 +294,6 @@ def verify_employee():
             }, 404
 
         wage_id, wage_name, wage_father, amount, is_already_paid, created_at = wage_record
-
-        # 5️⃣ If already paid
         if is_already_paid == 1:
             return {
                 "status": "warning", 
@@ -319,8 +304,6 @@ def verify_employee():
                 "amount": amount,
                 "wage_id": wage_id
             }, 200
-
-        # 6️⃣ Update only the latest record for this employee
         cursor.execute("""
             UPDATE WagesUpload
             SET IsPaid = 1
@@ -357,7 +340,7 @@ def stop_camera_endpoint():
         logger.error(f"Error stopping camera: {e}")
         return jsonify({"status": "error", "message": str(e)}), 500
 
-# Cleanup on module shutdown
+
 import atexit
 
 def cleanup_resources():
