@@ -121,7 +121,6 @@
           <table class="table table-bordered" id="dataTable" width="100%">
             <thead class="thead-dark">
               <tr>
-                <th>ID</th>
                 <th>Employee Code</th>
                 <th>Name</th>
                 <th>Father Name</th>
@@ -133,8 +132,7 @@
   {% if upload_data %}
   {% for row in upload_data %}
   <tr id="row-{{ row[0] }}" class="{% if row[5]==1 %}table-success{% endif %}">
-    <td>{{ row[0] }}</td> <!-- Wage ID -->
-    <td>{{ row[1] }}</td> <!-- Employee Code -->
+    <td>{{ row[0] }}</td> 
     <td>{{ row[2] }}</td>
     <td>{{ row[3] }}</td>
     <td>{{ row[4] }}</td>
