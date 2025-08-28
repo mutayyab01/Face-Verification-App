@@ -20,8 +20,8 @@ def get_upload_data() -> List[Dict[str, Any]]:
                 SELECT 
     NucleusId,         
     ContractorId,      
-    Name,              
-    FatherName,        
+LabourName, 
+ContractorName,   
     Amount,            
     CASE WHEN IsPaid = 1 THEN 1 ELSE 0 END AS IsPaid,   -- force into 0/1
     CASE WHEN IsPaid = 1 THEN 'Yes' ELSE 'No' END AS IsPaidText, 

@@ -53,6 +53,30 @@ def wages_upload():
             print(f"❌ ContractorId parse error: {e} for value {value}")
             return None
 
+    def parse_amount(value):
+        """Parse amount removing commas, spaces and converting to float"""
+        if pd.isna(value):
+            return 0.0
+        try:
+            if isinstance(value, str):
+                # Remove commas, spaces, and any other non-numeric characters except decimal point
+                val = value.replace(',', '').replace(' ', '').strip()
+                # Handle cases where amount might have currency symbols
+                import re
+                # Extract only numbers and decimal points
+                val = re.sub(r'[^\d.]', '', val)
+                if val == '':
+                    return 0.0
+                return float(val)
+            elif isinstance(value, (int, float)):
+                return float(value)
+            else:
+                # Try to convert directly
+                return float(str(value).replace(',', '').replace(' ', '').strip())
+        except Exception as e:
+            print(f"❌ Amount parse error: {e} for value '{value}' (type: {type(value)})")
+            return 0.0
+
     if request.method == 'POST':
         file = request.files.get('file')
         unit_id = request.form.get('Unit')
@@ -65,7 +89,9 @@ def wages_upload():
         try:
             df = pd.read_excel(file)
             df.columns = df.columns.str.strip()
-            required_columns = {'NucleusId', 'ContractorId', 'Name', 'FatherName', 'Amount', 'IsPaid'}
+            
+            # Updated required columns to match your Excel format
+            required_columns = {'Labour Code', 'Contractor Code', 'Labour Name', 'Net Payable'}
             if not required_columns.issubset(df.columns):
                 missing = required_columns - set(df.columns)
                 return render_template('finance/wagesUpload.html', message=f"Missing columns: {missing}", status="error")
@@ -80,42 +106,51 @@ def wages_upload():
 
             for index, row in df.iterrows():
                 try:
-                    contractor_id = parse_contractor_id(row['ContractorId'])
-                    print(f"Row {index} - Parsed ContractorId: {contractor_id}")
+                    # Map Excel columns to database columns
+                    nucleus_id = row['Labour Code']  # Labour Code -> NucleusId
+                    contractor_id = parse_contractor_id(row['Contractor Code'])  # Contractor Code -> ContractorId
+                    labour_name = str(row['Labour Name']).strip()  # Labour Name -> Name
+                    contractor_name = str(row.get('Contractor Name', '')).strip()  # For ContractorName field
+                    amount = parse_amount(row['Net Payable'])  # Net Payable -> Amount (properly formatted as number)
+                    
+                    print(f"Row {index} - NucleusId: {nucleus_id}, ContractorId: {contractor_id}, Amount: {amount:.2f}")
 
+                    # Validate ContractorId
                     if contractor_id is not None:
-                        cursor.execute("SELECT Id FROM Contractor WHERE Id = ? AND IsActive = 1", (contractor_id,))
+                        cursor.execute("SELECT ContractorId FROM Contractor WHERE ContractorId = ? AND IsActive = 1", (contractor_id,))
                         if not cursor.fetchone():
                             print(f"⚠ ContractorId {contractor_id} invalid at row {index}, skipping.")
                             skipped_rows += 1
                             continue
 
+                    # Validate NucleusId (Labour Code)
                     try:
-                        nucleus_id = int(row['NucleusId'])
+                        nucleus_id_int = int(nucleus_id)
                     except Exception:
                         print(f"⚠ Invalid NucleusId at row {index}, skipping.")
                         skipped_rows += 1
                         continue
-                    cursor.execute("SELECT Id FROM Employee WHERE NucleusId = ?", (nucleus_id,))
+                    
+                    cursor.execute("SELECT Id FROM Employee WHERE NucleusId = ?", (nucleus_id_int,))
                     if not cursor.fetchone():
-                        print(f"⚠ NucleusId {nucleus_id} not found at row {index}, skipping.")
+                        print(f"⚠ NucleusId {nucleus_id_int} not found at row {index}, skipping.")
                         skipped_rows += 1
                         continue
 
-                    is_paid = 1 if str(row['IsPaid']).strip().upper() == 'TRUE' else 0
-                    is_paid = int(is_paid)
+                    # Default IsPaid to 0 (False) since it's not in your Excel
+                    is_paid = 0
 
                     cursor.execute("""
                         INSERT INTO WagesUpload (
-                            NucleusId, ContractorId, Name, FatherName, Amount, UnitId, IsPaid, CreatedBy, CreatedAt
+                            NucleusId, ContractorId, LabourName, ContractorName, Amount, UnitId, IsPaid, CreatedBy, CreatedAt
                         )
                         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
                     """, (
-                        nucleus_id,
+                        nucleus_id_int,
                         contractor_id,
-                        str(row['Name']).strip(),
-                        str(row['FatherName']).strip(),
-                        float(row['Amount']),
+                        labour_name,
+                        contractor_name,  # Using contractor name as substitute for father name
+                        amount,
                         int(unit_id),
                         is_paid,
                         session['user_id'],
@@ -137,6 +172,7 @@ def wages_upload():
             message = f"Error processing file: {e}"
             status = "error"
 
+    # Rest of your code for displaying upload data...
     upload_data = []
     try:
         conn = DatabaseManager.get_connection()
@@ -146,8 +182,8 @@ def wages_upload():
                 SELECT 
                     NucleusId,
                     ContractorId,
-                    Name,
-                    FatherName,
+                    LabourName,
+                    ContractorName,
                     Amount,
                     CASE WHEN IsPaid = 1 THEN 'Yes' ELSE 'No' END AS IsPaid,
                     UnitId,

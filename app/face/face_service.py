@@ -19,7 +19,7 @@ class FaceMatch:
     is_match: bool
     confidence: float
     distance: float
-    location: Tuple[int, int, int, int]  # top, right, bottom, left
+    location: Tuple[int, int, int, int]  
 
 @dataclass
 class FrameProcessor:
@@ -40,17 +40,16 @@ class FaceRecognitionService:
     def create_face_encoding(self, image_data: bytes) -> np.ndarray:
         """Create face encoding from image data"""
         try:
-            # Decode image
+
             np_img = np.frombuffer(image_data, np.uint8)
             image = cv2.imdecode(np_img, cv2.IMREAD_COLOR)
             
             if image is None:
                 raise InvalidImageError("Could not decode image data")
             
-            # Convert to RGB
+
             rgb_image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
             
-            # Find face encodings
             face_locations = face_recognition.face_locations(rgb_image, model=self.config.MODEL)
             if not face_locations:
                 raise NoFaceFoundError("No face found in the image")
@@ -59,7 +58,6 @@ class FaceRecognitionService:
             if not face_encodings:
                 raise NoFaceFoundError("Could not generate face encoding")
             
-            # Return first encoding (assuming single face per employee image)
             return face_encodings[0]
             
         except Exception as e:
@@ -81,7 +79,6 @@ class FaceRecognitionService:
         """Process frame for face recognition"""
         self._frame_count += 1
         
-        # Get known encoding
         known_encoding = self.encoding_cache.get(employee_id)
         if known_encoding is None:
             raise FaceEncodingError(f"No encoding found for employee {employee_id}")
@@ -92,17 +89,14 @@ class FaceRecognitionService:
         if should_process:
             matches = self._detect_faces(frame, known_encoding)
             
-            # Update recent matches for stability
             current_frame_matches = [match.is_match for match in matches]
             self._recent_matches.extend(current_frame_matches)
             
             if len(self._recent_matches) > self.config.MAX_RECENT_FRAMES:
                 self._recent_matches = self._recent_matches[-self.config.MAX_RECENT_FRAMES:]
         
-        # Draw face rectangles and labels
         processed_frame = self._draw_face_annotations(frame, matches, employee_id)
         
-        # Check verification status
         face_verified = self._is_face_verified()
         
         return FrameProcessor(
@@ -116,16 +110,16 @@ class FaceRecognitionService:
         matches = []
         
         try:
-            # Resize for faster processing
+
             small_frame = cv2.resize(frame, (0, 0), fx=self.config.SCALE_FACTOR, fy=self.config.SCALE_FACTOR)
             rgb_small_frame = cv2.cvtColor(small_frame, cv2.COLOR_BGR2RGB)
             
-            # Find faces
+
             face_locations = face_recognition.face_locations(rgb_small_frame, model=self.config.MODEL)
             face_encodings = face_recognition.face_encodings(rgb_small_frame, face_locations)
             
             for face_encoding, face_location in zip(face_encodings, face_locations):
-                # Compare faces
+
                 face_matches = face_recognition.compare_faces([known_encoding], face_encoding, tolerance=self.config.TOLERANCE)
                 face_distances = face_recognition.face_distance([known_encoding], face_encoding)
                 
@@ -155,25 +149,24 @@ class FaceRecognitionService:
             top, right, bottom, left = match.location
             
             if match.is_match:
-                color = (0, 255, 0)  # Green
+                color = (0, 255, 0)  
                 label = "MATCH"
                 thickness = 3
             else:
-                color = (0, 0, 255)  # Red
+                color = (0, 0, 255) 
                 label = "UNKNOWN"
                 thickness = 2
             
-            # Draw rectangle
+
             cv2.rectangle(annotated_frame, (left, top), (right, bottom), color, thickness)
-            
-            # Draw label with background
+
             text_size = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 0.6, 2)[0]
             cv2.rectangle(annotated_frame, (left, top - text_size[1] - 10), 
                          (left + text_size[0], top), color, -1)
             cv2.putText(annotated_frame, label, (left, top - 5),
                        cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2)
         
-        # Add employee info overlay
+
         self._add_employee_overlay(annotated_frame, employee_id, self._is_face_verified())
         
         return annotated_frame

@@ -13,7 +13,7 @@ from . import face_bp
 
 logger = logging.getLogger(__name__)
 
-# Initialize services
+
 camera_service = CameraService()
 face_service = FaceRecognitionService()
 
@@ -127,7 +127,7 @@ def verify_employeebyCode():
         cursor = conn.cursor()
 
         cursor.execute("""
-            SELECT TOP 1 NucleusId, Name, FatherName, Amount, IsPaid
+            SELECT TOP 1 NucleusId, LabourName, ContractorName, Amount, IsPaid
             FROM WagesUpload
             WHERE NucleusId = ?
             ORDER BY CreatedAt DESC
@@ -273,19 +273,21 @@ def verify_employee():
             FROM Employee 
             WHERE NucleusId = ? AND IsActive = 1
         """, (employee_id,))
-        
+
         employee = cursor.fetchone()
+        print(employee)
         if not employee:
             return {"status": "error", "message": "Employee not found or inactive"}, 404
 
-        nucleus_id, employee_name, father_name = employee
+        nucleus_id, employee_name, contractor_name = employee
+
         cursor.execute("""
-            SELECT TOP 1 Id, Name, FatherName, Amount, IsPaid, CreatedAt
+            SELECT TOP 1 Id, LabourName, ContractorName, Amount, IsPaid, CreatedAt
             FROM WagesUpload 
             WHERE NucleusId = ?
             ORDER BY CreatedAt DESC
         """, (nucleus_id,))
-        
+
         wage_record = cursor.fetchone()
         if not wage_record:
             return {
@@ -293,17 +295,19 @@ def verify_employee():
                 "message": f"No wages record found for Employee NucleusId: {nucleus_id}"
             }, 404
 
-        wage_id, wage_name, wage_father, amount, is_already_paid, created_at = wage_record
+        wage_id, wage_labour_name, wage_contractor_name, amount, is_already_paid, created_at = wage_record
+
         if is_already_paid == 1:
             return {
                 "status": "warning", 
                 "message": "Wages already paid for this employee",
-                "employee_name": employee_name,
-                "father_name": father_name,
+                "ContractorName": contractor_name,
+                "LabourName": employee_name,
                 "nucleus_id": nucleus_id,
                 "amount": amount,
                 "wage_id": wage_id
             }, 200
+
         cursor.execute("""
             UPDATE WagesUpload
             SET IsPaid = 1
@@ -315,7 +319,7 @@ def verify_employee():
             "status": "success", 
             "message": "✅ Face and Employee Code matched! Wages payment confirmed.",
             "employee_name": employee_name,
-            "father_name": father_name,
+            "contractor_name": contractor_name,
             "nucleus_id": nucleus_id,
             "amount": amount,
             "wage_id": wage_id
@@ -327,7 +331,7 @@ def verify_employee():
     finally:
         if 'conn' in locals():
             conn.close()
-
+            
 @face_bp.route('/stop_camera', methods=['POST'])
 @require_auth
 @require_role(['admin', 'cashier'])

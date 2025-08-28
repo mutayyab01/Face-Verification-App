@@ -118,7 +118,7 @@ class WagesModel:
             
             cursor = conn.cursor()
             cursor.execute("""
-                SELECT Id, NucleusId, Name, FatherName, Amount, IsPaid
+                SELECT Id, NucleusId, LabourName, ContractorName, Amount, IsPaid
                 FROM WagesUpload 
                 WHERE NucleusId = ?
             """, (nucleus_id,))
@@ -180,7 +180,7 @@ class WagesModel:
             
             cursor = conn.cursor()
             cursor.execute("""
-                SELECT Id, NucleusId, Name, FatherName, Amount, IsPaid
+                SELECT Id, NucleusId, LabourName, ContractorName, Amount, IsPaid
                 FROM WagesUpload 
                 WHERE IsPaid = 0
                 ORDER BY Name
