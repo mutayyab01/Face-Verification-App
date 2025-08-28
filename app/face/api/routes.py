@@ -70,7 +70,7 @@ def stop_camera_api():
 
 @face_api_bp.route('/cache/clear', methods=['POST'])
 @require_auth
-@require_role(['admin'])
+@require_role(['admin', 'cashier'])
 @handle_face_recognition_errors
 def clear_cache_api():
     """Clear face encoding cache"""
