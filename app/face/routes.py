@@ -38,22 +38,16 @@ def dashboard():
 @require_auth
 @require_role(['admin', 'cashier'])
 def testfaceapp():
-    """
-    Render the face recognition HTML page.
-    """
-    return render_template("FaceRecognition/testface.html")
+    upload_data=get_upload_data()
+    return render_template("FaceRecognition/testface.html",upload_data=upload_data)
 
 
+# ===== Match Face & Update Wages =====
 @face_bp.route('/cashier/matchFace', methods=["POST"])
 @require_auth
 @require_role(['admin', 'cashier'])
 def match_face():
-    """
-    Fetch employee info or compare stored image with live camera image.
-    If live_image is sent → perform face comparison.
-    """
     try:
-        # Parse incoming JSON
         data = request.get_json(force=True)
         neclusid = data.get("neclusid")
         live_image_data = data.get("live_image")  # optional
@@ -61,7 +55,6 @@ def match_face():
         if not neclusid:
             return jsonify({"status": "error", "message": "Employee Code (Neclusid) required"}), 400
 
-        # Fetch employee from DB
         conn = DatabaseManager.get_connection()
         cursor = conn.cursor()
         cursor.execute("""
@@ -75,14 +68,13 @@ def match_face():
             return jsonify({"status": "error", "message": "Employee not found"}), 404
 
         nucleus_id, name, image_bytes = row
-
         if not image_bytes:
             return jsonify({"status": "error", "message": "Employee has no stored face image"}), 404
 
         # Convert DB image to Base64 for frontend
         image_base64 = "data:image/png;base64," + base64.b64encode(image_bytes).decode('utf-8')
 
-        # If no live image sent → just return employee info
+        # If no live image sent → return employee info
         if not live_image_data:
             return jsonify({
                 "status": "success",
@@ -92,15 +84,13 @@ def match_face():
                 "message": "Employee fetched"
             })
 
-        # ✅ Face recognition comparison
-        # DB image → numpy array
+        # ===== Face Recognition =====
         db_image = face_recognition.load_image_file(io.BytesIO(image_bytes))
         db_encodings = face_recognition.face_encodings(db_image)
         if not db_encodings:
             return jsonify({"status": "error", "message": "No face detected in stored employee image"}), 400
         db_encoding = db_encodings[0]
 
-        # Live image → numpy array
         header, encoded = live_image_data.split(",", 1)
         live_image_bytes = base64.b64decode(encoded)
         live_image = face_recognition.load_image_file(io.BytesIO(live_image_bytes))
@@ -109,9 +99,20 @@ def match_face():
             return jsonify({"status": "error", "message": "No face detected in live image"}), 400
         live_encoding = live_encodings[0]
 
-        # Compare faces
         matched = face_recognition.compare_faces([db_encoding], live_encoding, tolerance=0.5)[0]
         message = "Matched ✅" if matched else "Unknown ❌"
+
+        # ===== Update WagesUpload if matched =====
+        if matched:
+            try:
+                cursor.execute("""
+                    UPDATE WagesUpload
+                    SET IsPaid = 1, VerifyType = 'FaceMatch'
+                    WHERE NucleusId = ?
+                """, (nucleus_id,))
+                conn.commit()
+            except Exception as e:
+                logger.error(f"Error updating WagesUpload: {e}")
 
         return jsonify({
             "status": "success",
@@ -128,10 +129,6 @@ def match_face():
     finally:
         if 'conn' in locals():
             conn.close()
-    
-    
-    
-    
     
     
     

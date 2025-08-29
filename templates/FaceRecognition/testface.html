@@ -1,11 +1,12 @@
 {% extends "master.html" %}
 
-{% block title %}Face Detection{% endblock %}
+{% block title %}Face Detection & Wages Upload{% endblock %}
 
 {% block content %}
 <div class="container mt-4">
-  <!-- Card Wrapper -->
-  <div class="card shadow-lg">
+
+  <!-- ===== Face Recognition Card ===== -->
+  <div class="card shadow-lg mb-5">
     <div class="card-header bg-info text-white">
       <h4 class="mb-0">Face Detection</h4>
     </div>
@@ -36,7 +37,7 @@
         </div>
 
         <!-- Live Camera Feed -->
-        <div class="col-md-5 position-relative">
+        <div class="col-md-5 position-relative" style="margin-top:20px;">
           <video id="video" autoplay playsinline class="w-100"
                  style="height:280px; object-fit:cover; border-radius:8px;"></video>
           <h5 id="verificationOverlay"
@@ -60,75 +61,129 @@
 
     </div>
   </div>
+
+  <!-- ===== Wages Upload Grid Card ===== -->
+  <!-- Uploaded Wages Data Grid -->
+    <div class="card mt-4">
+      <div class="card-header">
+        <h6>Uploaded Wages Data</h6>
+      </div>
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table table-bordered" id="dataTable" width="100%">
+            <thead class="thead-dark">
+              <tr>
+                <th>Labour Code</th>
+                <th>Labour Name</th>
+                <th>Contractor Name</th>
+                <th>Amount</th>
+                <th>Paid?</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% if upload_data %}
+              {% for row in upload_data %}
+              <tr id="row-{{ row[0] }}" class="{% if row[5]==1 %}table-success{% endif %}">
+                <td>{{ row[0] }}</td> 
+                <td>{{ row[2] }}</td>
+                <td>{{ row[3] }}</td>
+                <td>{{ row[4] }}</td>
+                <td class="text-center">
+                  <input type="checkbox" id="paid-{{ row[0] }}" class="wage-checkbox" {% if row[5]==1 %}checked{% endif %} disabled>
+                </td>
+              </tr>
+              {% endfor %}
+              {% else %}
+              <tr>
+                <td colspan="5" class="text-center">No uploaded data found.</td>
+              </tr>
+              {% endif %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
 </div>
 
+<!-- ===== Scripts ===== -->
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+
 <script>
-  const video = document.getElementById("video");
-  const canvas = document.getElementById("canvas");
-  const capturedImage = document.getElementById("capturedImage");
-  const fetchEmployeeBtn = document.getElementById("fetchEmployeeBtn");
-  const verifyBtn = document.getElementById("verifyBtn");
-  const employeeImage = document.getElementById("employeeImage");
-  const verificationOverlay = document.getElementById("verificationOverlay");
+const video = document.getElementById("video");
+const canvas = document.getElementById("canvas");
+const capturedImage = document.getElementById("capturedImage");
+const fetchEmployeeBtn = document.getElementById("fetchEmployeeBtn");
+const verifyBtn = document.getElementById("verifyBtn");
+const employeeImage = document.getElementById("employeeImage");
+const verificationOverlay = document.getElementById("verificationOverlay");
 
-  // ✅ Request Camera Access
-  navigator.mediaDevices.getUserMedia({ video: true })
-    .then(stream => { video.srcObject = stream; })
-    .catch(err => { alert("Camera access denied: " + err); });
+// ===== Camera Access =====
+navigator.mediaDevices.getUserMedia({ video: true })
+  .then(stream => { video.srcObject = stream; })
+  .catch(err => { alert("Camera access denied: " + err); });
 
-  // ✅ Fetch Employee Info
-  fetchEmployeeBtn.addEventListener("click", async () => {
-    const employeeCode = document.getElementById("employeeCode").value.trim();
-    if (!employeeCode) return alert("Enter Employee Code");
+// ===== Fetch Employee =====
+fetchEmployeeBtn.addEventListener("click", async () => {
+  const employeeCode = document.getElementById("employeeCode").value.trim();
+  if (!employeeCode) return alert("Enter Employee Code");
 
-    try {
-      const response = await fetch("/face/cashier/matchFace", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ neclusid: employeeCode })
-      });
-      const result = await response.json();
+  try {
+    const response = await fetch("/face/cashier/matchFace", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ neclusid: employeeCode })
+    });
+    const result = await response.json();
 
-      if (result.status === "success") {
-        employeeImage.src = result.employee_image;
-        verifyBtn.classList.remove("d-none");
-        verificationOverlay.style.display = "none";
-        capturedImage.classList.add("d-none");
-      } else {
-        alert("❌ " + result.message);
-      }
-    } catch (err) {
-      alert("⚠️ Request Failed: " + err);
+    if (result.status === "success") {
+      employeeImage.src = result.employee_image;
+      verifyBtn.classList.remove("d-none");
+      verificationOverlay.style.display = "none";
+      capturedImage.classList.add("d-none");
+    } else {
+      alert("❌ " + result.message);
     }
-  });
+  } catch (err) {
+    alert("⚠️ Request Failed: " + err);
+  }
+});
 
-  // ✅ Verify Face
-  verifyBtn.addEventListener("click", async () => {
-    const employeeCode = document.getElementById("employeeCode").value.trim();
-    const context = canvas.getContext("2d");
-    context.drawImage(video, 0, 0, canvas.width, canvas.height);
+// ===== Verify Face =====
+verifyBtn.addEventListener("click", async () => {
+  const employeeCode = document.getElementById("employeeCode").value.trim();
+  const context = canvas.getContext("2d");
+  context.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-    const capturedDataUrl = canvas.toDataURL("image/png");
-    capturedImage.src = capturedDataUrl;
-    capturedImage.classList.remove("d-none");
+  const capturedDataUrl = canvas.toDataURL("image/png");
+  capturedImage.src = capturedDataUrl;
+  capturedImage.classList.remove("d-none");
 
-    try {
-      const response = await fetch("/face/cashier/matchFace", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ neclusid: employeeCode, live_image: capturedDataUrl })
-      });
-      const result = await response.json();
+  try {
+    const response = await fetch("/face/cashier/matchFace", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ neclusid: employeeCode, live_image: capturedDataUrl })
+    });
+    const result = await response.json();
 
-      verificationOverlay.textContent = result.status === "success" ? result.message : "❌ " + result.message;
-      verificationOverlay.style.color = result.message.includes("Matched") ? "lime" : "red";
-      verificationOverlay.style.display = "block";
+    verificationOverlay.textContent = result.status === "success" ? result.message : "❌ " + result.message;
+    verificationOverlay.style.color = result.message.includes("Matched") ? "lime" : "red";
+    verificationOverlay.style.display = "block";
 
-    } catch (err) {
-      verificationOverlay.textContent = "⚠️ Request Failed";
-      verificationOverlay.style.color = "red";
-      verificationOverlay.style.display = "block";
+    if(result.message.includes("Matched")) {
+      // Reload DataTable and highlight
+      const table = $('#wagesTable').DataTable();
+      table.ajax.reload(null, false);
     }
-  });
+
+  } catch (err) {
+    verificationOverlay.textContent = "⚠️ Request Failed";
+    verificationOverlay.style.color = "red";
+    verificationOverlay.style.display = "block";
+  }
+});
 </script>
 {% endblock %}
