@@ -10,12 +10,16 @@ from .face_service import FaceRecognitionService
 from .exceptions import FaceRecognitionError, CameraError, DatabaseError
 from .utils import generate_video_frames, get_upload_data
 from . import face_bp
+import face_recognition
+import base64
+import io
 
 logger = logging.getLogger(__name__)
 
 
 camera_service = CameraService()
 face_service = FaceRecognitionService()
+
 
 @face_bp.route('/cashier/dashboard')
 @require_auth
@@ -30,6 +34,113 @@ def dashboard():
         flash('Error loading dashboard.', 'error')
         return render_template('FaceRecognition/face_dashboard.html')
     
+@face_bp.route('/cashier/testfaceapp')
+@require_auth
+@require_role(['admin', 'cashier'])
+def testfaceapp():
+    """
+    Render the face recognition HTML page.
+    """
+    return render_template("FaceRecognition/testface.html")
+
+
+@face_bp.route('/cashier/matchFace', methods=["POST"])
+@require_auth
+@require_role(['admin', 'cashier'])
+def match_face():
+    """
+    Fetch employee info or compare stored image with live camera image.
+    If live_image is sent → perform face comparison.
+    """
+    try:
+        # Parse incoming JSON
+        data = request.get_json(force=True)
+        neclusid = data.get("neclusid")
+        live_image_data = data.get("live_image")  # optional
+
+        if not neclusid:
+            return jsonify({"status": "error", "message": "Employee Code (Neclusid) required"}), 400
+
+        # Fetch employee from DB
+        conn = DatabaseManager.get_connection()
+        cursor = conn.cursor()
+        cursor.execute("""
+            SELECT TOP 1 NucleusId, Name, Image
+            FROM Employee
+            WHERE NucleusId = ?
+        """, (neclusid,))
+        row = cursor.fetchone()
+
+        if not row:
+            return jsonify({"status": "error", "message": "Employee not found"}), 404
+
+        nucleus_id, name, image_bytes = row
+
+        if not image_bytes:
+            return jsonify({"status": "error", "message": "Employee has no stored face image"}), 404
+
+        # Convert DB image to Base64 for frontend
+        image_base64 = "data:image/png;base64," + base64.b64encode(image_bytes).decode('utf-8')
+
+        # If no live image sent → just return employee info
+        if not live_image_data:
+            return jsonify({
+                "status": "success",
+                "neclusid": nucleus_id,
+                "employee_name": name,
+                "employee_image": image_base64,
+                "message": "Employee fetched"
+            })
+
+        # ✅ Face recognition comparison
+        # DB image → numpy array
+        db_image = face_recognition.load_image_file(io.BytesIO(image_bytes))
+        db_encodings = face_recognition.face_encodings(db_image)
+        if not db_encodings:
+            return jsonify({"status": "error", "message": "No face detected in stored employee image"}), 400
+        db_encoding = db_encodings[0]
+
+        # Live image → numpy array
+        header, encoded = live_image_data.split(",", 1)
+        live_image_bytes = base64.b64decode(encoded)
+        live_image = face_recognition.load_image_file(io.BytesIO(live_image_bytes))
+        live_encodings = face_recognition.face_encodings(live_image)
+        if not live_encodings:
+            return jsonify({"status": "error", "message": "No face detected in live image"}), 400
+        live_encoding = live_encodings[0]
+
+        # Compare faces
+        matched = face_recognition.compare_faces([db_encoding], live_encoding, tolerance=0.5)[0]
+        message = "Matched ✅" if matched else "Unknown ❌"
+
+        return jsonify({
+            "status": "success",
+            "neclusid": nucleus_id,
+            "employee_name": name,
+            "employee_image": image_base64,
+            "message": message
+        })
+
+    except Exception as e:
+        logger.error(f"Error in face matching: {e}")
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+    finally:
+        if 'conn' in locals():
+            conn.close()
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+
 @face_bp.route('/cashier/VerifyByCode')
 @require_auth
 @require_role(['admin', 'cashier'])

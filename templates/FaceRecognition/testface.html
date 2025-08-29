@@ -1,0 +1,134 @@
+{% extends "master.html" %}
+
+{% block title %}Face Recognition{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <h2 class="text-center">🧑‍💼 Employee Face Recognition</h2>
+
+  <!-- Employee Info Card -->
+  <div id="employeeInfo" class="card mt-4 d-none w-50 mx-auto shadow">
+    <div class="card-body text-center">
+      <img id="employeeImage" class="img-thumbnail mb-3" style="max-width:150px;">
+      <h5 id="employeeName" class="card-title"></h5>
+      <p id="employeeCodeLabel" class="card-text text-muted"></p>
+    </div>
+  </div>
+
+  <!-- Employee Code Input -->
+  <div class="mt-3 text-center">
+    <input type="text" id="employeeCode" class="form-control w-50 d-inline" placeholder="Enter Employee Code (Neclusid)">
+    <button id="fetchEmployeeBtn" class="btn btn-success">Fetch Employee</button>
+  </div>
+
+  <!-- Camera Stream with overlay -->
+  <div class="text-center mt-4 position-relative d-inline-block">
+    <video id="video" width="640" height="480" autoplay playsinline
+           style="border:2px solid #333; border-radius:10px;"></video>
+    <h2 id="verificationOverlay"
+        style="position: absolute; top: 50%; left: 50%;
+               transform: translate(-50%, -50%);
+               color: yellow;
+               background: rgba(0,0,0,0.5);
+               padding: 10px 20px;
+               border-radius: 10px;
+               font-weight: bold;
+               display: none;">
+      <!-- Result text will appear here -->
+    </h2>
+  </div>
+
+  <!-- Hidden Canvas for capturing image -->
+  <canvas id="canvas" width="640" height="480" class="d-none"></canvas>
+
+  <!-- Verification Button -->
+  <div class="text-center mt-3">
+    <button id="verifyBtn" class="btn btn-primary d-none">🔍 Verify Face</button>
+  </div>
+
+  <!-- Captured Image Preview -->
+  <div class="text-center mt-3">
+    <img id="capturedImage" class="d-none img-thumbnail" style="max-width:300px;" />
+  </div>
+</div>
+
+<script>
+  const video = document.getElementById("video");
+  const canvas = document.getElementById("canvas");
+  const capturedImage = document.getElementById("capturedImage");
+  const fetchEmployeeBtn = document.getElementById("fetchEmployeeBtn");
+  const verifyBtn = document.getElementById("verifyBtn");
+  const employeeInfo = document.getElementById("employeeInfo");
+  const employeeImage = document.getElementById("employeeImage");
+  const employeeName = document.getElementById("employeeName");
+  const employeeCodeLabel = document.getElementById("employeeCodeLabel");
+  const verificationOverlay = document.getElementById("verificationOverlay");
+
+  // ✅ Request Camera Access
+  navigator.mediaDevices.getUserMedia({ video: true })
+    .then(stream => { video.srcObject = stream; })
+    .catch(err => { alert("Camera access denied: " + err); });
+
+  // ✅ Fetch Employee Info (without live image)
+  fetchEmployeeBtn.addEventListener("click", async () => {
+    const employeeCode = document.getElementById("employeeCode").value.trim();
+    if (!employeeCode) return alert("Enter Employee Code");
+
+    try {
+      const response = await fetch("/face/cashier/matchFace", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ neclusid: employeeCode })
+      });
+      const result = await response.json();
+
+      if (result.status === "success") {
+        employeeImage.src = result.employee_image;
+        employeeName.textContent = result.employee_name;
+        employeeCodeLabel.textContent = "Code: " + result.neclusid;
+        employeeInfo.classList.remove("d-none");
+        verifyBtn.classList.remove("d-none");
+        verificationOverlay.style.display = "none";
+        capturedImage.classList.add("d-none");
+      } else {
+        alert("❌ " + result.message);
+      }
+    } catch (err) {
+      alert("⚠️ Request Failed: " + err);
+    }
+  });
+
+  // ✅ Verify Face with live camera image
+  verifyBtn.addEventListener("click", async () => {
+    const employeeCode = document.getElementById("employeeCode").value.trim();
+    const context = canvas.getContext("2d");
+    context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+    const capturedDataUrl = canvas.toDataURL("image/png");
+    capturedImage.src = capturedDataUrl;
+    capturedImage.classList.remove("d-none");
+
+    try {
+      const response = await fetch("/face/cashier/matchFace", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ neclusid: employeeCode, live_image: capturedDataUrl })
+      });
+      const result = await response.json();
+
+      if (result.status === "success") {
+        verificationOverlay.textContent = result.message;
+        verificationOverlay.style.color = result.message.includes("Matched") ? "lime" : "red";
+      } else {
+        verificationOverlay.textContent = "❌ " + result.message;
+        verificationOverlay.style.color = "red";
+      }
+      verificationOverlay.style.display = "block";
+    } catch (err) {
+      verificationOverlay.textContent = "⚠️ Request Failed";
+      verificationOverlay.style.color = "red";
+      verificationOverlay.style.display = "block";
+    }
+  });
+</script>
+{% endblock %}
