@@ -16,8 +16,8 @@ def dashboard():
     try:
         print("📊 Fetching finance dashboard stats...")
         stats = {
-            'total_employees': DatabaseManager.execute_query("SELECT COUNT(*) FROM Employees", fetch_one=True),
-            'active_employees': DatabaseManager.execute_query("SELECT COUNT(*) FROM Employees WHERE IsActive = 1", fetch_one=True)
+            'total_employees': DatabaseManager.execute_query("SELECT COUNT(*) FROM Employee", fetch_one=True),
+            'active_employees': DatabaseManager.execute_query("SELECT COUNT(*) FROM Employee WHERE IsActive = 1", fetch_one=True)
         }
         stats = {k: v[0] if v else 0 for k, v in stats.items()}
         print("✅ Dashboard stats fetched:", stats)

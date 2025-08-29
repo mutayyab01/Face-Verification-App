@@ -67,7 +67,7 @@
       <h3>Face Detection</h3>
       <div>
         <button id="stopCameraBtn" class="btn btn-warning" style="margin-right: 10px;">Stop Camera</button>
-        <a href="login.html" class="btn btn-secondary">Back</a>
+        <a href="{{ url_for('admin.dashboard' if session.user_type == 'admin' else 'face.dashboard') }}" class="btn btn-secondary">Back</a>
       </div>
     </div>
 
