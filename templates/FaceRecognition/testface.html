@@ -1,54 +1,64 @@
 {% extends "master.html" %}
 
-{% block title %}Face Recognition{% endblock %}
+{% block title %}Face Detection{% endblock %}
 
 {% block content %}
 <div class="container mt-4">
-  <h2 class="text-center">🧑‍💼 Employee Face Recognition</h2>
-
-  <!-- Employee Info Card -->
-  <div id="employeeInfo" class="card mt-4 d-none w-50 mx-auto shadow">
-    <div class="card-body text-center">
-      <img id="employeeImage" class="img-thumbnail mb-3" style="max-width:150px;">
-      <h5 id="employeeName" class="card-title"></h5>
-      <p id="employeeCodeLabel" class="card-text text-muted"></p>
+  <!-- Card Wrapper -->
+  <div class="card shadow-lg">
+    <div class="card-header bg-info text-white">
+      <h4 class="mb-0">Face Detection</h4>
     </div>
-  </div>
+    <div class="card-body">
 
-  <!-- Employee Code Input -->
-  <div class="mt-3 text-center">
-    <input type="text" id="employeeCode" class="form-control w-50 d-inline" placeholder="Enter Employee Code (Neclusid)">
-    <button id="fetchEmployeeBtn" class="btn btn-success">Fetch Employee</button>
-  </div>
+      <!-- Employee Code Input -->
+      <div class="row mb-4 align-items-center">
+        <div class="col-md-4">
+          <label class="fw-bold">Employee Code</label>
+          <input type="text" id="employeeCode" class="form-control" placeholder="Enter Employee Code">
+        </div>
+        <div class="col-md-2 mt-3 mt-md-4">
+          <button id="fetchEmployeeBtn" class="btn btn-info text-white">Identification</button>
+        </div>
+      </div>
 
-  <!-- Camera Stream with overlay -->
-  <div class="text-center mt-4 position-relative d-inline-block">
-    <video id="video" width="640" height="480" autoplay playsinline
-           style="border:2px solid #333; border-radius:10px;"></video>
-    <h2 id="verificationOverlay"
-        style="position: absolute; top: 50%; left: 50%;
-               transform: translate(-50%, -50%);
-               color: yellow;
-               background: rgba(0,0,0,0.5);
-               padding: 10px 20px;
-               border-radius: 10px;
-               font-weight: bold;
-               display: none;">
-      <!-- Result text will appear here -->
-    </h2>
-  </div>
+      <!-- Employee Image + Live Camera Feed -->
+      <div class="row text-center">
+        <!-- Employee Registered Image -->
+        <div class="col-md-5">
+          <img id="employeeImage" class="img-thumbnail w-100"
+               style="height:280px; object-fit:cover; border-radius:8px;">
+        </div>
 
-  <!-- Hidden Canvas for capturing image -->
-  <canvas id="canvas" width="640" height="480" class="d-none"></canvas>
+        <!-- Verify Button in Middle -->
+        <div class="col-md-2 d-flex align-items-center justify-content-center">
+          <button id="verifyBtn" class="btn btn-success btn-lg d-none">Verify</button>
+        </div>
 
-  <!-- Verification Button -->
-  <div class="text-center mt-3">
-    <button id="verifyBtn" class="btn btn-primary d-none">🔍 Verify Face</button>
-  </div>
+        <!-- Live Camera Feed -->
+        <div class="col-md-5 position-relative">
+          <video id="video" autoplay playsinline class="w-100"
+                 style="height:280px; object-fit:cover; border-radius:8px;"></video>
+          <h5 id="verificationOverlay"
+              style="position: absolute; top: 50%; left: 50%;
+                     transform: translate(-50%, -50%);
+                     color: yellow;
+                     background: rgba(0,0,0,0.6);
+                     padding: 8px 15px;
+                     border-radius: 8px;
+                     display: none;">
+          </h5>
+        </div>
+      </div>
 
-  <!-- Captured Image Preview -->
-  <div class="text-center mt-3">
-    <img id="capturedImage" class="d-none img-thumbnail" style="max-width:300px;" />
+      <!-- Hidden Canvas + Captured Image -->
+      <canvas id="canvas" width="640" height="480" class="d-none"></canvas>
+      <div class="text-center mt-3">
+        <img id="capturedImage" class="d-none img-thumbnail"
+             style="width:250px; height:250px; object-fit:cover; border-radius:8px;" />
+      </div>
+
+    </div>
   </div>
 </div>
 
@@ -58,10 +68,7 @@
   const capturedImage = document.getElementById("capturedImage");
   const fetchEmployeeBtn = document.getElementById("fetchEmployeeBtn");
   const verifyBtn = document.getElementById("verifyBtn");
-  const employeeInfo = document.getElementById("employeeInfo");
   const employeeImage = document.getElementById("employeeImage");
-  const employeeName = document.getElementById("employeeName");
-  const employeeCodeLabel = document.getElementById("employeeCodeLabel");
   const verificationOverlay = document.getElementById("verificationOverlay");
 
   // ✅ Request Camera Access
@@ -69,7 +76,7 @@
     .then(stream => { video.srcObject = stream; })
     .catch(err => { alert("Camera access denied: " + err); });
 
-  // ✅ Fetch Employee Info (without live image)
+  // ✅ Fetch Employee Info
   fetchEmployeeBtn.addEventListener("click", async () => {
     const employeeCode = document.getElementById("employeeCode").value.trim();
     if (!employeeCode) return alert("Enter Employee Code");
@@ -84,9 +91,6 @@
 
       if (result.status === "success") {
         employeeImage.src = result.employee_image;
-        employeeName.textContent = result.employee_name;
-        employeeCodeLabel.textContent = "Code: " + result.neclusid;
-        employeeInfo.classList.remove("d-none");
         verifyBtn.classList.remove("d-none");
         verificationOverlay.style.display = "none";
         capturedImage.classList.add("d-none");
@@ -98,7 +102,7 @@
     }
   });
 
-  // ✅ Verify Face with live camera image
+  // ✅ Verify Face
   verifyBtn.addEventListener("click", async () => {
     const employeeCode = document.getElementById("employeeCode").value.trim();
     const context = canvas.getContext("2d");
@@ -116,14 +120,10 @@
       });
       const result = await response.json();
 
-      if (result.status === "success") {
-        verificationOverlay.textContent = result.message;
-        verificationOverlay.style.color = result.message.includes("Matched") ? "lime" : "red";
-      } else {
-        verificationOverlay.textContent = "❌ " + result.message;
-        verificationOverlay.style.color = "red";
-      }
+      verificationOverlay.textContent = result.status === "success" ? result.message : "❌ " + result.message;
+      verificationOverlay.style.color = result.message.includes("Matched") ? "lime" : "red";
       verificationOverlay.style.display = "block";
+
     } catch (err) {
       verificationOverlay.textContent = "⚠️ Request Failed";
       verificationOverlay.style.color = "red";
