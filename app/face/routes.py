@@ -101,75 +101,71 @@ def match_face():
 
         matched = face_recognition.compare_faces([db_encoding], live_encoding, tolerance=0.5)[0]
         message = "Matched ✅" if matched else "Unknown ❌"
-
         # ===== Update WagesUpload if matched =====
-        cursor = conn.cursor()
+        if matched:
+            try:
+                cursor.execute("""
+                    SELECT NucleusId, Name, FatherName 
+                    FROM Employee 
+                    WHERE NucleusId = ? AND IsActive = 1
+                """, (neclusid,))
+                employee = cursor.fetchone()
+                print(employee)
+                if not employee:
+                    return {"status": "error", "message": "Employee not found or inactive"}, 404
 
-        cursor.execute("""
-            SELECT NucleusId, Name, FatherName 
-            FROM Employee 
-            WHERE NucleusId = ? AND IsActive = 1
-        """, (neclusid,))
+                nucleus_id, employee_name, contractor_name = employee
 
-        employee = cursor.fetchone()
-        print(employee)
-        if not employee:
-            return {"status": "error", "message": "Employee not found or inactive"}, 404
+                cursor.execute("""
+                    SELECT TOP 1 Id, LabourName, ContractorName, Amount, IsPaid, CreatedAt
+                    FROM WagesUpload 
+                    WHERE NucleusId = ?
+                    ORDER BY CreatedAt DESC
+                """, (nucleus_id,))
+                wage_record = cursor.fetchone()
+                if not wage_record:
+                    return {
+                        "status": "error",
+                        "message": f"No wages record found for Employee NucleusId: {nucleus_id}"
+                    }, 404
 
-        nucleus_id, employee_name, contractor_name = employee
+                wage_id, wage_labour_name, wage_contractor_name, amount, is_already_paid, created_at = wage_record
 
-        cursor.execute("""
-            SELECT TOP 1 Id, LabourName, ContractorName, Amount, IsPaid, CreatedAt
-            FROM WagesUpload 
-            WHERE NucleusId = ?
-            ORDER BY CreatedAt DESC
-        """, (nucleus_id,))
+                if is_already_paid == 1:
+                    return {
+                        "status": "warning",
+                        "message": "Wages already paid for this employee",
+                        "ContractorName": contractor_name,
+                        "LabourName": employee_name,
+                        "nucleus_id": nucleus_id,
+                        "amount": amount,
+                        "wage_id": wage_id
+                    }, 200
 
-        wage_record = cursor.fetchone()
-        if not wage_record:
-            return {
-                "status": "error", 
-                "message": f"No wages record found for Employee NucleusId: {nucleus_id}"
-            }, 404
+                cursor.execute("""
+                    UPDATE WagesUpload
+                    SET IsPaid = 1
+                    WHERE Id = ?
+                """, (wage_id,))
+                conn.commit()
 
-        wage_id, wage_labour_name, wage_contractor_name, amount, is_already_paid, created_at = wage_record
-
-        if is_already_paid == 1:
-            return {
-                "status": "warning", 
-                "message": "Wages already paid for this employee",
-                "ContractorName": contractor_name,
-                "LabourName": employee_name,
-                "nucleus_id": nucleus_id,
-                "amount": amount,
-                "wage_id": wage_id
-            }, 200
-
-        cursor.execute("""
-            UPDATE WagesUpload
-            SET IsPaid = 1
-            WHERE Id = ?
-        """, (wage_id,))
-        conn.commit()
-
-        return {
-            "status": "success", 
-            "message": "✅ Face and Employee Code matched! Wages payment confirmed.",
-            "employee_name": employee_name,
-            "contractor_name": contractor_name,
-            "nucleus_id": nucleus_id,
-            "amount": amount,
-            "wage_id": wage_id
-        }, 200
-
-    except Exception as e:
-        logger.error(f"Error in verify_employee: {e}")
-        return {"status": "error", "message": "Verification failed"}, 500
+                return {
+                    "status": "success",
+                    "message": "✅ Face and Employee Code matched! Wages payment confirmed.",
+                    "employee_name": employee_name,
+                    "contractor_name": contractor_name,
+                    "nucleus_id": nucleus_id,
+                    "amount": amount,
+                    "wage_id": wage_id
+                }, 200
+            except Exception as e:
+                logger.error(f"Error in verify_employee: {e}")
+                return {"status": "error", "message": "Verification failed"}, 500
+        else:
+            return {"status": "error", "message": "Face did not match"}, 400
     finally:
         if 'conn' in locals():
             conn.close()
-    
-    
     
     
     
