@@ -227,21 +227,36 @@ def MatchbyCode():
         return render_template('FaceRecognition/VerifyByCode.html', upload_data=upload_data)
     
     try:
+        # Fetch employee face
         employee = EmployeeFaceModel.get_by_id(employee_id)
         if not employee or not employee.Image:
             flash("Employee not found or no image available.", "error")
             camera_service.stop()
             return render_template('FaceRecognition/VerifyByCode.html', upload_data=upload_data)
         
+        # Load face encoding
         face_service.load_employee_encoding(employee_id, employee.Image)
         
+        # Convert image to base64
         import base64
         image_base64 = base64.b64encode(employee.Image).decode('utf-8')
         
+        # Fetch amount from WagesUpload
+        conn = DatabaseManager.get_connection()
+        cursor = conn.cursor()
+        cursor.execute("""
+            SELECT TOP 1 Amount,LabourName
+            FROM WagesUpload
+            WHERE NucleusId = ?
+            ORDER BY CreatedAt DESC
+        """, (employee_id,))
+        row = cursor.fetchone()
+        
         return render_template('FaceRecognition/VerifyByCode.html',
-                             employee_id=employee_id,
-                             image_base64=image_base64,
-                             upload_data=upload_data)
+                               employee_id=employee_id,
+                               image_base64=image_base64,
+                               employeObject = row,
+                               upload_data=upload_data)
                              
     except FaceRecognitionError as e:
         logger.error(f"Face recognition error: {e}")
@@ -498,5 +513,4 @@ def cleanup_resources():
 
 atexit.register(cleanup_resources)
 
-
-
+    

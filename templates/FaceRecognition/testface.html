@@ -21,6 +21,18 @@
         <div class="col-md-2 mt-3 mt-md-4">
           <button id="fetchEmployeeBtn" class="btn btn-info text-white">Identification</button>
         </div>
+         {% if employeObject %}
+              <span
+                ><strong style="color: rgb(68, 73, 68)">Employee Name:</strong>
+                {{ employeObject.LabourName }}</span
+              ><br />
+              <span
+                ><strong style="color: rgb(108, 116, 108)"
+                  >Employee Amount:</strong
+                >
+                {{ employeObject.Amount }}</span
+              >
+              {% endif %}
       </div>
 
       <!-- Employee Image + Live Camera Feed -->

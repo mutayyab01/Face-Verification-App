@@ -1,13 +1,15 @@
-{% extends "master.html" %}
-{% block title %}Face Recognition{% endblock %}
-
-{% block content %}
+{% extends "master.html" %} {% block title %}Face Recognition{% endblock %} {%
+block content %}
 <main>
   <div class="container">
     <div class="d-flex justify-content-between align-items-center mb-4">
       <h3>Verify Employee by Code</h3>
-      <div>  
-        <a href="{{ url_for('admin.dashboard' if session.user_type == 'admin' else 'face.dashboard') }}" class="btn btn-secondary">Back</a>
+      <div>
+        <a
+          href="{{ url_for('admin.dashboard' if session.user_type == 'admin' else 'face.dashboard') }}"
+          class="btn btn-secondary"
+          >Back</a
+        >
       </div>
     </div>
 
@@ -21,11 +23,33 @@
           <div class="row mb-4">
             <div class="col-md-6">
               <label for="employee_id">Employee Code</label>
-              <div class="d-flex align-items-center" style="gap: 10px;">
-                <input type="number" name="employee_id" id="employee_id" class="form-control" required
-                  placeholder="Enter Code" value="{{ employee_id if employee_id else '' }}">
-                <button type="submit" class="btn btn-info text-white">Identification</button>
+              <div class="d-flex align-items-center" style="gap: 10px">
+                <input
+                  type="number"
+                  name="employee_id"
+                  id="employee_id"
+                  class="form-control"
+                  required
+                  placeholder="Enter Code"
+                  value="{{ employee_id if employee_id else '' }}"
+                />
+
+                <button type="submit" class="btn btn-info text-white">
+                  Identification
+                </button>
               </div>
+              {% if employeObject %}
+              <span
+                ><strong style="color: rgb(68, 73, 68)">Employee Name:</strong>
+                {{ employeObject.LabourName }}</span
+              ><br />
+              <span
+                ><strong style="color: rgb(108, 116, 108)"
+                  >Employee Amount:</strong
+                >
+                {{ employeObject.Amount }}</span
+              >
+              {% endif %}
             </div>
           </div>
         </form>
@@ -35,15 +59,26 @@
           <div class="col-md-5">
             {% if image_base64 %}
             <p><strong>Employee Registered</strong></p>
-            <img src="data:image/jpeg;base64,{{ image_base64 }}" alt="Employee Image" class="img-thumbnail shadow"
-              style="width: 400px; height: 300px;">
+
+            <img
+              src="data:image/jpeg;base64,{{ image_base64 }}"
+              alt="Employee Image"
+              class="img-thumbnail shadow"
+              style="width: 400px; height: 300px"
+            />
             {% else %}
             <p>No image found.</p>
             {% endif %}
           </div>
 
-          <div class="col-md-2 d-flex justify-content-center align-items-center">
-            <button type="button" id="verifyBtn" class="btn btn-success btn-lg shadow">
+          <div
+            class="col-md-2 d-flex justify-content-center align-items-center"
+          >
+            <button
+              type="button"
+              id="verifyBtn"
+              class="btn btn-success btn-lg shadow"
+            >
               <i class="bi bi-check-circle"></i> Verify
             </button>
           </div>
@@ -62,33 +97,38 @@
           <table class="table table-bordered" id="dataTable" width="100%">
             <thead class="thead-dark">
               <tr>
-                    <th>Labour Code</th>
+                <th>Labour Code</th>
                 <th>Labour Name</th>
                 <th>Contractor Name</th>
                 <th>Amount</th>
                 <th>Paid?</th>
               </tr>
             </thead>
-<tbody>
-  {% if upload_data %}
-  {% for row in upload_data %}
-  <tr id="row-{{ row[0] }}" class="{% if row[5] == 1 %}table-success{% endif %}">
-    <td>{{ row[0] }}</td>   <!-- NucleusId -->
-    <td>{{ row[2] }}</td>   <!-- Name -->
-    <td>{{ row[3] }}</td>   <!-- FatherName -->
-    <td>{{ row[4] }}</td>   <!-- Amount -->
-    <td class="text-center">
-      <input type="checkbox" id="paid-{{ row[0] }}" {% if row[5] == 1 %}checked{% endif %} disabled>
-    </td>
-  </tr>
-  {% endfor %}
-  {% else %}
-  <tr>
-    <td colspan="6" class="text-center">No uploaded data found.</td>
-  </tr>
-  {% endif %}
-</tbody>
-
+            <tbody>
+              {% if upload_data %} {% for row in upload_data %}
+              <tr
+                id="row-{{ row[0] }}"
+                class="{% if row[5] == 1 %}table-success{% endif %}"
+              >
+                <td>{{ row[0] }}</td>
+                <!-- NucleusId -->
+                <td>{{ row[2] }}</td>
+                <!-- Name -->
+                <td>{{ row[3] }}</td>
+                <!-- FatherName -->
+                <td>{{ row[4] }}</td>
+                <!-- Amount -->
+                <td class="text-center">
+                  <input type="checkbox" id="paid-{{ row[0] }}" {% if row[5] ==
+                  1 %}checked{% endif %} disabled>
+                </td>
+              </tr>
+              {% endfor %} {% else %}
+              <tr>
+                <td colspan="6" class="text-center">No uploaded data found.</td>
+              </tr>
+              {% endif %}
+            </tbody>
           </table>
         </div>
       </div>
@@ -96,81 +136,91 @@
   </div>
 
   <!-- Scripts -->
-  <link href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css" rel="stylesheet">
+  <link
+    href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css"
+    rel="stylesheet"
+  />
   <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
   <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
   <script>
     $(document).ready(function () {
-      $('#dataTable').DataTable();
+      $("#dataTable").DataTable();
 
-      $('#verifyBtn').click(function (e) {
+      $("#verifyBtn").click(function (e) {
         e.preventDefault();
 
         // Always take Employee ID from input field
-        const employeeId = $('#employee_id').val().trim();
+        const employeeId = $("#employee_id").val().trim();
         console.log("Sending employee_id:", employeeId);
 
         if (!employeeId) {
-          Swal.fire({ icon: 'error', title: 'Error', text: 'Please enter Employee ID' });
+          Swal.fire({
+            icon: "error",
+            title: "Error",
+            text: "Please enter Employee ID",
+          });
           return;
         }
 
         const $btn = $(this);
         const originalText = $btn.html();
-        $btn.html('<span class="spinner-border spinner-border-sm"></span> Verifying...')
-            .prop('disabled', true);
+        $btn
+          .html(
+            '<span class="spinner-border spinner-border-sm"></span> Verifying...'
+          )
+          .prop("disabled", true);
 
         $.ajax({
           url: '{{ url_for("face.verify_employeebyCode") }}',
-          method: 'POST',
-          contentType: 'application/json',
+          method: "POST",
+          contentType: "application/json",
           data: JSON.stringify({ employee_id: employeeId }),
           success: function (response) {
             console.log("Server response:", response);
 
-            if (response.status === 'success') {
-  Swal.fire({
-    icon: 'success',
-    title: '✅ Verification Successful!',
-    html: `
+            if (response.status === "success") {
+              Swal.fire({
+                icon: "success",
+                title: "✅ Verification Successful!",
+                html: `
       <strong>Employee:</strong> ${response.employee_name}<br>
       <strong>Father:</strong> ${response.father_name}<br>
       <strong>Nucleus ID:</strong> ${response.nucleus_id}<br>
       <strong>Amount:</strong> ${response.amount}<br>
       <span style="color:green;font-weight:bold;">Wages payment confirmed!</span>
-    `
-  });
+    `,
+              });
 
-  $(`#row-${response.nucleus_id}`).addClass('table-success');
-  $(`#paid-${response.nucleus_id}`).prop('checked', true);
-} else if (response.status === 'warning') {
+              $(`#row-${response.nucleus_id}`).addClass("table-success");
+              $(`#paid-${response.nucleus_id}`).prop("checked", true);
+            } else if (response.status === "warning") {
               Swal.fire({
-                icon: 'warning',
-                title: '⚠️ Already Paid',
+                icon: "warning",
+                title: "⚠️ Already Paid",
                 html: `
                   ${response.message}<br>
                   <strong>Employee:</strong> ${response.employee_name}<br>
                   <strong>Amount:</strong> ${response.amount}
-                `
+                `,
               });
-
             } else {
               Swal.fire({
-                icon: 'error',
-                title: '❌ Verification Failed',
-                text: response.message
+                icon: "error",
+                title: "❌ Verification Failed",
+                text: response.message,
               });
             }
           },
           error: function (xhr) {
-            let errorMessage = xhr.responseJSON?.message || 'Verification failed';
-            Swal.fire({ icon: 'error', title: '❌ Error', text: errorMessage });
+            let errorMessage =
+              xhr.responseJSON?.message || "Verification failed";
+            Swal.fire({ icon: "error", title: "❌ Error", text: errorMessage });
           },
           complete: function () {
-            $btn.html(originalText).prop('disabled', false);
-          }
+            $btn.html(originalText).prop("disabled", false);
+          },
         });
       });
     });
