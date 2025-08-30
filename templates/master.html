@@ -20,7 +20,7 @@
   <link href="{{ url_for('static',filename='css/select2.min.css') }}" rel="stylesheet" />
   <link href="{{ url_for('static',filename='css/select2-bootstrap4.css') }}" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   {% block extra_css %}{% endblock %}
 </head>
 
@@ -123,20 +123,13 @@
         <div id="collapseEmployeeFace" class="collapse" aria-labelledby="headingEmployeeDetector"
           data-parent="#accordionSidebar">
           <div class="bg-white py-2 collapse-inner rounded">
-            <h6 class="collapse-header">Labour Face Operations:</h6>
-            <a class="collapse-item" href="{{ url_for('face.MatchEmpFace') }}">Verify By Labour Face</a>
+            <a class="collapse-item" href="{{ url_for('face.RenderFacePage') }}">Verify By Labour Face</a>
           </div>
         </div>
         <div id="collapseEmployeeFace" class="collapse" aria-labelledby="headingEmployeeDetector"
           data-parent="#accordionSidebar">
           <div class="bg-white py-2 collapse-inner rounded">
             <a class="collapse-item" href="{{ url_for('face.VerifyByCode') }}">Verify By Labour Code</a>
-          </div>
-        </div>
-        <div id="collapseEmployeeFace" class="collapse" aria-labelledby="headingEmployeeDetector"
-          data-parent="#accordionSidebar">
-          <div class="bg-white py-2 collapse-inner rounded">
-            <a class="collapse-item" href="{{ url_for('face.testfaceapp') }}">test Face App</a>
           </div>
         </div>
       </li>
@@ -182,9 +175,9 @@
       <!-- Divider -->
       <hr class="sidebar-divider d-none d-md-block" />
 
-    <div class="text-center d-none d-md-inline">
-      <button id="sidebarToggle" class="rounded-circle border-0" title="Toggle Sidebar"></button>
-    </div>
+      <div class="text-center d-none d-md-inline">
+        <button id="sidebarToggle" class="rounded-circle border-0" title="Toggle Sidebar"></button>
+      </div>
     </ul>
     <!-- End of Sidebar -->
 
@@ -296,7 +289,8 @@
                 </a>
                 <a class="dropdown-item d-flex align-items-center" href="#">
                   <div class="dropdown-list-image mr-3">
-                    <img class="rounded-circle" src="{{ url_for('static',filename='img/undraw_profile_2.svg') }}" alt="..." />
+                    <img class="rounded-circle" src="{{ url_for('static',filename='img/undraw_profile_2.svg') }}"
+                      alt="..." />
                     <div class="status-indicator"></div>
                   </div>
                   <div>
@@ -309,7 +303,8 @@
                 </a>
                 <a class="dropdown-item d-flex align-items-center" href="#">
                   <div class="dropdown-list-image mr-3">
-                    <img class="rounded-circle" src="{{ url_for('static',filename='img/undraw_profile_3.svg') }}" alt="..." />
+                    <img class="rounded-circle" src="{{ url_for('static',filename='img/undraw_profile_3.svg') }}"
+                      alt="..." />
                     <div class="status-indicator bg-warning"></div>
                   </div>
                   <div>
@@ -615,8 +610,8 @@
     });
 
 
-   //Side bar button code
-  document.addEventListener('DOMContentLoaded', function () {
+    //Side bar button code
+    document.addEventListener('DOMContentLoaded', function () {
       const sidebarToggle = document.getElementById('sidebarToggle');
       const sidebarToggleTop = document.getElementById('sidebarToggleTop');
       const sidebar = document.getElementById('accordionSidebar');

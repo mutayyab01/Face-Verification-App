@@ -1,0 +1,266 @@
+{% extends "master.html" %}
+{% block title %}Face Detection & Wages Upload{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+
+  <!-- ===== Face Recognition Card ===== -->
+  <div class="card shadow-lg mb-5">
+    <div class="card-header bg-info text-white">
+      <h4 class="mb-0">Face Detection</h4>
+    </div>
+    <div class="card-body">
+
+      <!-- Employee Code Input -->
+      <div class="row mb-4 align-items-center">
+        <div class="col-md-4">
+          <label class="fw-bold">Employee Code</label>
+          <input type="text" id="employeeCode" class="form-control" placeholder="Enter Employee Code">
+        </div>
+        <div class="col-md-2 mt-3 mt-md-4">
+          <button id="fetchEmployeeBtn" class="btn btn-info text-white">Identification</button>
+          <div id="fetchLoader" class="spinner-border text-info mt-2" role="status" style="display:none; width:20px; height:20px;">
+            <span class="visually-hidden">Loading...</span>
+          </div>
+        </div>
+      </div>
+      <span>
+        <strong style="color: rgb(68, 73, 68); display: none;" id="employeeNameLabel">Employee Name:</strong>
+      </span>
+      <br id="linebreak" style="display:none;"> <!-- Line break -->
+      <span>
+        <strong style="color: rgb(108, 116, 108); display: none;" id="employeeAmountLabel">Employee Amount:</strong>
+      </span>
+
+      <!-- Employee Image + Live Camera Feed -->
+      <div class="row text-center">
+        <!-- Employee Registered Image -->
+        <div class="col-md-5">
+          <img id="employeeImage" class="img-thumbnail w-100"
+            style="height:280px; object-fit:cover; border-radius:8px; ">
+        </div>
+
+        <!-- Verify Button in Middle -->
+        <div class="col-md-2 d-flex align-items-center justify-content-center flex-column">
+          <button id="verifyBtn" class="btn btn-success btn-lg d-none">Verify</button>
+          <div id="verifyLoader" class="spinner-border text-success mt-2" role="status" style="display:none; width:25px; height:25px;">
+            <span class="visually-hidden">Verifying...</span>
+          </div>
+        </div>
+
+        <!-- ===== Live Camera Feed with Loader ===== -->
+        <div class="col-md-5 position-relative" style="margin-top:20px;">
+          <div id="videoLoader" style="position:absolute; top:50%; left:50%;
+       transform:translate(-50%,-50%); background:rgba(0,0,0,0.6);
+       color:white; padding:10px 20px; border-radius:8px; font-weight:bold;">
+            <div class="spinner-border spinner-border-sm text-light me-2"></div>
+            Loading Camera...
+          </div>
+          <video id="video" autoplay playsinline class="w-100"
+            style="height:280px; object-fit:cover; border-radius:8px;"></video>
+          <h5 id="verificationOverlay" style="position: absolute; top: 50%; left: 50%;
+              transform: translate(-50%, -50%);
+              color: yellow;
+              background: rgba(0,0,0,0.6);
+              padding: 8px 15px;
+              border-radius: 8px;
+              display: none;">
+          </h5>
+        </div>
+      </div>
+
+      <!-- Hidden Canvas + Captured Image -->
+      <canvas id="canvas" width="640" height="480" class="d-none"></canvas>
+      <div class="text-center mt-3">
+        <img id="capturedImage" class="d-none img-thumbnail"
+          style="width:250px; height:250px; object-fit:cover; border-radius:8px;display: none;" />
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ===== Wages Upload Grid Card ===== -->
+  <div class="card mt-4">
+    <div class="card-header">
+      <h6>Uploaded Wages Data</h6>
+    </div>
+    <div class="card-body">
+      <div class="table-responsive">
+        <table class="table table-bordered" id="example" width="100%">
+          <thead class="thead-dark">
+            <tr>
+              <th>Labour Code</th>
+              <th>Labour Name</th>
+              <th>Contractor Name</th>
+              <th>Amount</th>
+              <th>Paid?</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% if upload_data %}
+            {% for row in upload_data %}
+            <tr id="row-{{ row[0] }}" class="{% if row[5]==1 %}table-success{% endif %}">
+              <td>{{ row[0] }}</td>
+              <td>{{ row[2] }}</td>
+              <td>{{ row[3] }}</td>
+              <td>{{ row[4] }}</td>
+              <td class="text-center">
+                <input type="checkbox" id="paid-{{ row[0] }}" class="wage-checkbox" {% if row[5]==1 %}checked{% endif %}
+                  disabled>
+              </td>
+            </tr>
+            {% endfor %}
+            {% else %}
+            <tr>
+              <td colspan="5" class="text-center">No uploaded data found.</td>
+            </tr>
+            {% endif %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ===== Scripts ===== -->
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+<script>
+  const video = document.getElementById("video");
+  const canvas = document.getElementById("canvas");
+  const capturedImage = document.getElementById("capturedImage");
+  const fetchEmployeeBtn = document.getElementById("fetchEmployeeBtn");
+  const fetchLoader = document.getElementById("fetchLoader");
+  const employeeNameLabel = document.getElementById("employeeNameLabel");
+  const employeeAmountLabel = document.getElementById("employeeAmountLabel");
+  const linebreak = document.getElementById("linebreak");
+  const verifyBtn = document.getElementById("verifyBtn");
+  const verifyLoader = document.getElementById("verifyLoader");
+  const employeeImage = document.getElementById("employeeImage");
+  const verificationOverlay = document.getElementById("verificationOverlay");
+
+  // ===== Camera Access with Loader =====
+  navigator.mediaDevices.getUserMedia({ video: true })
+    .then(stream => {
+      video.srcObject = stream;
+      document.getElementById("videoLoader").style.display = "none"; // hide loader
+    })
+    .catch(err => {
+      document.getElementById("videoLoader").innerText = "Camera access denied!";
+    });
+
+  // ===== Fetch Employee =====
+fetchEmployeeBtn.addEventListener("click", async () => {
+  // 🔒 Prevent multiple clicks
+  if (fetchEmployeeBtn.disabled) return;
+  fetchEmployeeBtn.disabled = true; // disable immediately
+  fetchLoader.style.display = "inline-block";
+
+  const employeeCode = document.getElementById("employeeCode").value.trim();
+  if (!employeeCode) {
+    alert("Enter Employee Code");
+    fetchEmployeeBtn.disabled = false; // re-enable if invalid input
+    fetchLoader.style.display = "none";
+    return;
+  }
+
+  try {
+    const response = await fetch("GetEmployeeByIdOnFacePage", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ neclusid: employeeCode })
+    });
+
+    const result = await response.json();
+    console.log(result);
+
+    if (result.status === "success") {
+      employeeImage.src = result.employee_image;
+      employeeNameLabel.innerHTML = "Employee Name: " + result.employee_name;
+      employeeAmountLabel.innerHTML = "Employee Amount: " + result.employee_amount;
+      linebreak.innerHTML = "<br>";
+      linebreak.style.display = "inline-block";
+
+      employeeNameLabel.style.display = "inline-block";
+      employeeAmountLabel.style.display = "inline-block";
+      verifyBtn.classList.remove("d-none");
+      verificationOverlay.style.display = "none";
+      capturedImage.classList.add("d-none");
+    } else {
+      alert("❌ " + result.message);
+    }
+
+  } catch (err) {
+    alert("⚠️ Request Failed: " + err);
+  } finally {
+    fetchLoader.style.display = "none";
+
+    // 🕒 Auto clear after 10 seconds and re-enable button
+    setTimeout(() => {
+      fetchEmployeeBtn.disabled = false; 
+    }, 1000);
+  }
+});
+
+
+// ===== Verify Face =====
+verifyBtn.addEventListener("click", async () => {
+  // 🔒 Prevent multiple clicks
+  if (verifyBtn.disabled) return;
+  verifyBtn.disabled = true; // disable immediately
+  verifyLoader.style.display = "block";
+
+  const employeeCode = document.getElementById("employeeCode").value.trim();
+  const context = canvas.getContext("2d");
+  context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+  const capturedDataUrl = canvas.toDataURL("image/png");
+  capturedImage.src = capturedDataUrl;
+  capturedImage.classList.remove("d-none");
+
+  try {
+    const response = await fetch("VerifyEmployeeOnFacePage", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ neclusid: employeeCode, live_image: capturedDataUrl })
+    });
+
+    const result = await response.json();
+
+    verificationOverlay.textContent = result.status === "success" ? result.message : "❌ " + result.message;
+    verificationOverlay.style.color = result.message.includes("Matched") ? "lime" : "red";
+    verificationOverlay.style.display = "block";
+    console.log(result);
+
+    if (result.status==="success") {
+      
+    }
+
+    // 🕒 Auto clear after 10 seconds
+    setTimeout(() => {
+      verificationOverlay.style.display = "none";
+      capturedImage.classList.add("d-none");
+    }, 10000);
+
+  } catch (err) {
+    verificationOverlay.textContent = "⚠️ Request Failed";
+    verificationOverlay.style.color = "red";
+    verificationOverlay.style.display = "block";
+
+    setTimeout(() => {
+      verificationOverlay.style.display = "none";
+      capturedImage.classList.add("d-none");
+    }, 5000);
+  } finally {
+    verifyLoader.style.display = "none";
+    // 🔓 Re-enable after 2 seconds (to avoid spamming)
+    setTimeout(() => {
+      verifyBtn.disabled = false;
+    }, 1000);
+  }
+});
+
+
+</script>
+{% endblock %}

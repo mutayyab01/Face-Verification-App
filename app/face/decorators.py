@@ -20,21 +20,21 @@ def handle_face_recognition_errors(f):
                 return jsonify({"status": "error", "message": str(e)}), 400
             else:
                 flash(str(e), "error")
-                return render_template('FaceRecognition/face.html')
+                return render_template('FaceRecognition/VerifyByFace.html')
         except FaceRecognitionError as e:
             logger.error(f"Face recognition error in {f.__name__}: {e}")
             if request.is_json:
                 return jsonify({"status": "error", "message": str(e)}), 500
             else:
                 flash("Face recognition error occurred", "error")
-                return render_template('FaceRecognition/face.html')
+                return render_template('FaceRecognition/VerifyByFace.html')
         except Exception as e:
             logger.error(f"Unexpected error in {f.__name__}: {e}")
             if request.is_json:
                 return jsonify({"status": "error", "message": "Internal server error"}), 500
             else:
                 flash("An unexpected error occurred", "error")
-                return render_template('FaceRecognition/face.html')
+                return render_template('FaceRecognition/VerifyByFace.html')
     
     return decorated_function
 
@@ -62,7 +62,7 @@ def validate_employee_id(f):
                     return jsonify({"status": "error", "message": str(e)}), 400
                 else:
                     flash(str(e), "error")
-                    return render_template('FaceRecognition/face.html')
+                    return render_template('FaceRecognition/VerifyByFace.html')
         
         return f(*args, **kwargs)
     

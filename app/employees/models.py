@@ -1,3 +1,4 @@
+from sqlite3 import DatabaseError
 from app.database import DatabaseManager
 from datetime import datetime
 import logging
@@ -117,5 +118,32 @@ class EmployeeModel:
             "DELETE FROM Employee WHERE Id = ?",
             (employee_id,)
         )
+
+    @staticmethod
+    def getNameandAmount(employeeID):
+        try:
+            conn = DatabaseManager.get_connection()
+            if not conn:
+                raise DatabaseError("Database connection failed")
+
+            cursor = conn.cursor()
+            cursor.execute("""
+                SELECT LabourName, Amount
+                FROM Employee
+                WHERE Id = ?
+            """, (employeeID,))
+
+            results = cursor.fetchone()
+            if not results:
+                return None
+
+            return results
+
+        except Exception as e:
+            logger.error(f"Error fetching LabourName and Amount: {e}")
+            raise DatabaseError(f"Failed to fetch LabourName and Amount: {e}")
+        finally:
+            if 'conn' in locals():
+                conn.close()
 
 
