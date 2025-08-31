@@ -103,29 +103,68 @@ def match_face():
         message = "Matched ✅" if matched else "Unknown ❌"
 
         # ===== Update WagesUpload if matched =====
-        if matched:
-            try:
-                cursor.execute("""
-                    UPDATE WagesUpload
-                    SET IsPaid = 1, VerifyType = 'FaceMatch'
-                    WHERE NucleusId = ?
-                """, (nucleus_id,))
-                conn.commit()
-            except Exception as e:
-                logger.error(f"Error updating WagesUpload: {e}")
+        cursor = conn.cursor()
 
-        return jsonify({
-            "status": "success",
-            "neclusid": nucleus_id,
-            "employee_name": name,
-            "employee_image": image_base64,
-            "message": message
-        })
+        cursor.execute("""
+            SELECT NucleusId, Name, FatherName 
+            FROM Employee 
+            WHERE NucleusId = ? AND IsActive = 1
+        """, (neclusid,))
+
+        employee = cursor.fetchone()
+        print(employee)
+        if not employee:
+            return {"status": "error", "message": "Employee not found or inactive"}, 404
+
+        nucleus_id, employee_name, contractor_name = employee
+
+        cursor.execute("""
+            SELECT TOP 1 Id, LabourName, ContractorName, Amount, IsPaid, CreatedAt
+            FROM WagesUpload 
+            WHERE NucleusId = ?
+            ORDER BY CreatedAt DESC
+        """, (nucleus_id,))
+
+        wage_record = cursor.fetchone()
+        if not wage_record:
+            return {
+                "status": "error", 
+                "message": f"No wages record found for Employee NucleusId: {nucleus_id}"
+            }, 404
+
+        wage_id, wage_labour_name, wage_contractor_name, amount, is_already_paid, created_at = wage_record
+
+        if is_already_paid == 1:
+            return {
+                "status": "warning", 
+                "message": "Wages already paid for this employee",
+                "ContractorName": contractor_name,
+                "LabourName": employee_name,
+                "nucleus_id": nucleus_id,
+                "amount": amount,
+                "wage_id": wage_id
+            }, 200
+
+        cursor.execute("""
+            UPDATE WagesUpload
+            SET IsPaid = 1
+            WHERE Id = ?
+        """, (wage_id,))
+        conn.commit()
+
+        return {
+            "status": "success", 
+            "message": "✅ Face and Employee Code matched! Wages payment confirmed.",
+            "employee_name": employee_name,
+            "contractor_name": contractor_name,
+            "nucleus_id": nucleus_id,
+            "amount": amount,
+            "wage_id": wage_id
+        }, 200
 
     except Exception as e:
-        logger.error(f"Error in face matching: {e}")
-        return jsonify({"status": "error", "message": str(e)}), 500
-
+        logger.error(f"Error in verify_employee: {e}")
+        return {"status": "error", "message": "Verification failed"}, 500
     finally:
         if 'conn' in locals():
             conn.close()
