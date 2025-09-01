@@ -1,4 +1,4 @@
-from flask import render_template, flash
+from flask import render_template, flash,jsonify,request
 import logging
 from . import admin_bp
 from app.auth.decorators import require_auth, require_role
@@ -26,3 +26,45 @@ def dashboard():
         logger.error(f"Error in admin dashboard: {e}")
         flash('Error loading dashboard data.', 'error')
         return render_template('admin/admin_dashboard.html', stats={'employees': 0, 'contractors': 0, 'users': 0})
+    
+    
+@admin_bp.route('/ViewEmployePayment')
+@require_auth
+@require_role(['admin'])
+def viewPaymentLabour():
+    return render_template('admin/EmployeePaymentView.html')
+
+
+@admin_bp.route("/api/get_employeesPayment")
+@require_auth
+@require_role(["admin"])
+def get_employees_payment():
+    conn = DatabaseManager.get_connection()
+    cursor = conn.cursor()
+
+    # Sirf unhi records ko lo jaha latest record ka IsPaid = 1 ho
+    cursor.execute("""
+        SELECT NucleusId, LabourName, ContractorName, Amount, IsPaid
+        FROM WagesUpload
+        WHERE CreatedAt = (
+            SELECT MAX(CreatedAt) 
+            FROM WagesUpload wu 
+            WHERE wu.NucleusId = WagesUpload.NucleusId
+        )
+        AND IsPaid = 1
+        ORDER BY NucleusId desc
+    """)
+
+    rows = cursor.fetchall()
+
+    employees = []
+    for row in rows:
+        employees.append({
+            "NucleusId": row.NucleusId,
+            "LabourName": row.LabourName,
+            "ContractorName": row.ContractorName,
+            "Amount": row.Amount,
+            "IsPaid": row.IsPaid
+        })
+
+    return jsonify(employees)

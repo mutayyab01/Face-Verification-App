@@ -1,0 +1,54 @@
+{% extends "master.html" %}
+
+{% block title %}Employee Payment Records{% endblock %}
+
+{% block content %}
+<main class="container mt-4">
+  <h3>Employee Payment Records</h3>
+  
+  <table class="table table-bordered" id="employeeTable">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Labour Name</th>
+        <th>Contractor</th>
+        <th>Amount</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody>
+    </tbody>
+  </table>
+</main>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+function loadPayments() {
+  $.ajax({
+    url: "/admin/api/get_employeesPayment",
+    method: "GET",
+    success: function(data) {
+      let tbody = $("#employeeTable tbody");
+      tbody.empty();
+      data.forEach(emp => {
+        let row = `
+          <tr style="background-color:#d4edda;">
+            <td>${emp.NucleusId}</td>
+            <td>${emp.LabourName}</td>
+            <td>${emp.ContractorName}</td>
+            <td>${emp.Amount}</td>
+            <td>✅ Paid</td>
+          </tr>
+        `;
+        tbody.append(row); 
+      });
+    }
+  });
+}
+
+$(document).ready(function() {
+  loadPayments();
+  setInterval(loadPayments, 5000);
+});
+</script>
+{% endblock %}
