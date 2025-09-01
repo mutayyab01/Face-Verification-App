@@ -42,7 +42,6 @@ def get_employees_payment():
     conn = DatabaseManager.get_connection()
     cursor = conn.cursor()
 
-    # Sirf unhi records ko lo jaha latest record ka IsPaid = 1 ho
     cursor.execute("""
         SELECT NucleusId, LabourName, ContractorName, Amount, IsPaid
         FROM WagesUpload
