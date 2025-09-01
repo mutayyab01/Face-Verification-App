@@ -4,6 +4,7 @@ from datetime import datetime
 import pandas as pd
 from . import finance_bp
 from app.contractors.models import ContractorModel
+from .models import WagesUploadModel
 from app.auth.decorators import require_auth, require_role
 from app.database import DatabaseManager
 
@@ -87,6 +88,7 @@ def wages_upload():
             return render_template('finance/wagesUpload.html', message="Please select a Unit.", status="error")
 
         try:
+            result = WagesUploadModel.delete_existing_record_with_unitId(unit_id)         
             df = pd.read_excel(file)
             df.columns = df.columns.str.strip()
             
@@ -173,31 +175,16 @@ def wages_upload():
             status = "error"
 
     # Rest of your code for displaying upload data...
-    upload_data = []
     try:
-        conn = DatabaseManager.get_connection()
-        if conn:
-            cursor = conn.cursor()
-            cursor.execute("""
-                SELECT 
-                    NucleusId,
-                    ContractorId,
-                    LabourName,
-                    ContractorName,
-                    Amount,
-                    CASE WHEN IsPaid = 1 THEN 'Yes' ELSE 'No' END AS IsPaid,
-                    UnitId,
-                    CreatedBy,
-                    CreatedAt
-                FROM WagesUpload
-                WHERE CONVERT(VARCHAR(19), CreatedAt, 120) = (
-                    SELECT CONVERT(VARCHAR(19), MAX(CreatedAt), 120)
-                    FROM WagesUpload
-                )
-            """)
-            upload_data = cursor.fetchall()
-            units = ContractorModel.get_unit()
+        unit_id = request.args.get("unit_id", type=int, default=1)
+        upload_data = WagesUploadModel.get_latest_record_by_unit(unit_id)
+        units = ContractorModel.get_unit()
+        unit_map = {
+                        1: "C4",
+                        2: "E-38",
+                        3: "B44"
+                   }
     except Exception as e:
         logger.error(f"Failed to fetch WagesUpload data: {e}")
 
-    return render_template('finance/wagesUpload.html', message=message, status=status, upload_data=upload_data, units=units)
+    return render_template('finance/wagesUpload.html', message=message, status=status, upload_data=upload_data, units=units, unit_map=unit_map)

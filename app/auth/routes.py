@@ -18,7 +18,7 @@ def login():
             return render_template('auth/login.html')
         
         user = DatabaseManager.execute_query(
-            "SELECT Id, FirstName, LastName, Email, Password, Type FROM [User] WHERE LOWER(TRIM(Email)) = ? and IsActive=1",
+            "SELECT Id, FirstName, LastName, Email, Password, Type, Unit FROM [User] WHERE LOWER(TRIM(Email)) = ? and IsActive=1",
             (email,),
             fetch_one=True
         )
@@ -32,6 +32,7 @@ def login():
             session['LastName'] = user[2]
             session['email'] = user[3].strip()
             session['user_type'] = user[5].lower().strip()
+            session['cashier_unit'] = user[6]
             session['last_activity'] = datetime.now()
             
             logger.info(f"User {email} logged in successfully")
