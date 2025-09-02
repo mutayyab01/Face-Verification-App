@@ -25,10 +25,6 @@
 <!-- jQuery -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
-<!-- DataTables CSS & JS -->
-<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
-<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
-
 
 <script>
 let employeeTable;
@@ -43,10 +39,9 @@ function loadPayments() {
         employeeTable = $('#employeeTable').DataTable({
           pageLength: 10,
           lengthChange: false,
-          searching: true,
           ordering: false,
           data: data,
-          dom: 'Bfrtip',   
+          dom: '<"d-flex justify-content-between align-items-center mb-2"fB>rtip',
           buttons: [
             'copy', 'csv', 'excel', 'pdf', 'print'
           ],
