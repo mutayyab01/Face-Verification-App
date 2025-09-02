@@ -16,39 +16,30 @@ block content %}
         <h5>Face Detection</h5>
       </div>
       <div class="card-body">
-        <form id="faceDetectionForm" action="{{ url_for('face.MatchbyCode') }}">
+        <form id="faceDetectionForm">
           <div class="row mb-4">
             <div class="col-md-6">
               <label for="employee_id">Employee Code</label>
               <div class="d-flex align-items-center" style="gap: 10px">
                 <input type="number" name="employee_id" id="employee_id" class="form-control" required
-                  placeholder="Enter Code" value="{{ employee_id if employee_id else '' }}" />
+                  placeholder="Enter Code" />
 
-                <button type="submit" class="btn btn-info text-white">
+                <button type="button" id="searchBtn" class="btn btn-info text-white">
                   Identification
                 </button>
               </div>
-              {% if employeObject %}
-              <span><strong style="color: rgb(68, 73, 68)">Employee Name:</strong>
-                {{ employeObject.LabourName }}</span><br />
-              <span><strong style="color: rgb(108, 116, 108)">Employee Amount:</strong>
-                {{ employeObject.Amount }}</span>
-              {% endif %}
+              <div id="employeeInfo">
+                <!-- Employee info will be displayed here via AJAX -->
+              </div>
             </div>
           </div>
         </form>
 
-        {% if employee_id %}
-        <div class="row align-items-center text-center">
+        <div class="row align-items-center text-center" id="employeeImageSection" style="display: none;">
           <div class="col-md-5">
-            {% if image_base64 %}
             <p><strong>Employee Registered</strong></p>
-
-            <img src="data:image/jpeg;base64,{{ image_base64 }}" alt="Employee Image" class="img-thumbnail shadow"
+            <img id="employeeImage" alt="Employee Image" class="img-thumbnail shadow"
               style="width: 400px; height: 300px" />
-            {% else %}
-            <p>No image found.</p>
-            {% endif %}
           </div>
 
           <div class="col-md-2 d-flex justify-content-center align-items-center">
@@ -57,9 +48,10 @@ block content %}
             </button>
           </div>
         </div>
-        {% endif %}
       </div>
     </div>
+    
+    <!-- The rest of your HTML remains the same -->
     <div class="row align-items-center mb-3">
       {% if session.user_type == 'admin' %}
       <form method="GET" action="{{ url_for('face.RenderCodePage') }}">
@@ -116,7 +108,7 @@ block content %}
       </div>
       <div class="card-body">
         <div class="table-responsive">
-          <table class="table table-bordered" id="example" width="100%">
+          <table class="table table-bordered" id="dataTable" width="100%">
             <thead class="thead-dark">
               <tr>
                 <th>Labour Code</th>
@@ -145,7 +137,6 @@ block content %}
               </tr>
               {% endif %}
             </tbody>
-
           </table>
         </div>
       </div>
@@ -154,18 +145,16 @@ block content %}
 
   <!-- Scripts -->
   <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
-
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <script>
     $(document).ready(function () {
-      $("#dataTable").DataTable();
-
-      $("#verifyBtn").click(function (e) {
-        e.preventDefault();
-
-        // Always take Employee ID from input field
+      // Initialize DataTable
+      $('#dataTable').DataTable();
+      
+      // Search button click handler
+      $("#searchBtn").click(function () {
         const employeeId = $("#employee_id").val().trim();
-        console.log("Sending employee_id:", employeeId);
-
+        
         if (!employeeId) {
           Swal.fire({
             icon: "error",
@@ -174,39 +163,100 @@ block content %}
           });
           return;
         }
-
+        
+        // Show loading state
         const $btn = $(this);
         const originalText = $btn.html();
-        $btn.html('<span class="spinner-border spinner-border-sm"></span> Verifying...')
-          .prop('disabled', true);
-
+        $btn.html('<span class="spinner-border spinner-border-sm"></span> Searching...').prop("disabled", true);
+        
+        // AJAX request to search for employee
         $.ajax({
-          url: '{{ url_for("face.verify_employeebyCode") }}',
+          url: "{{ url_for('face.MatchbyCode') }}",
+          method: "GET",
+          data: { employee_id: employeeId },
+          success: function (response) {
+            if (response.status === "success") {
+              // Display employee info
+              $("#employeeInfo").html(`
+                <span><strong style="color: rgb(68, 73, 68)">Employee Name:</strong> ${response.employee.LabourName}</span><br />
+                <span><strong style="color: rgb(108, 116, 108)">Employee Amount:</strong> ${response.employee.Amount}</span>
+              `);
+              
+              // Display employee image
+              $("#employeeImage").attr("src", "data:image/jpeg;base64," + response.image_base64);
+              $("#employeeImageSection").show();
+              
+              // Store employee ID for verification
+              $("#verifyBtn").data("employee-id", employeeId);
+            } else {
+              $("#employeeInfo").html('<div class="text-danger">' + response.message + '</div>');
+              $("#employeeImageSection").hide();
+              Swal.fire({
+                icon: "error",
+                title: "Error",
+                text: response.message,
+              });
+            }
+          },
+          error: function () {
+            Swal.fire({
+              icon: "error",
+              title: "Error",
+              text: "An error occurred while searching",
+            });
+          },
+          complete: function () {
+            // Reset button
+            $btn.html(originalText).prop("disabled", false);
+          }
+        });
+      });
+      
+      // Verify button click handler
+      $("#verifyBtn").click(function () {
+        const employeeId = $(this).data("employee-id");
+        
+        if (!employeeId) {
+          Swal.fire({
+            icon: "error",
+            title: "Error",
+            text: "Please search for an employee first",
+          });
+          return;
+        }
+        
+        // Show loading state
+        const $btn = $(this);
+        const originalText = $btn.html();
+        $btn.html('<span class="spinner-border spinner-border-sm"></span> Verifying...').prop("disabled", true);
+        
+        // AJAX request to verify employee
+        $.ajax({
+          url: "{{ url_for('face.verify_employeebyCode') }}",
           method: "POST",
           contentType: "application/json",
           data: JSON.stringify({ employee_id: employeeId }),
           success: function (response) {
-            console.log("Server response:", response);
-
-            if (response.status === 'success') {
+            if (response.status === "success") {
               Swal.fire({
-                icon: 'success',
-                title: '✅ Verification Successful!',
+                icon: "success",
+                title: "Verification Successful!",
                 html: `
-                <strong>Employee:</strong> ${response.employee_name}<br>
-                <strong>Father:</strong> ${response.father_name}<br>
-                <strong>Nucleus ID:</strong> ${response.nucleus_id}<br>
-                <strong>Amount:</strong> ${response.amount}<br>
-                <span style="color:green;font-weight:bold;">Wages payment confirmed!</span>
-    `
+                  <strong>Employee:</strong> ${response.employee_name}<br>
+                  <strong>Father:</strong> ${response.father_name}<br>
+                  <strong>Nucleus ID:</strong> ${response.nucleus_id}<br>
+                  <strong>Amount:</strong> ${response.amount}<br>
+                  <span style="color:green;font-weight:bold;">Wages payment confirmed!</span>
+                `,
               });
-
-              $(`#row-${response.nucleus_id}`).addClass('table-success');
-              $(`#paid-${response.nucleus_id}`).prop('checked', true);
-            } else if (response.status === 'warning') {
+              
+              // Update the table without reloading
+              $(`#row-${response.nucleus_id}`).addClass("table-success");
+              $(`#paid-${response.nucleus_id}`).prop("checked", true);
+            } else if (response.status === "warning") {
               Swal.fire({
                 icon: "warning",
-                title: "⚠️ Already Paid",
+                title: "Already Paid",
                 html: `
                   ${response.message}<br>
                   <strong>Employee:</strong> ${response.employee_name}<br>
@@ -216,19 +266,23 @@ block content %}
             } else {
               Swal.fire({
                 icon: "error",
-                title: "❌ Verification Failed",
+                title: "Verification Failed",
                 text: response.message,
               });
             }
           },
           error: function (xhr) {
-            let errorMessage =
-              xhr.responseJSON?.message || "Verification failed";
-            Swal.fire({ icon: "error", title: "❌ Error", text: errorMessage });
+            let errorMessage = xhr.responseJSON?.message || "Verification failed";
+            Swal.fire({
+              icon: "error",
+              title: "Error",
+              text: errorMessage,
+            });
           },
           complete: function () {
+            // Reset button
             $btn.html(originalText).prop("disabled", false);
-          },
+          }
         });
       });
     });

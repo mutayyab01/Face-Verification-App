@@ -16,6 +16,9 @@ import base64
 import io
 from datetime import datetime
 
+
+
+
 logger = logging.getLogger(__name__)
 
 
@@ -268,62 +271,51 @@ def RenderCodePage():
         flash("An unexpected error occurred.", "error")
         return render_template('FaceRecognition/VerifyByCode.html', upload_data=upload_data)
 
+
+# when i searched any employee by id it show employes data M sabir
 @face_bp.route('/cashier/matchbycode', methods=['GET'])
 @require_auth
 @require_role(['admin', 'cashier'])
 def MatchbyCode():
-    """Main face matching interface"""
     employee_id = request.args.get('employee_id', type=int)
-    cashier_unit=session['cashier_unit']
+    cashier_unit = session.get('cashier_unit', 1)
+    unit_map = {1: "C4", 2: "E-38", 3: "B44"}
 
-    unit_map = {
-                        1: "C4",
-                        2: "E-38",
-                        3: "B44"
-                   }
-    if cashier_unit:
-        upload_data=get_upload_data(cashier_unit)
-    else:
-            upload_data = get_upload_data(1)
     if not employee_id:
-        return render_template('FaceRecognition/VerifyByCode.html', upload_data=upload_data,unit_map=unit_map)
-    
+        # This is the initial page load, render the template with data
+        upload_data = get_upload_data(cashier_unit)
+        units = get_all_units() if session.get('user_type') == 'admin' else []
+        
+        return render_template(
+            'FaceRecognition/VerifyByCode.html',
+            upload_data=upload_data,
+            unit_map=unit_map,
+            units=units
+        )
+
     try:
-        # Fetch employee face
-        # Fetch employee face
         employee = EmployeeFaceModel.get_by_id(employee_id)
-        logger.info(f"Fetched employee: {employee}")
         if not employee or not employee.Image:
-            flash("Employee not found or no image available.", "error")
-            return render_template('FaceRecognition/VerifyByCode.html', upload_data=upload_data,unit_map=unit_map)
-        
-        # Load face encoding
-        face_service.load_employee_encoding(employee_id, employee.Image)
-        
-        # Convert image to base64
-        # Convert image to base64
+            return jsonify({"status": "error", "message": "Employee not found or no image"})
+
         import base64
-        image_base64 = base64.b64encode(employee.Image).decode('utf-8')
+        image_base64 = base64.b64encode(employee.Image).decode("utf-8")
         row = EmployeeModel.getNameandAmount(employee_id)
-        print("Employee Data:", row)
 
-        return render_template('FaceRecognition/VerifyByCode.html',
-                             employee_id=employee_id,
-                             employeObject=row,
-                             image_base64=image_base64,
-                             upload_data=upload_data,
-                             unit_map=unit_map)
-                             
-    except FaceRecognitionError as e:
-        logger.error(f"Face recognition error: {e}")
-        flash(str(e), "error")
-        return render_template('FaceRecognition/VerifyByCode.html', upload_data=upload_data,unit_map=unit_map)
+        return jsonify({
+            "status": "success",
+            "employee_id": employee_id,
+            "employee": {
+                "LabourName": row.LabourName if hasattr(row, "LabourName") else row[0],
+                "Amount": row.Amount if hasattr(row, "Amount") else row[1]
+            },
+            "image_base64": image_base64
+        })
     except Exception as e:
-        logger.error(f"Unexpected error in match_employee_face: {e}")
-        flash("An unexpected error occurred.", "error")
-        return render_template('FaceRecognition/VerifyByCode.html', upload_data=upload_data,unit_map=unit_map)
+        return jsonify({"status": "error", "message": str(e)})
 
 
+# verification method for employee by code
 @face_bp.route('/verify_employeebyCode', methods=['POST'])
 @require_auth
 @require_role(['admin', 'cashier'])
@@ -331,11 +323,10 @@ def verify_employeebyCode():
     try:
         data = request.get_json(silent=True) or {}
         employee_id = data.get("employee_id")
-        cashier_unit=session['cashier_unit']
+        cashier_unit = session.get('cashier_unit', 1)
 
         if not employee_id:
             return jsonify({"status": "error", "message": "Employee ID is required"}), 400
-
 
         row = check_labour_ispaid_or_not(cashier_unit, employee_id)
 
@@ -343,7 +334,6 @@ def verify_employeebyCode():
             return jsonify({"status": "error", "message": "Employee not found"})
 
         nucleus_id, name, father_name, amount, is_paid, created_at = row
-        print("Wage Record:", row)
         if is_paid is True:
             return jsonify({
                 "status": "warning",
@@ -354,10 +344,10 @@ def verify_employeebyCode():
                 "amount": amount
             })
         
-        # ✅ Convert created_at to date only
+        # Convert created_at to date only
         created_date = created_at.date() if isinstance(created_at, datetime) else datetime.strptime(created_at, "%Y-%m-%d %H:%M:%S.%f").date()
 
-        affectedrow = mark_labour_as_paid_for_code(cashier_unit, created_date,nucleus_id)
+        affectedrow = mark_labour_as_paid_for_code(cashier_unit, created_date, nucleus_id)
 
         return jsonify({
             "status": "success",
@@ -371,8 +361,5 @@ def verify_employeebyCode():
     except Exception as e:
         logger.error(f"Verification failed: {e}")
         return jsonify({"status": "error", "message": str(e)}), 500
-
-
-
 
     
