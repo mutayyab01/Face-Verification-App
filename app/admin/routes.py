@@ -48,16 +48,15 @@ def get_employees_payment():
        CASE
        WHEN UnitId = 1 THEN 'C4'
        END AS Unit
-      
-FROM WagesUpload
-WHERE CreatedAt = (
-    SELECT MAX(CreatedAt) 
-    FROM WagesUpload wu 
-    WHERE wu.NucleusId = WagesUpload.NucleusId
-)
-AND IsPaid = 1 
-AND UnitId = 1
-ORDER BY UpdatedAt DESC;  
+    FROM WagesUpload
+    WHERE CreatedAt = (
+        SELECT MAX(CreatedAt) 
+        FROM WagesUpload wu 
+        WHERE wu.NucleusId = WagesUpload.NucleusId
+    )
+    AND IsPaid = 1 
+    AND UnitId = 1
+    ORDER BY UpdatedAt DESC;  
     """)
 
     rows = cursor.fetchall()
@@ -65,13 +64,13 @@ ORDER BY UpdatedAt DESC;
     employees = []
     for row in rows:
         employees.append({
-        "NucleusId": row.NucleusId,
-        "LabourName": row.LabourName,
-        "ContractorName": row.ContractorName,
-        "Amount": row.Amount,
-        "Date": row.UpdatedAt.strftime("%Y-%m-%d %H:%M:%S"),
-        "Unit":row.Unit,
-        "IsPaid": row.IsPaid,
+            "NucleusId": row.NucleusId,
+            "LabourName": row.LabourName,
+            "ContractorName": row.ContractorName,
+            "Amount": row.Amount,
+            "Date": row.UpdatedAt.strftime("%Y-%m-%d %H:%M:%S") if row.UpdatedAt else None,
+            "Unit": row.Unit,
+            "IsPaid": row.IsPaid,
         })
 
     return jsonify(employees)
