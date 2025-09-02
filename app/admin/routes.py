@@ -43,7 +43,7 @@ def get_employees_payment():
     cursor = conn.cursor()
 
     cursor.execute("""
-     SELECT NucleusId, ContractorId, LabourName, ContractorName, Amount,
+     SELECT NucleusId, ContractorId, LabourName, ContractorName, UpdatedAt, Amount,
        UnitId, IsPaid, VerifyType,
        CASE
        WHEN UnitId = 1 THEN 'C4'
@@ -69,6 +69,7 @@ ORDER BY UpdatedAt DESC;
         "LabourName": row.LabourName,
         "ContractorName": row.ContractorName,
         "Amount": row.Amount,
+        "Date": row.UpdatedAt.strftime("%Y-%m-%d %H:%M:%S"),
         "Unit":row.Unit,
         "IsPaid": row.IsPaid,
         })
