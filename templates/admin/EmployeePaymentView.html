@@ -9,39 +9,59 @@
   <table class="table table-bordered" id="employeeTable">
     <thead>
       <tr>
-        <th>ID</th>
+        <th>Employee Code</th>
         <th>Labour Name</th>
         <th>Contractor</th>
         <th>Amount</th>
+        <th>Unit</th>
         <th>Status</th>
       </tr>
     </thead>
-    <tbody>
-    </tbody>
+    <tbody></tbody>
   </table>
 </main>
 
+
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+
 <script>
+// Author: Abrar ul Hassan, Comment: Load Paid Employee Data, Created At: 09-01-2025
+let employeeTable;
+
 function loadPayments() {
   $.ajax({
     url: "/admin/api/get_employeesPayment",
     method: "GET",
     success: function(data) {
-      let tbody = $("#employeeTable tbody");
-      tbody.empty();
-      data.forEach(emp => {
-        let row = `
-          <tr style="background-color:#d4edda;">
-            <td>${emp.NucleusId}</td>
-            <td>${emp.LabourName}</td>
-            <td>${emp.ContractorName}</td>
-            <td>${emp.Amount}</td>
-            <td>✅ Paid</td>
-          </tr>
-        `;
-        tbody.append(row); 
-      });
+      if (!employeeTable) {
+
+        employeeTable = $('#employeeTable').DataTable({
+          pageLength: 10,          
+          lengthChange: false,     
+          searching: true,     
+          ordering: false,         
+          data: data,
+          columns: [
+            { data: "NucleusId" },
+            { data: "LabourName" },
+            { data: "ContractorName" },
+            { data: "Amount" },
+            { data: "Unit" },
+            { 
+              data: "IsPaid",
+              render: function() {
+                return "✅ Paid";
+              }
+            },
+    
+          ]
+        });
+      } else {
+
+        employeeTable.clear().rows.add(data).draw();
+      }
     }
   });
 }
