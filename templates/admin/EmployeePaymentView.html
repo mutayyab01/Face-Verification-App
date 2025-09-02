@@ -3,6 +3,7 @@
 {% block title %}Employee Payment Records{% endblock %}
 
 {% block content %}
+
 <main class="container mt-4">
   <h3>Employee Payment Records</h3>
   
@@ -22,28 +23,34 @@
   </table>
 </main>
 
-
+<!-- jQuery -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<!-- DataTables CSS & JS -->
 <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
 <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
 
+
 <script>
-// Author: Abrar ul Hassan, Comment: Load Paid Employee Data, Created At: 09-01-2025
 let employeeTable;
 
+// Author: Abrar ul Hassan, Comment: Load Paid Employee Data, Created At: 09-01-2025
 function loadPayments() {
   $.ajax({
     url: "/admin/api/get_employeesPayment",
     method: "GET",
     success: function(data) {
       if (!employeeTable) {
-
         employeeTable = $('#employeeTable').DataTable({
-          pageLength: 10,          
-          lengthChange: false,     
-          searching: true,     
-          ordering: false,         
+          pageLength: 10,
+          lengthChange: false,
+          searching: true,
+          ordering: false,
           data: data,
+          dom: 'Bfrtip',   
+          buttons: [
+            'copy', 'csv', 'excel', 'pdf', 'print'
+          ],
           columns: [
             { data: "NucleusId" },
             { data: "LabourName" },
@@ -56,12 +63,10 @@ function loadPayments() {
               render: function() {
                 return "✅ Paid";
               }
-            },
-    
+            }
           ]
         });
       } else {
-
         employeeTable.clear().rows.add(data).draw();
       }
     }
