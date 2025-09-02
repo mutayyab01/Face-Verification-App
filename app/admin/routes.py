@@ -34,7 +34,7 @@ def dashboard():
 def viewPaymentLabour():
     return render_template('admin/EmployeePaymentView.html')
 
-
+#Author: Abrar ul Hassan, Comment: Get Employee Paid Record, Created At: 09-01-2025
 @admin_bp.route("/api/get_employeesPayment")
 @require_auth
 @require_role(["admin"])
@@ -43,15 +43,21 @@ def get_employees_payment():
     cursor = conn.cursor()
 
     cursor.execute("""
-        SELECT NucleusId, LabourName, ContractorName, Amount, IsPaid
-        FROM WagesUpload
-        WHERE CreatedAt = (
-            SELECT MAX(CreatedAt) 
-            FROM WagesUpload wu 
-            WHERE wu.NucleusId = WagesUpload.NucleusId
-        )
-        AND IsPaid = 1
-        ORDER BY NucleusId desc
+     SELECT NucleusId, ContractorId, LabourName, ContractorName, Amount,
+       UnitId, IsPaid, VerifyType,
+       CASE
+       WHEN UnitId = 1 THEN 'C4'
+       END AS Unit
+      
+FROM WagesUpload
+WHERE CreatedAt = (
+    SELECT MAX(CreatedAt) 
+    FROM WagesUpload wu 
+    WHERE wu.NucleusId = WagesUpload.NucleusId
+)
+AND IsPaid = 1 
+AND UnitId = 1
+ORDER BY UpdatedAt DESC;  
     """)
 
     rows = cursor.fetchall()
@@ -59,11 +65,12 @@ def get_employees_payment():
     employees = []
     for row in rows:
         employees.append({
-            "NucleusId": row.NucleusId,
-            "LabourName": row.LabourName,
-            "ContractorName": row.ContractorName,
-            "Amount": row.Amount,
-            "IsPaid": row.IsPaid
+        "NucleusId": row.NucleusId,
+        "LabourName": row.LabourName,
+        "ContractorName": row.ContractorName,
+        "Amount": row.Amount,
+        "Unit":row.Unit,
+        "IsPaid": row.IsPaid,
         })
 
     return jsonify(employees)
