@@ -171,7 +171,7 @@
                 <th>Contractor Name</th>
                 <th>Unit Name</th>
                 <th>Status</th>
-                <th>Image</th>
+                <!-- <th>Image</th> -->
                 <th>Created By</th>
                 <th>Created At</th>
                 <th>Updated By</th>
@@ -182,7 +182,7 @@
 
             <tbody>
               {% for employee in employees %}
-              <tr class="{% if not employee[9] %}table-danger inactive-employee{% endif %}">
+              <tr class="{% if not employee[8] %}table-danger inactive-employee{% endif %}">
                 <!-- NucleusId -->
                 <td>{{ employee[1] }}</td>
 
@@ -240,7 +240,7 @@
 
                 <!-- Status (IsActive is at index 7) -->
                 <td>
-                  {% if employee[9] %}
+                  {% if employee[8] %}
                   <span class="badge bg-success">
                     <i class="fas fa-check-circle me-1"></i>
                     Active
@@ -254,25 +254,25 @@
                 </td>
 
                 <!-- Profile Image (Base64 image is at index 6) -->
-                <td>
+                <!-- <td>
                   {% if employee[8] %}
                   <img src="{{ employee[8] }}" alt="Profile" width="50" height="50" class="rounded-circle border" />
                   {% else %}
                   <span class="text-muted">No image</span>
                   {% endif %}
-                </td>
+                </td> -->
 
                 <!-- Created By Email  -->
-                <td>{{ employee[10] }}</td>
+                <td>{{ employee[9] }}</td>
 
                 <!-- Created At  -->
-                <td>{{ employee[11] }}</td>
+                <td>{{ employee[10] }}</td>
 
                 <!-- Updated By Email -->
-                <td>{{ employee[12] if employee[11] else 'N/A' }}</td>
+                <td>{{ employee[11] if employee[11] else 'N/A' }}</td>
 
                 <!-- Updated At  -->
-                <td>{{ employee[13] if employee[12] else 'N/A' }}</td>
+                <td>{{ employee[12] if employee[12] else 'N/A' }}</td>
 
                 <!-- Actions -->
                 <td>

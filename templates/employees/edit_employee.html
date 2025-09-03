@@ -20,113 +20,130 @@
                 <form method="POST" action="{{ url_for('employees.edit_employee', employee_id=employee[0]) }}"
                     enctype="multipart/form-data" novalidate>
                     <div class="row">
-                        <!-- Name -->
-                        <div class="col-md-6">
+                        <!-- Employee Image Preview (4 col) -->
+                        <div class="col-md-4 text-center">
+                            {% if employee[8] %}
                             <div class="mb-3">
-                                <label for="Name" class="form-label">Name *</label>
-                                <input type="text" class="form-control" id="Name" name="Name" value="{{ employee[2] }}"
-                                    required pattern="^[A-Za-z ]+$" title="Only alphabets and spaces are allowed">
-                                <div class="invalid-feedback">
-                                    Please provide a valid name (letters and spaces only).
-                                </div>
+                                <p class="text-muted">Previous Image:</p>
+                                <img src="data:image/png;base64,{{ employee[8] }}" alt="Employee Image"
+                                    class="img-thumbnail mb-2" style="max-width: 100%; height: auto;">
                             </div>
+                            {% else %}
+                            <div class="mb-3">
+                                <p class="text-muted">No Image Available</p>
+                                <img src="{{ url_for('static', filename='images/default-user.png') }}" alt="No Image"
+                                    class="img-thumbnail mb-2" style="max-width: 100%; height: auto;">
+                            </div>
+                            {% endif %}
                         </div>
 
-                        <!-- Father Name -->
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="FatherName" class="form-label">Father Name *</label>
-                                <input type="text" class="form-control" id="FatherName" name="FatherName"
-                                    value="{{ employee[3] }}" required pattern="^[A-Za-z ]+$"
-                                    title="Only alphabets and spaces are allowed">
-                                <div class="invalid-feedback">
-                                    Please provide a valid father's name.
+                        <!-- Employee Form Fields (8 col → split into 4+4) -->
+                        <div class="col-md-8">
+                            <div class="row">
+                                <!-- Name -->
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="Name" class="form-label">Name *</label>
+                                        <input type="text" class="form-control" id="Name" name="Name"
+                                            value="{{ employee[2] }}" required pattern="^[A-Za-z ]+$"
+                                            title="Only alphabets and spaces are allowed">
+                                        <div class="invalid-feedback">
+                                            Please provide a valid name (letters and spaces only).
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Father Name -->
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="FatherName" class="form-label">Father Name *</label>
+                                        <input type="text" class="form-control" id="FatherName" name="FatherName"
+                                            value="{{ employee[3] }}" required pattern="^[A-Za-z ]+$"
+                                            title="Only alphabets and spaces are allowed">
+                                        <div class="invalid-feedback">
+                                            Please provide a valid father's name.
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    </div>
-                    <div class="row">
+                            <div class="row">
+                                <!-- Phone Number -->
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="PhoneNumber" class="form-label">Phone Number *</label>
+                                        <input type="text" class="form-control" id="PhoneNumber" name="PhoneNumber"
+                                            value="{{ employee[4] if employee[4] else '' }}" required pattern="^\d{11}$"
+                                            title="11 digits required">
+                                        <div class="invalid-feedback">
+                                            Please provide a valid 11-digit phone number.
+                                        </div>
+                                    </div>
+                                </div>
 
-                        <!-- Phone Number -->
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="PhoneNumber" class="form-label">Phone Number *</label>
-                                <input type="text" class="form-control" id="PhoneNumber" name="PhoneNumber"
-                                    value="{{ employee[4] if employee[4] else '' }}" required pattern="^\d{11}$"
-                                    title="11 digits required">
-                                <div class="invalid-feedback">
-                                    Please provide a valid 11-digit phone number.
+                                <!-- Contractor -->
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="ContractorId" class="form-label">Contractor</label>
+                                        <select class="form-control single-select" id="ContractorId" name="ContractorId">
+                                            <option value="">Select Contractor</option>
+                                            {% for contractor in contractors %}
+                                            <option value="{{ contractor[0] }}" {% if contractor[0]==employee[6]
+                                                %}selected{% endif %}>
+                                                {{ contractor[1] }} {{ contractor[2] }}
+                                            </option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
 
-                        <!-- Contractor -->
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="ContractorId" class="form-label">Contractor</label>
-                                <select class="form-control" id="ContractorId" name="ContractorId">
-                                    <option value="">Select Contractor </option>
-                                    {% for contractor in contractors %}
-                                    <option value="{{ contractor[0] }}" {% if contractor[0]==employee[6] %}selected{%
-                                        endif %}>
-                                        {{ contractor[1] }} {{ contractor[2] }}
-                                    </option>
-                                    {% endfor %}
-                                </select>
+                            <div class="row">
+                                <!-- Unit -->
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="Unit" class="form-label">Select Unit *</label>
+                                        <select class="form-control" id="Unit" name="Unit" required>
+                                            <option value="">Select Unit</option>
+                                            {% for unit in units %}
+                                            <option value="{{ unit[0] }}" {% if unit[0]==employee[7] %}selected{% endif
+                                                %}>
+                                                {{ unit[1] }}
+                                            </option>
+                                            {% endfor %}
+                                        </select>
+                                        <div class="invalid-feedback">Please select a Unit.</div>
+                                    </div>
+                                </div>
+
+                                <!-- Address -->
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="Address" class="form-label">Address</label>
+                                        <textarea class="form-control" id="Address" name="Address" rows="3">{{ employee[5] if employee[5] else '' }}</textarea>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-6">
+                            <!-- Upload New Image -->
                             <div class="mb-3">
-                                <label for="Unit" class="form-label">Select Unit *</label>
-                                <select class="form-control" id="Unit" name="Unit" required>
-                                    <option value="">Select Unit</option>
-                                    {% for unit in units %}
-                                    <option value="{{ unit[0] }}" {% if unit[0]==employee[7] %}selected{% endif %}>
-                                        {{ unit[1] }}
-                                    </option>
-                                    {% endfor %}
-                                </select>
-                                <div class="invalid-feedback">Please select a Unit.</div>
-                            </div>
-                        </div>
-                        <!-- Image Upload -->
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="ProfileImage" class="form-label">Employee Image</label>
+                                <label for="ProfileImage" class="form-label">Upload New Image</label>
                                 <input type="file" class="form-control" id="ProfileImage" name="ProfileImage"
                                     accept="image/*">
-                                <!-- {% if employee[7] %}
-                                <small class="text-muted mt-2">Current image exists</small>
-                                {% endif %} -->
                             </div>
+                            <!-- Active Status -->
+                            <div class="mb-3 form-check">
+                                <input type="checkbox" class="form-check-input" id="IsActive" name="IsActive" {% if
+                                    employee[9] %}checked{% endif %}>
+                                <label class="form-check-label" for="IsActive">Active</label>
+                            </div>
+                            <!-- Buttons -->
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-1"></i> Update Employee
+                            </button>
+                            <a href="{{ url_for('employees.list_employees') }}" class="btn btn-secondary">
+                                <i class="fas fa-times me-1"></i> Cancel
+                            </a>
                         </div>
                     </div>
-                    <div class="row">
-                        <!-- Address -->
-                        <div class="col-md-12">
-                            <div class="mb-3">
-                                <label for="Address" class="form-label">Address</label>
-                                <textarea class="form-control" id="Address" name="Address"
-                                    rows="2">{{ employee[5] if employee[5] else '' }}</textarea>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Active Status -->
-                    <div class="mb-3 form-check">
-                        <input type="checkbox" class="form-check-input" id="IsActive" name="IsActive" {% if employee[9]
-                            %}checked{% endif %}>
-                        <label class="form-check-label" for="IsActive">Active</label>
-                    </div>
-
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-save me-1"></i> Update Employee
-                    </button>
-                    <a href="{{ url_for('employees.list_employees') }}" class="btn btn-secondary">
-                        <i class="fas fa-times me-1"></i> Cancel
-                    </a>
                 </form>
             </div>
         </div>
