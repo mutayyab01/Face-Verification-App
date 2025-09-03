@@ -93,8 +93,6 @@ def edit_employee(employee_id):
         contractors = ContractorModel.get_active_contractors()
         units = ContractorModel.get_unit()
 
-        logger.error(f"Error updating employee: {employee},{contractors}")
-
         if not employee:
             flash('Employee not found.', 'error')
             return redirect(url_for('employees.list_employees'))
@@ -105,7 +103,7 @@ def edit_employee(employee_id):
                              units=units)
     
     except Exception as e:
-        logger.error(f"Error in edit_employee: {e}")
+        logger.error(f"Error in edit_employee:")
         flash('Error loading employee data.', 'error')
         return redirect(url_for('employees.list_employees'))
 

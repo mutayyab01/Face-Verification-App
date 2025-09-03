@@ -12,7 +12,7 @@ class EmployeeModel:
         """Get all employees with contractor information, including base64 image"""
         raw_employees = DatabaseManager.execute_query("""
               SELECT e.Id, e.NucleusId, e.Name, e.FatherName, e.PhoneNo, e.Address, 
-                (c.Name + ' ' + c.FatherName) as ContractorName, u.Name as UnitName, e.Image, e.IsActive,
+                (c.Name + ' ' + c.FatherName) as ContractorName, u.Name as UnitName, e.IsActive,
                 u1.Email as CreatedByEmail, e.CreatedAt,
                 u2.Email as UpdatedByEmail, e.UpdatedAt
             FROM Employee e
@@ -22,33 +22,8 @@ class EmployeeModel:
             LEFT JOIN [User] u2 ON e.UpdatedBy = u2.Id
             ORDER BY e.Id DESC
         """, fetch_all=True)
-
-        employees = []
-        for emp in raw_employees:
-            image_data = None
-            if emp[8]:  # e.Image (binary blob)
-                image_data = "data:image/jpeg;base64," + base64.b64encode(emp[8]).decode('utf-8')
-
-            # Create a new tuple with base64 image
-            emp_with_image = (
-                emp[0],  # Id
-                emp[1],  # NucleusId
-                emp[2],  # Name
-                emp[3],  # FatherName
-                emp[4],  # PhoneNo
-                emp[5],  # Address
-                emp[6],  # ContractorName
-                emp[7],  # UnitName
-                image_data,  # 🔁 Converted to base64 string
-                emp[9],  # IsActive
-                emp[10],  # CreatedByEmail
-                emp[11],  # CreatedAt
-                emp[12], # UpdatedByEmail
-                emp[13], # UpdatedAt
-            )
-            employees.append(emp_with_image)
-
-        return employees
+            
+        return raw_employees
 
     @staticmethod
     def exists_nucleus_id(nucleus_id):
@@ -60,14 +35,25 @@ class EmployeeModel:
         )
         return result is not None
 
+
     @staticmethod
     def get_by_id(employee_id):
-        """Get employee by ID"""
-        return DatabaseManager.execute_query(
+        """Get employee by ID with Base64 image conversion"""
+        employee = DatabaseManager.execute_query(
             "SELECT * FROM Employee WHERE Id = ?",
             (employee_id,),
             fetch_one=True
         )
+
+        if employee:
+            employee = list(employee)  # convert tuple to list so we can modify it
+
+            # If Image column exists and is not None, convert to Base64
+            if employee[8]:
+                employee[8] = base64.b64encode(employee[8]).decode('utf-8')
+
+        return employee
+
 
     @staticmethod
     def create(data, created_by):
