@@ -44,25 +44,15 @@ block content %}
             {% if image_base64 %}
             <p><strong>Employee Registered</strong></p>
 
-            <img
-              src="data:image/jpeg;base64,{{ image_base64 }}"
-              alt="Employee Image"
-              class="img-thumbnail shadow"
-              style="width: 400px; height: 300px"
-            />
+            <img src="data:image/jpeg;base64,{{ image_base64 }}" alt="Employee Image" class="img-thumbnail shadow"
+              style="width: 400px; height: 300px" />
             {% else %}
             <p>No image found.</p>
             {% endif %}
           </div>
 
-          <div
-            class="col-md-2 d-flex justify-content-center align-items-center"
-          >
-            <button
-              type="button"
-              id="verifyBtn"
-              class="btn btn-success btn-lg shadow"
-            >
+          <div class="col-md-2 d-flex justify-content-center align-items-center">
+            <button type="button" id="verifyBtn" class="btn btn-success btn-lg shadow">
               <i class="bi bi-check-circle"></i> Verify
             </button>
           </div>
@@ -70,7 +60,55 @@ block content %}
         {% endif %}
       </div>
     </div>
+    <div class="row align-items-center mb-3">
+      {% if session.user_type == 'admin' %}
+      <form method="GET" action="{{ url_for('face.RenderCodePage') }}">
+        <div class="row align-items-center mb-3">
+          <!-- Date -->
+          <div class="col-md-4">
+            <h6><mark>Data is Shown by Date :
+                {% if upload_data %}{{ upload_data[0][9].strftime('%Y-%m-%d %H:%M:%S') }}{% else %}--{%
+                endif %}
+              </mark></h6>
+          </div>
 
+          <!-- Unit Display -->
+          <div class="col-md-4">
+            <h6><mark>Unit : {% if upload_data %}{{ unit_map[upload_data[0][7]] }}{% else %}--{% endif
+                %}</mark></h6>
+          </div>
+
+          <!-- Unit Dropdown -->
+          <div class="col-md-4">
+            <label for="Unit" class="form-label">Select Unit *</label>
+            <select class="form-control" id="Unit" name="unit_id" required onchange="this.form.submit()">
+              <option value="">Select Unit</option>
+              {% for unit in units %}
+              <option value="{{ unit[0] }}" {% if request.args.get('unit_id')==unit[0]|string %}selected{% endif %}>
+                {{ unit[1] }}
+              </option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+      </form>
+      {% endif %}
+      {% if session.user_type == 'cashier' %}
+      <!-- Date -->
+      <div class="col-md-4">
+        <h6><mark>Data is Shown by Date :
+            {% if upload_data %}{{ upload_data[0][9].strftime('%Y-%m-%d %H:%M:%S') }}{% else %}--{%
+            endif %}
+          </mark></h6>
+      </div>
+
+      <!-- Unit Display -->
+      <div class="col-md-4">
+        <h6><mark>Unit : {% if upload_data %}{{ unit_map[upload_data[0][7]] }}{% else %}--{% endif
+            %}</mark></h6>
+      </div>
+    </div>
+    {% endif %}
     <!-- Uploaded Wages Data Grid -->
     <div class="card mt-4">
       <div class="card-header">
@@ -97,7 +135,7 @@ block content %}
                 <td>{{ row[3] }}</td> <!-- FatherName -->
                 <td>{{ row[4] }}</td> <!-- Amount -->
                 <td class="text-center">
-                  <input type="checkbox" id="paid-{{ row[0] }}" {% if row[5]==1 %}checked{% endif %} disabled>
+                  <input type="checkbox" id="paid-{{ row[0] }}" {% if row[5] == 1 %}checked{% endif %} disabled>
                 </td>
               </tr>
               {% endfor %}

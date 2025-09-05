@@ -19,7 +19,8 @@
         </div>
         <div class="col-md-2 mt-3 mt-md-4">
           <button id="fetchEmployeeBtn" class="btn btn-info text-white">Identification</button>
-          <div id="fetchLoader" class="spinner-border text-info mt-2" role="status" style="display:none; width:20px; height:20px;">
+          <div id="fetchLoader" class="spinner-border text-info mt-2" role="status"
+            style="display:none; width:20px; height:20px;">
             <span class="visually-hidden">Loading...</span>
           </div>
         </div>
@@ -43,7 +44,8 @@
         <!-- Verify Button in Middle -->
         <div class="col-md-2 d-flex align-items-center justify-content-center flex-column">
           <button id="verifyBtn" class="btn btn-success btn-lg d-none">Verify</button>
-          <div id="verifyLoader" class="spinner-border text-success mt-2" role="status" style="display:none; width:25px; height:25px;">
+          <div id="verifyLoader" class="spinner-border text-success mt-2" role="status"
+            style="display:none; width:25px; height:25px;">
             <span class="visually-hidden">Verifying...</span>
           </div>
         </div>
@@ -78,7 +80,54 @@
 
     </div>
   </div>
+  {% if session.user_type == 'admin' %}
+  <form method="GET" action="{{ url_for('face.RenderFacePage') }}">
+    <div class="row align-items-center mb-3">
+      <!-- Date -->
+      <div class="col-md-4">
+        <h6><mark>Data is Shown by Date :
+            {% if upload_data %}{{ upload_data[0][9].strftime('%Y-%m-%d %H:%M:%S') }}{% else %}--{%
+            endif %}
+          </mark></h6>
+      </div>
 
+      <!-- Unit Display -->
+      <div class="col-md-4">
+        <h6><mark>Unit : {% if upload_data %}{{ unit_map[upload_data[0][7]] }}{% else %}--{% endif
+            %}</mark></h6>
+      </div>
+
+      <!-- Unit Dropdown -->
+      <div class="col-md-4">
+        <label for="Unit" class="form-label">Select Unit *</label>
+        <select class="form-control" id="Unit" name="unit_id" required onchange="this.form.submit()">
+          <option value="">Select Unit</option>
+          {% for unit in units %}
+          <option value="{{ unit[0] }}" {% if request.args.get('unit_id')==unit[0]|string %}selected{% endif %}>
+            {{ unit[1] }}
+          </option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+  </form>
+  {% endif %}
+  {% if session.user_type == 'cashier' %}
+  <div class="row align-items-center mb-3">
+    <!-- Date -->
+    <div class="col-md-4">
+      <h6><mark>Data is Shown by Date :
+          {% if upload_data %}{{ upload_data[0][9].strftime('%Y-%m-%d %H:%M:%S') }}{% else %}--{%
+          endif %}
+        </mark></h6>
+    </div>
+    <!-- Unit Display -->
+    <div class="col-md-4">
+      <h6><mark>Unit : {% if upload_data %}{{ unit_map[upload_data[0][7]] }}{% else %}--{% endif
+          %}</mark></h6>
+    </div>
+  </div>
+  {% endif %}
   <!-- ===== Wages Upload Grid Card ===== -->
   <div class="card mt-4">
     <div class="card-header">
@@ -151,115 +200,115 @@
     });
 
   // ===== Fetch Employee =====
-fetchEmployeeBtn.addEventListener("click", async () => {
-  // 🔒 Prevent multiple clicks
-  if (fetchEmployeeBtn.disabled) return;
-  fetchEmployeeBtn.disabled = true; // disable immediately
-  fetchLoader.style.display = "inline-block";
+  fetchEmployeeBtn.addEventListener("click", async () => {
+    // 🔒 Prevent multiple clicks
+    if (fetchEmployeeBtn.disabled) return;
+    fetchEmployeeBtn.disabled = true; // disable immediately
+    fetchLoader.style.display = "inline-block";
 
-  const employeeCode = document.getElementById("employeeCode").value.trim();
-  if (!employeeCode) {
-    alert("Enter Employee Code");
-    fetchEmployeeBtn.disabled = false; // re-enable if invalid input
-    fetchLoader.style.display = "none";
-    return;
-  }
-
-  try {
-    const response = await fetch("GetEmployeeByIdOnFacePage", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ neclusid: employeeCode })
-    });
-
-    const result = await response.json();
-    console.log(result);
-
-    if (result.status === "success") {
-      employeeImage.src = result.employee_image;
-      employeeNameLabel.innerHTML = "Employee Name: " + result.employee_name;
-      employeeAmountLabel.innerHTML = "Employee Amount: " + result.employee_amount;
-      linebreak.innerHTML = "<br>";
-      linebreak.style.display = "inline-block";
-
-      employeeNameLabel.style.display = "inline-block";
-      employeeAmountLabel.style.display = "inline-block";
-      verifyBtn.classList.remove("d-none");
-      verificationOverlay.style.display = "none";
-      capturedImage.classList.add("d-none");
-    } else {
-      alert("❌ " + result.message);
+    const employeeCode = document.getElementById("employeeCode").value.trim();
+    if (!employeeCode) {
+      alert("Enter Employee Code");
+      fetchEmployeeBtn.disabled = false; // re-enable if invalid input
+      fetchLoader.style.display = "none";
+      return;
     }
 
-  } catch (err) {
-    alert("⚠️ Request Failed: " + err);
-  } finally {
-    fetchLoader.style.display = "none";
+    try {
+      const response = await fetch("GetEmployeeByIdOnFacePage", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ neclusid: employeeCode })
+      });
 
-    // 🕒 Auto clear after 10 seconds and re-enable button
-    setTimeout(() => {
-      fetchEmployeeBtn.disabled = false; 
-    }, 1000);
-  }
-});
+      const result = await response.json();
+      console.log(result);
 
+      if (result.status === "success") {
+        employeeImage.src = result.employee_image;
+        employeeNameLabel.innerHTML = "Employee Name: " + result.employee_name;
+        employeeAmountLabel.innerHTML = "Employee Amount: " + result.employee_amount;
+        linebreak.innerHTML = "<br>";
+        linebreak.style.display = "inline-block";
 
-// ===== Verify Face =====
-verifyBtn.addEventListener("click", async () => {
-  // 🔒 Prevent multiple clicks
-  if (verifyBtn.disabled) return;
-  verifyBtn.disabled = true; // disable immediately
-  verifyLoader.style.display = "block";
+        employeeNameLabel.style.display = "inline-block";
+        employeeAmountLabel.style.display = "inline-block";
+        verifyBtn.classList.remove("d-none");
+        verificationOverlay.style.display = "none";
+        capturedImage.classList.add("d-none");
+      } else {
+        alert("❌ " + result.message);
+      }
 
-  const employeeCode = document.getElementById("employeeCode").value.trim();
-  const context = canvas.getContext("2d");
-  context.drawImage(video, 0, 0, canvas.width, canvas.height);
+    } catch (err) {
+      alert("⚠️ Request Failed: " + err);
+    } finally {
+      fetchLoader.style.display = "none";
 
-  const capturedDataUrl = canvas.toDataURL("image/png");
-  capturedImage.src = capturedDataUrl;
-  capturedImage.classList.remove("d-none");
-
-  try {
-    const response = await fetch("VerifyEmployeeOnFacePage", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ neclusid: employeeCode, live_image: capturedDataUrl })
-    });
-
-    const result = await response.json();
-
-    verificationOverlay.textContent = result.status === "success" ? result.message : "❌ " + result.message;
-    verificationOverlay.style.color = result.message.includes("Matched") ? "lime" : "red";
-    verificationOverlay.style.display = "block";
-    console.log(result);
-
-    if (result.status==="success") {
-      
+      // 🕒 Auto clear after 10 seconds and re-enable button
+      setTimeout(() => {
+        fetchEmployeeBtn.disabled = false;
+      }, 1000);
     }
+  });
 
-    // 🕒 Auto clear after 10 seconds
-    setTimeout(() => {
-      verificationOverlay.style.display = "none";
-      capturedImage.classList.add("d-none");
-    }, 10000);
 
-  } catch (err) {
-    verificationOverlay.textContent = "⚠️ Request Failed";
-    verificationOverlay.style.color = "red";
-    verificationOverlay.style.display = "block";
+  // ===== Verify Face =====
+  verifyBtn.addEventListener("click", async () => {
+    // 🔒 Prevent multiple clicks
+    if (verifyBtn.disabled) return;
+    verifyBtn.disabled = true; // disable immediately
+    verifyLoader.style.display = "block";
 
-    setTimeout(() => {
-      verificationOverlay.style.display = "none";
-      capturedImage.classList.add("d-none");
-    }, 5000);
-  } finally {
-    verifyLoader.style.display = "none";
-    // 🔓 Re-enable after 2 seconds (to avoid spamming)
-    setTimeout(() => {
-      verifyBtn.disabled = false;
-    }, 1000);
-  }
-});
+    const employeeCode = document.getElementById("employeeCode").value.trim();
+    const context = canvas.getContext("2d");
+    context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+    const capturedDataUrl = canvas.toDataURL("image/png");
+    capturedImage.src = capturedDataUrl;
+    capturedImage.classList.remove("d-none");
+
+    try {
+      const response = await fetch("VerifyEmployeeOnFacePage", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ neclusid: employeeCode, live_image: capturedDataUrl })
+      });
+
+      const result = await response.json();
+
+      verificationOverlay.textContent = result.status === "success" ? result.message : "❌ " + result.message;
+      verificationOverlay.style.color = result.status === "success" ? "green" : "red";
+      verificationOverlay.style.display = "block";
+      console.log(result);
+
+      if (result.status === "success") {
+
+      }
+
+      // 🕒 Auto clear after 10 seconds
+      setTimeout(() => {
+        verificationOverlay.style.display = "none";
+        capturedImage.classList.add("d-none");
+      }, 10000);
+
+    } catch (err) {
+      verificationOverlay.textContent = "⚠️ Request Failed";
+      verificationOverlay.style.color = "red";
+      verificationOverlay.style.display = "block";
+
+      setTimeout(() => {
+        verificationOverlay.style.display = "none";
+        capturedImage.classList.add("d-none");
+      }, 5000);
+    } finally {
+      verifyLoader.style.display = "none";
+      // 🔓 Re-enable after 2 seconds (to avoid spamming)
+      setTimeout(() => {
+        verifyBtn.disabled = false;
+      }, 1000);
+    }
+  });
 
 
 </script>
