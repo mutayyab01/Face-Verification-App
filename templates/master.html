@@ -68,20 +68,20 @@
         </a>
       </li>
       {% endif %}
-      {% if session.user_type == 'admin'%}
+      {% if session.user_type == 'cashier'%}
       <!-- Employee Management Section -->
-      <div class="sidebar-heading">Admin</div>
+      <div class="sidebar-heading">Payment View</div>
 
       <li class="nav-item">
         <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseEmployeePayment"
           aria-expanded="true" aria-controls="collapseEmployeePayment">
           <i class="fas fa-fw fa-users"></i>
-          <span>Admin</span>
+          <span>Cashier Payment</span>
         </a>
         <div id="collapseEmployeePayment" class="collapse" aria-labelledby="headingEmployee"
           data-parent="#accordionSidebar">
           <div class="bg-white py-2 collapse-inner rounded">
-            <h6 class="collapse-header">Admin Operations:</h6>
+            <h6 class="collapse-header">Cashier Operations:</h6>
             <a class="collapse-item" href="{{ url_for('admin.viewPaymentLabour') }}">Labour Payment View</a>
           </div>
         </div>

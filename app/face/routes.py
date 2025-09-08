@@ -9,7 +9,7 @@ from .models import EmployeeModel
 from app.contractors.models import ContractorModel
 from .face_service import FaceRecognitionService
 from .exceptions import FaceRecognitionError
-from .utils import  get_upload_data, mark_labour_as_paid_for_code,check_labour_ispaid_or_not,mark_labour_as_paid_for_face,PreviousWeekUnpaidEmployeesfromDB,FilterByDatePreviousWeek
+from .utils import  get_upload_data, mark_labour_as_paid_for_code,check_labour_ispaid_or_not,mark_labour_as_paid_for_face
 from . import face_bp
 import face_recognition
 import base64
@@ -347,7 +347,8 @@ def verify_employeebyCode():
         # Convert created_at to date only
         created_date = created_at.date() if isinstance(created_at, datetime) else datetime.strptime(created_at, "%Y-%m-%d %H:%M:%S.%f").date()
 
-        affectedrow = mark_labour_as_paid_for_code(cashier_unit, created_date, nucleus_id)
+        # affectedrow = mark_labour_as_paid_for_code(cashier_unit, created_date, nucleus_id)
+        mark_labour_as_paid_for_code(cashier_unit, created_date, nucleus_id)
 
         return jsonify({
             "status": "success",
@@ -362,44 +363,4 @@ def verify_employeebyCode():
         logger.error(f"Verification failed: {e}")
         return jsonify({"status": "error", "message": str(e)}), 500
 
-
-
-@face_bp.route('/ViewUnpaidEmployees')
-@require_auth
-@require_role(['admin', 'cashier'])
-def ViewUnpaidEmployees():
-    return render_template('FaceRecognition/PreviousWeekUnpaidEmployee.html')
-
-@face_bp.route("/api/PreviousWeekUnpaidEmployees", methods=["GET", "POST"])
-@require_auth
-@require_role(['admin', 'cashier'])
-def PreviousWeekUnpaidEmployees():
-    cashier_unit = session.get('cashier_unit', 1)
-    data = request.get_json(silent=True)
-    fromDate, toDate = None, None  
-    if data:
-        fromDate = data.get("from_date")
-        toDate = data.get("to_date")
-        print(fromDate, toDate, "fromdatetoDate")
-    if fromDate and toDate:
-        employees = FilterByDatePreviousWeek(cashier_unit, fromDate, toDate)
-    else:
-        employees = PreviousWeekUnpaidEmployeesfromDB(cashier_unit)
-    result = []
-    for row in employees:
-        result.append({
-            "NucleusId": row.get("NucleusId"),
-            "ContractorId": row.get("ContractorId"),
-            "LabourName": row.get("LabourName"),
-            "ContractorName": row.get("ContractorName"),
-            "Amount": row.get("Amount"),
-            "UnitId": row.get("UnitId"),
-            "UnitName": row.get("UnitName"),
-            "IsPaid": row.get("IsPaid"),
-            "VerifyType": row.get("VerifyType"),
-            "CreatedBy": row.get("CreatedBy"),
-            "CreatedAt": row.get("CreatedAt").strftime("%Y-%m-%d %H:%M:%S") 
-                          if row.get("CreatedAt") else None,
-        })
-
-    return jsonify(result)
+    
