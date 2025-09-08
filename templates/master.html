@@ -148,6 +148,21 @@
           </div>
         </div>
       </li>
+
+      <div class="sidebar-heading">Previous Week Unpaid Employees</div>
+        <li class="nav-item">
+        <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#UnpaidEmployee"
+          aria-expanded="true" aria-controls="UnpaidEmployee">
+          <i class="fas fa-fw fa-user"></i>
+          <span>Unpaid Employees</span>
+        </a>
+        <div id="UnpaidEmployee" class="collapse" aria-labelledby="headingEmployeeDetector"
+          data-parent="#accordionSidebar">
+          <div class="bg-white py-2 collapse-inner rounded">
+            <a class="collapse-item" href="{{ url_for('face.ViewUnpaidEmployees') }}">Unpaid Employees List</a>
+          </div>
+        </div>
+      </li>
       {% endif %}
       {% if session.user_type == 'admin' %}
       <!-- User Management Section -->

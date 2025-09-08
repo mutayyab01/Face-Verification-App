@@ -1,0 +1,133 @@
+{% extends "master.html" %}
+
+{% block title %}Previous Week Unpaid Employees{% endblock %}
+
+{% block content %}
+
+<main class="container mt-4">
+    <h3>Previous Week Unpaid Employees</h3>
+    <div class="row">
+        <div class="col-md-5">
+            <div class="mb-3">
+                <label for="fromDate" class="form-label">From Date Range</label>
+                <input type="date" class="form-control" id="fromDate" placeholder="Select from date">
+            </div>
+        </div>
+        <div class="col-md-5">
+            <div class="mb-3">
+                <label for="toDate" class="form-label">To Date Range</label>
+                <input type="date" class="form-control" id="toDate" placeholder="Select to date">
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="mb-3">
+                <label for="filterButton" class="form-label">&nbsp;</label>
+                <button id="filterButton" class="btn btn-block btn-secondary">Filter</button>
+            </div>
+        </div>
+    </div>
+    <table class="table table-bordered" id="UnpaidEmployeeTable">
+        <thead>
+            <tr>
+                <th>Employee Code</th>
+                <th>Contractor Id</th>
+                <th>Labour Name</th>
+                <th>Contractor</th>
+                <th>Amount</th>
+                <!-- <th>Unit Id</th> -->
+                <th>Unit</th>
+                <th>Status</th>
+                <!-- <th>Verify Type</th> -->
+                <!-- <th>Created By</th> -->
+                <th>Date</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+
+</main>
+
+<!-- jQuery -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+
+<script>
+    let UnpaidEmployeeTable;
+
+    // Load without filter (default = previous week unpaid employees)
+    function loadPayments() {
+        $.ajax({
+            url: "/face/api/PreviousWeekUnpaidEmployees",
+            method: "GET",
+            success: function (data) {
+                renderTable(data);
+            }
+        });
+    }
+
+    // Load with filter (date range)
+    function filterPayments(fromDate, toDate) {
+        $.ajax({
+            url: "/face/api/PreviousWeekUnpaidEmployees",  // ✅ same endpoint
+            method: "POST",
+            contentType: "application/json",
+            data: JSON.stringify({
+                from_date: fromDate,
+                to_date: toDate
+            }),
+            success: function (data) {
+                renderTable(data);
+            }
+        });
+    }
+
+    // Render/update DataTable
+    function renderTable(data) {
+        if (!UnpaidEmployeeTable) {
+            UnpaidEmployeeTable = $('#UnpaidEmployeeTable').DataTable({
+                pageLength: 10,
+                lengthChange: false,
+                ordering: false,
+                data: data,
+                dom: '<"d-flex justify-content-between align-items-center mb-2"fB>rtip',
+                buttons: ['copy', 'csv', 'excel', 'pdf', 'print'],
+                columns: [
+                    { data: "NucleusId" },
+                    { data: "ContractorId" },
+                    { data: "LabourName" },
+                    { data: "ContractorName" },
+                    { data: "Amount" },
+                    { data: "UnitName" },
+                    {
+                        data: "IsPaid",
+                        render: function (data) {
+                            return data === 1 ? "Paid" : "Unpaid";
+                        }
+                    },
+                    { data: "CreatedAt" }
+                ]
+            });
+        } else {
+            UnpaidEmployeeTable.clear().rows.add(data).draw();
+        }
+    }
+
+    $(document).ready(function () {
+        // Default load
+        loadPayments();
+
+        // Filter button click
+        $("#filterButton").click(function () {
+            const fromDate = $("#fromDate").val();
+            const toDate = $("#toDate").val();
+
+            if (fromDate && toDate) {
+                filterPayments(fromDate, toDate);
+            } else {
+                swal.fire("Error", "Please select both From and To Dates.", "error");
+            }
+        });
+    });
+</script>
+
+{% endblock %}
