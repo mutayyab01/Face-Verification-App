@@ -176,3 +176,76 @@ def check_labour_ispaid_or_not(unit_id: int, nucleus_id: int) -> bool:
         logger.error(f"Failed to check labour payment status: {e}")
 
     return False
+
+
+def PreviousWeekUnpaidEmployeesfromDB(unit_id: int) -> List[Dict[str, Any]]:
+    try:
+        conn = DatabaseManager.get_connection()
+        if conn:
+            cursor = conn.cursor()
+            query = """
+                SELECT 
+                    wu.NucleusId,
+                    wu.ContractorId,
+                    wu.LabourName,
+                    wu.ContractorName,
+                    wu.Amount,
+                    wu.UnitId,
+                    u.Name AS UnitName,
+                    wu.IsPaid,
+                    wu.VerifyType,
+                    wu.CreatedBy,
+                    wu.CreatedAt
+                FROM WagesUpload wu
+                INNER JOIN Unit u ON wu.UnitId = u.Id
+                WHERE wu.IsPaid = 0 
+                  AND wu.UnitId = ?
+                  AND CAST(CreatedAt AS DATE) = (
+                  SELECT MAX(CAST(CreatedAt AS DATE)) 
+                  FROM WagesUpload where UnitId = ?
+                );
+            """
+            params = (unit_id, unit_id)
+            cursor.execute(query, params)
+            columns = [col[0] for col in cursor.description]  # get column names
+            rows = cursor.fetchall()
+            results = [dict(zip(columns, row)) for row in rows]  # convert each row into dict
+            return results
+    except Exception as e:
+        logger.error(f"Failed to load previous week unpaid employees: {e}")
+    return []
+
+    
+def FilterByDatePreviousWeek(unit_id: int, from_date: datetime.date, to_date: datetime.date) -> List[Dict[str, Any]]:
+    try:
+        conn = DatabaseManager.get_connection()
+        if conn:
+            cursor = conn.cursor()
+            query = """
+                    SELECT 
+                    wu.NucleusId,
+                    wu.ContractorId,
+                    wu.LabourName,
+                    wu.ContractorName,
+                    wu.Amount,
+                    wu.UnitId,
+                    u.Name AS UnitName,
+                    wu.IsPaid,
+                    wu.VerifyType,
+                    wu.CreatedBy,
+                    wu.CreatedAt
+                    FROM WagesUpload wu
+                    INNER JOIN Unit u ON wu.UnitId = u.Id
+                    WHERE wu.IsPaid = 0
+                    AND wu.UnitId = ?
+                    AND CAST(wu.CreatedAt AS DATE) BETWEEN ? AND ?;
+            """
+            params = (unit_id, from_date, to_date)
+            cursor.execute(query, params)
+            columns = [col[0] for col in cursor.description]  # get column names
+            rows = cursor.fetchall()
+            results = [dict(zip(columns, row)) for row in rows]  # convert each row into dict
+            return results
+    except Exception as e:
+        logger.error(f"Failed to load previous week unpaid employees: {e}")
+    return []
