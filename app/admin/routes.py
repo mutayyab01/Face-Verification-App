@@ -27,7 +27,7 @@ def dashboard():
         flash('Error loading dashboard data.', 'error')
         return render_template('admin/admin_dashboard.html', stats={'employees': 0, 'contractors': 0, 'users': 0})
     
-    
+#Author: Abrar ul Hassan, Comment: View Page Employee Payment View, Created At: 09-01-2025
 @admin_bp.route('/ViewEmployePayment')
 @require_auth
 @require_role(['admin'])
