@@ -30,14 +30,14 @@ def dashboard():
 #Author: Abrar ul Hassan, Comment: View Page Employee Payment View, Created At: 09-01-2025
 @admin_bp.route('/ViewEmployePayment')
 @require_auth
-@require_role(['admin'])
+@require_role(['cashier'])
 def viewPaymentLabour():
     return render_template('admin/EmployeePaymentView.html')
 
 #Author: Abrar ul Hassan, Comment: Get Employee Paid Record, Created At: 09-01-2025
 @admin_bp.route("/api/get_employeesPayment")
 @require_auth
-@require_role(["admin"])
+@require_role(["cashier"])
 def get_employees_payment():
     conn = DatabaseManager.get_connection()
     cursor = conn.cursor()
