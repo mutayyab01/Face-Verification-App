@@ -6,7 +6,7 @@
 
 <main class="container mt-4">
   <h3>Employee Payment Records</h3>
-  
+
   <table class="table table-bordered" id="employeeTable">
     <thead>
       <tr>
@@ -14,8 +14,8 @@
         <th>Labour Name</th>
         <th>Contractor</th>
         <th>Amount</th>
-        <th>Date</th>
         <th>Unit</th>
+        <th>Date</th>
         <th>Status</th>
       </tr>
     </thead>
@@ -28,49 +28,49 @@
 
 
 <script>
-let employeeTable;
+  let employeeTable;
 
-// Author: Abrar ul Hassan, Comment: Load Paid Employee Data, Created At: 09-01-2025
-function loadPayments() {
-  $.ajax({
-    url: "/admin/api/get_employeesPayment",
-    method: "GET",
-    success: function(data) {
-      if (!employeeTable) {
-        employeeTable = $('#employeeTable').DataTable({
-          pageLength: 10,
-          lengthChange: false,
-          ordering: false,
-          data: data,
-          dom: '<"d-flex justify-content-between align-items-center mb-2"fB>rtip',
-          buttons: [
-            'copy', 'csv', 'excel', 'pdf', 'print'
-          ],
-          columns: [
-            { data: "NucleusId" },
-            { data: "LabourName" },
-            { data: "ContractorName" },
-            { data: "Amount" },
-            { data: "Unit" },
-            { data: "Date" },
-            { 
-              data: "IsPaid",
-              render: function() {
-                return "✅ Paid";
+  // Author: Abrar ul Hassan, Comment: Load Paid Employee Data, Created At: 09-01-2025
+  function loadPayments() {
+    $.ajax({
+      url: "/admin/api/get_employeesPayment",
+      method: "GET",
+      success: function (data) {
+        if (!employeeTable) {
+          employeeTable = $('#employeeTable').DataTable({
+            pageLength: 10,
+            lengthChange: false,
+            ordering: false,
+            data: data,
+            dom: '<"d-flex justify-content-between align-items-center mb-2"fB>rtip',
+            buttons: [
+              'copy', 'csv', 'excel', 'pdf', 'print'
+            ],
+            columns: [
+              { data: "NucleusId" },
+              { data: "LabourName" },
+              { data: "ContractorName" },
+              { data: "Amount" },
+              { data: "Unit" },
+              { data: "Date" },
+              {
+                data: "IsPaid",
+                render: function () {
+                  return "✅ Paid";
+                }
               }
-            }
-          ]
-        });
-      } else {
-        employeeTable.clear().rows.add(data).draw();
+            ]
+          });
+        } else {
+          employeeTable.clear().rows.add(data).draw();
+        }
       }
-    }
-  });
-}
+    });
+  }
 
-$(document).ready(function() {
-  loadPayments();
-  setInterval(loadPayments, 5000);
-});
+  $(document).ready(function () {
+    loadPayments();
+    setInterval(loadPayments, 5000);
+  });
 </script>
 {% endblock %}
