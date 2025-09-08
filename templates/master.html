@@ -78,7 +78,8 @@
           <i class="fas fa-fw fa-users"></i>
           <span>Admin</span>
         </a>
-        <div id="collapseEmployeePayment" class="collapse" aria-labelledby="headingEmployee" data-parent="#accordionSidebar">
+        <div id="collapseEmployeePayment" class="collapse" aria-labelledby="headingEmployee"
+          data-parent="#accordionSidebar">
           <div class="bg-white py-2 collapse-inner rounded">
             <h6 class="collapse-header">Admin Operations:</h6>
             <a class="collapse-item" href="{{ url_for('admin.viewPaymentLabour') }}">Labour Payment View</a>
@@ -132,20 +133,17 @@
       <div class="sidebar-heading">Labour Face</div>
 
       <li class="nav-item">
-        <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseEmployeeFace"
-          aria-expanded="true" aria-controls="collapseEmployeeFace">
+        <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseFaceOptions"
+          aria-expanded="true" aria-controls="collapseFaceOptions">
           <i class="fas fa-fw fa-user"></i>
           <span>Labour Detection Face</span>
         </a>
-        <div id="collapseEmployeeFace" class="collapse" aria-labelledby="headingEmployeeDetector"
+
+        <!-- Collapse group -->
+        <div id="collapseFaceOptions" class="collapse" aria-labelledby="headingEmployeeDetector"
           data-parent="#accordionSidebar">
           <div class="bg-white py-2 collapse-inner rounded">
             <a class="collapse-item" href="{{ url_for('face.RenderFacePage') }}">Verify By Labour Face</a>
-          </div>
-        </div>
-        <div id="collapseEmployeeFace" class="collapse" aria-labelledby="headingEmployeeDetector"
-          data-parent="#accordionSidebar">
-          <div class="bg-white py-2 collapse-inner rounded">
             <a class="collapse-item" href="{{ url_for('face.RenderCodePage') }}">Verify By Labour Code</a>
           </div>
         </div>
