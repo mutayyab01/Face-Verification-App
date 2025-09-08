@@ -1,4 +1,4 @@
-from flask import render_template, flash, request, session
+from flask import render_template, flash, request, session, redirect, url_for
 import logging
 from datetime import datetime
 import pandas as pd
@@ -36,8 +36,11 @@ def dashboard():
 @require_role(['finance'])
 def wages_upload():
     print("📁 Accessed Wages Upload Route")
-    message = None
-    status = None
+    
+    # Check for messages in session
+    message = session.pop('upload_message', None) if 'upload_message' in session else None
+    status = session.pop('upload_status', None) if 'upload_status' in session else None
+    
     units = []
 
     def parse_contractor_id(value):
@@ -83,9 +86,13 @@ def wages_upload():
         unit_id = request.form.get('Unit')
 
         if not file:
-            return render_template('finance/wagesUpload.html', message="No file uploaded.", status="error")
+            session['upload_message'] = "No file uploaded."
+            session['upload_status'] = "error"
+            return redirect(url_for('finance.wages_upload'))
         if not unit_id:
-            return render_template('finance/wagesUpload.html', message="Please select a Unit.", status="error")
+            session['upload_message'] = "Please select a Unit."
+            session['upload_status'] = "error"
+            return redirect(url_for('finance.wages_upload'))
 
         try:
             result = WagesUploadModel.delete_existing_record_with_unitId(unit_id)         
@@ -96,11 +103,15 @@ def wages_upload():
             required_columns = {'Labour Code', 'Contractor Code', 'Labour Name', 'Net Payable'}
             if not required_columns.issubset(df.columns):
                 missing = required_columns - set(df.columns)
-                return render_template('finance/wagesUpload.html', message=f"Missing columns: {missing}", status="error")
+                session['upload_message'] = f"Missing columns: {missing}"
+                session['upload_status'] = "error"
+                return redirect(url_for('finance.wages_upload'))
 
             conn = DatabaseManager.get_connection()
             if not conn:
-                return render_template('finance/wagesUpload.html', message="Database connection failed.", status="error")
+                session['upload_message'] = "Database connection failed."
+                session['upload_status'] = "error"
+                return redirect(url_for('finance.wages_upload'))
             cursor = conn.cursor()
 
             inserted_rows = 0
@@ -166,13 +177,15 @@ def wages_upload():
                     continue
 
             conn.commit()
-            message = f"✅ Inserted {inserted_rows} rows, skipped {skipped_rows} rows."
-            status = "success"
+            session['upload_message'] = f"✅ Inserted {inserted_rows} rows, skipped {skipped_rows} rows."
+            session['upload_status'] = "success"
+            return redirect(url_for('finance.wages_upload'))
 
         except Exception as e:
             logger.error(f"File processing error: {e}")
-            message = f"Error processing file: {e}"
-            status = "error"
+            session['upload_message'] = f"Error processing file: {e}"
+            session['upload_status'] = "error"
+            return redirect(url_for('finance.wages_upload'))
 
     # Rest of your code for displaying upload data...
     try:
