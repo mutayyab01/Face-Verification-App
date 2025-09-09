@@ -44,7 +44,9 @@ def login():
                 return redirect(url_for('hr.dashboard'))
             elif user_type == 'finance':
                 return redirect(url_for('finance.dashboard'))
-            elif user_type == 'cashier':
+            elif user_type == 'cashier:match':
+                return redirect(url_for('face.dashboard'))
+            elif user_type == 'cashier:paid':
                 return redirect(url_for('face.dashboard'))
             else:
                 session.clear()

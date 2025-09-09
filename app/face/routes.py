@@ -27,7 +27,7 @@ face_service = FaceRecognitionService()
 
 @face_bp.route('/cashier/dashboard')
 @require_auth
-@require_role(['cashier'])
+@require_role(['cashier:match','cashier:paid'])
 def dashboard():
     """Face recognition dashboard"""
     try:
@@ -40,7 +40,7 @@ def dashboard():
     
 @face_bp.route('/cashier/RenderFacePage')
 @require_auth
-@require_role(['admin', 'cashier'])
+@require_role(['admin', 'cashier:match'])
 def RenderFacePage():
     unit_id = request.args.get("unit_id", type=int, default=1)
     cashier_unit=session['cashier_unit']
@@ -58,7 +58,7 @@ def RenderFacePage():
 
 @face_bp.route('/cashier/GetEmployeeByIdOnFacePage', methods=['GET',"POST"])
 @require_auth
-@require_role(['admin', 'cashier'])
+@require_role(['admin', 'cashier:match'])
 def GetEmployeeById_onFacePage():
     """Main face matching interface"""
     data = request.get_json(force=True)
@@ -102,7 +102,7 @@ def GetEmployeeById_onFacePage():
 
 @face_bp.route('/cashier/GetWagesData')
 @require_auth
-@require_role(['admin', 'cashier'])
+@require_role(['admin', 'cashier:match'])
 def get_wages_data():
     upload_data = get_upload_data()
     rows = []
@@ -119,7 +119,7 @@ def get_wages_data():
 # ===== Match Face & Update Wages =====
 @face_bp.route('/cashier/VerifyEmployeeOnFacePage', methods=["POST"])
 @require_auth
-@require_role(['admin', 'cashier'])
+@require_role(['admin', 'cashier:match'])
 def VerifyEmployee_onFacePage():
     try:
         data = request.get_json(force=True)
@@ -242,7 +242,7 @@ def VerifyEmployee_onFacePage():
 
 @face_bp.route('/cashier/RenderCodePage')
 @require_auth
-@require_role(['admin', 'cashier'])
+@require_role(['admin', 'cashier:match'])
 def RenderCodePage():
     """Main face matching interface"""    
     try:
@@ -275,7 +275,7 @@ def RenderCodePage():
 # when i searched any employee by id it show employes data M sabir
 @face_bp.route('/cashier/matchbycode', methods=['GET'])
 @require_auth
-@require_role(['admin', 'cashier'])
+@require_role(['admin', 'cashier:match'])
 def MatchbyCode():
     employee_id = request.args.get('employee_id', type=int)
     cashier_unit = session.get('cashier_unit', 1)
@@ -318,7 +318,7 @@ def MatchbyCode():
 # verification method for employee by code
 @face_bp.route('/verify_employeebyCode', methods=['POST'])
 @require_auth
-@require_role(['admin', 'cashier'])
+@require_role(['admin', 'cashier:match'])
 def verify_employeebyCode():
     try:
         data = request.get_json(silent=True) or {}
@@ -366,13 +366,13 @@ def verify_employeebyCode():
 
 @face_bp.route('/ViewUnpaidEmployees')
 @require_auth
-@require_role(['admin', 'cashier'])
+@require_role(['admin', 'cashier:match'])
 def ViewUnpaidEmployees():
     return render_template('FaceRecognition/PreviousWeekUnpaidEmployee.html')
 
 @face_bp.route("/api/PreviousWeekUnpaidEmployees", methods=["GET", "POST"])
 @require_auth
-@require_role(['admin', 'cashier'])
+@require_role(['admin', 'cashier:match'])
 def PreviousWeekUnpaidEmployees():
     cashier_unit = session.get('cashier_unit', 1)
     data = request.get_json(silent=True)

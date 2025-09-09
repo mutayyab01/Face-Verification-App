@@ -59,7 +59,7 @@
         </a>
       </li>
       {% endif %}
-      {% if session.user_type == 'cashier' %}
+      {% if session.user_type == 'cashier:match' or session.user_type == 'cashier:paid' %}
       <!-- Dashboard Link -->
       <li class="nav-item">
         <a class="nav-link" href="{{ url_for('face.dashboard') }}">
@@ -68,7 +68,7 @@
         </a>
       </li>
       {% endif %}
-      {% if session.user_type == 'cashier'%}
+      {% if session.user_type == 'cashier:paid' %}
       <!-- Employee Management Section -->
       <div class="sidebar-heading">Payment View</div>
 
@@ -128,7 +128,7 @@
       </li>
       {% endif %}
 
-      {% if session.user_type == 'admin' or session.user_type == 'cashier' %}
+      {% if session.user_type == 'admin' or session.user_type == 'cashier:match' %}
       <!-- Employee Face Detection Section -->
       <div class="sidebar-heading">Labour Face</div>
 
