@@ -185,7 +185,6 @@ def VerifyEmployee_onFacePage():
                     WHERE NucleusId = ? AND IsActive = 1
                 """, (neclusid,))
                 employee = cursor.fetchone()
-                print(employee)
                 if not employee:
                     return jsonify({"status": "error", "message": "Employee not found or inactive"}), 404
 
@@ -200,7 +199,6 @@ def VerifyEmployee_onFacePage():
                     }), 404
                 
                 nucleus_id, name, father_name, amount, is_paid, created_at = row
-                print("Wage Record:", row)
                 if is_paid is True:
                     return jsonify({
                         "status": "warning",
@@ -217,7 +215,6 @@ def VerifyEmployee_onFacePage():
                 created_date = created_at.date() if isinstance(created_at, datetime) else datetime.strptime(created_at, "%Y-%m-%d %H:%M:%S.%f").date()
 
                 affectedrow = mark_labour_as_paid_for_face(cashier_unit, created_date,nucleus_id)
-                print("Affected Rows:", affectedrow)
 
                 return jsonify({
                     "status": "success",
@@ -258,7 +255,6 @@ def RenderCodePage():
         else:
             upload_data = get_upload_data(unit_id)
         
-        print(upload_data,"Mutayyab",{cashier_unit},{unit_id})
         units = ContractorModel.get_unit()
         return render_template('FaceRecognition/VerifyByCode.html',upload_data=upload_data,unit_map=unit_map, units=units)
 
@@ -380,7 +376,6 @@ def PreviousWeekUnpaidEmployees():
     if data:
         fromDate = data.get("from_date")
         toDate = data.get("to_date")
-        print(fromDate, toDate, "fromdatetoDate")
     if fromDate and toDate:
         employees = FilterByDatePreviousWeek(cashier_unit, fromDate, toDate)
     else:

@@ -72,7 +72,6 @@ def get_employees_payment():
 """, (session['cashier_unit'],))
 
     rows = cursor.fetchall()
-    print(rows)
 
     employees = []
     for row in rows:
