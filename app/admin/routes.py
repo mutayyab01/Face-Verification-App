@@ -44,23 +44,35 @@ def get_employees_payment():
     cursor = conn.cursor()
 
     cursor.execute("""
-     SELECT NucleusId, ContractorId, LabourName, ContractorName, UpdatedAt, Amount,
-       UnitId, IsPaid, VerifyType,
-       CASE
-       WHEN UnitId = 1 THEN 'C4'
-       END AS Unit
+    SELECT 
+        NucleusId, 
+        ContractorId, 
+        LabourName, 
+        ContractorName, 
+        UpdatedAt, 
+        Amount,
+        UnitId, 
+        IsPaid, 
+        VerifyType,
+        CASE 
+            WHEN UnitId = 1 THEN 'C4'
+            WHEN UnitId = 2 THEN 'B-38'
+            WHEN UnitId = 3 THEN 'B44'
+            ELSE 'Unknown'
+        END AS UnitName
     FROM WagesUpload
     WHERE CreatedAt = (
         SELECT MAX(CreatedAt) 
         FROM WagesUpload wu 
         WHERE wu.NucleusId = WagesUpload.NucleusId
     )
-    AND UnitId = 1
-    AND UpdatedAt is not null
+    AND UnitId = ?
+    AND UpdatedAt IS NOT NULL
     ORDER BY UpdatedAt DESC;  
-    """)
+""", (session['cashier_unit'],))
 
     rows = cursor.fetchall()
+    print(rows)
 
     employees = []
     for row in rows:
@@ -70,7 +82,7 @@ def get_employees_payment():
             "ContractorName": row.ContractorName,
             "Amount": row.Amount,
             "Date": row.UpdatedAt.strftime("%Y-%m-%d %H:%M:%S") if row.UpdatedAt else None,
-            "Unit": row.Unit,
+            "Unit": row.UnitName,
             "IsPaid": row.IsPaid,
         })
 
