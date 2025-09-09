@@ -35,7 +35,7 @@
     $.ajax({
       url: "/admin/api/get_employeesPayment",
       method: "GET",
-      success: function (data) {
+      success: function (data,row) {
         if (!employeeTable) {
           employeeTable = $('#employeeTable').DataTable({
             pageLength: 10,
@@ -55,8 +55,18 @@
               { data: "Date" },
               {
                 data: "IsPaid",
-                render: function () {
-                  return "✅ Paid";
+                render: function (data, type, row) {
+                  let checked = data == 1 ? "checked" : "";
+                  let disabled = data == 1 ? "disabled" : "";
+                  return `<div class="form-check">
+        <input 
+          class="form-check-input border-dark" 
+          type="checkbox" 
+          id="defaultCheckbox_${row.NucleusId}" 
+          onchange="onChangeCheckbox(this, ${row.NucleusId})" 
+          ${checked} ${disabled} >
+        <label class="form-check-label" for="defaultCheckbox_${row.NucleusId}"></label>
+      </div>`;
                 }
               }
             ]
@@ -67,10 +77,35 @@
       }
     });
   }
-
   $(document).ready(function () {
     loadPayments();
-    setInterval(loadPayments, 5000);
   });
+  //Author: Abrar ul Hassan, Comment: Get Nucleus id and Update Ispaid , Created At: 09-01-2025
+  function onChangeCheckbox(checkbox, NucleusId)
+  {
+    let isPaid = checkbox.checked ? 1 : 0;
+    $.ajax({
+      url:"/admin/api/get_employeesPayment",
+      type: "POST",
+      contentType: "application/json",
+      data: JSON.stringify({              
+      NucleusId: NucleusId,
+      isPaid: isPaid
+    }),
+      success:function(response)
+      {
+        console.log("Updated Sucesss",response);
+        if (isPaid === 1) {
+        checkbox.disabled = true;
+
+      }
+      },
+      error:function(xhr,status,error)
+      {
+        console.log("Updated Failed ", error)
+      }
+
+    })
+  }
 </script>
 {% endblock %}

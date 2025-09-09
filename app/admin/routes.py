@@ -1,8 +1,9 @@
-from flask import render_template, flash,jsonify,request
+from flask import render_template, flash,jsonify,request,session
 import logging
 from . import admin_bp
 from app.auth.decorators import require_auth, require_role
 from app.database import DatabaseManager
+from datetime import datetime
 
 logger = logging.getLogger(__name__)
 
@@ -54,8 +55,8 @@ def get_employees_payment():
         FROM WagesUpload wu 
         WHERE wu.NucleusId = WagesUpload.NucleusId
     )
-    AND IsPaid = 1 
     AND UnitId = 1
+    AND UpdatedAt is not null
     ORDER BY UpdatedAt DESC;  
     """)
 
@@ -74,3 +75,27 @@ def get_employees_payment():
         })
 
     return jsonify(employees)
+#Author: Abrar ul Hassan, Comment: Update Wages Payment Confirm ispaid =1, Created At: 09-09-2025
+@admin_bp.route("/api/get_employeesPayment",methods=["POST"])
+@require_auth
+@require_role(["cashier"])
+def PyamentConfirm():
+    try:
+        conn = DatabaseManager.get_connection()
+        cursor = conn.cursor()
+        data = request.get_json()
+        NucleusId = data.get("NucleusId")
+        IsPaid = data.get("isPaid")
+        cursor.execute("""
+            update WagesUpload set IsPaid = ?,
+            UpdatedAt = ?, 
+            UpdatedBy = ?
+            where NucleusId = ? AND UnitId = 1
+        """, (IsPaid,datetime.now(),session['user_id'],NucleusId))
+        conn.commit()
+        return jsonify({"success": True, "message": "Payment confirmed"})
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)}), 500
+    finally:
+        cursor.close()
+        conn.close()

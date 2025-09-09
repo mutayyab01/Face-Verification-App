@@ -69,13 +69,12 @@ def mark_labour_as_paid_for_code(unit_id: int, target_date: datetime.date, nucle
 
             query = """
                 UPDATE WagesUpload
-                SET IsPaid = 1,
-                VerifyType = 'Code',
-                UpdatedBy = ?,
-                UpdatedAt = ?
-                WHERE UnitId = ?
-                  AND CAST(CreatedAt AS DATE) = ?
-                  and NucleusId = ?
+SET VerifyType = 'Code',
+    UpdatedBy = ?,
+    UpdatedAt = ?
+WHERE UnitId = ?
+  AND CAST(CreatedAt AS DATE) = ?
+  AND NucleusId = ?
                   
             """
             params = (session['user_id'], datetime.now(), unit_id, target_date, nucleus_id)
