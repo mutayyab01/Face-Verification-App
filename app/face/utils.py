@@ -109,8 +109,7 @@ def mark_labour_as_paid_for_face(unit_id: int, target_date: datetime.date, nucle
 
             query = """
                 UPDATE WagesUpload
-                SET IsPaid = 1,
-                VerifyType = 'Face',
+                SET VerifyType = 'Face',
                 UpdatedBy = ?,
                 UpdatedAt = ?
                 WHERE UnitId = ?

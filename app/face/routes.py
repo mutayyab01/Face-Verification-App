@@ -214,7 +214,7 @@ def VerifyEmployee_onFacePage():
                 # ✅ Convert created_at to date only
                 created_date = created_at.date() if isinstance(created_at, datetime) else datetime.strptime(created_at, "%Y-%m-%d %H:%M:%S.%f").date()
 
-                affectedrow = mark_labour_as_paid_for_face(cashier_unit, created_date,nucleus_id)
+                mark_labour_as_paid_for_face(cashier_unit, created_date,nucleus_id)
 
                 return jsonify({
                     "status": "success",
