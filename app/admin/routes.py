@@ -98,11 +98,11 @@ def PyamentConfirm():
         NucleusId = data.get("NucleusId")
         IsPaid = data.get("isPaid")
         cursor.execute("""
-            update WagesUpload set IsPaid = ?,
-            UpdatedAt = ?, 
-            UpdatedBy = ?
-            where NucleusId = ? AND UnitId = 1
-        """, (IsPaid,datetime.now(),session['user_id'],NucleusId))
+    update WagesUpload set IsPaid = ?,
+    UpdatedAt = ?, 
+    UpdatedBy = ?
+    where NucleusId = ? AND UnitId = ?
+""", (IsPaid, datetime.now(), session['user_id'], NucleusId, session['cashier_unit'],))
         conn.commit()
         return jsonify({"success": True, "message": "Payment confirmed"})
     except Exception as e:
