@@ -150,9 +150,9 @@
       </li>
 
       <div class="sidebar-heading">Previous Week Unpaid Employees</div>
-        <li class="nav-item">
-        <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#UnpaidEmployee"
-          aria-expanded="true" aria-controls="UnpaidEmployee">
+      <li class="nav-item">
+        <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#UnpaidEmployee" aria-expanded="true"
+          aria-controls="UnpaidEmployee">
           <i class="fas fa-fw fa-user"></i>
           <span>Unpaid Employees</span>
         </a>
@@ -584,7 +584,14 @@
   <!-- DataTables CSS and JS -->
   <script>
     $(document).ready(function () {
-      $('#example').DataTable();
+      $('#example').DataTable({
+        dom: 'Blfrtip', 
+        lengthMenu: [[10, 25, 50, 100], [10, 25, 50, 100]],
+        pageLength: 10, 
+        buttons: [
+          'copy', 'csv', 'excel', 'pdf', 'print'
+        ]
+      });
     });
   </script>
   <script>
