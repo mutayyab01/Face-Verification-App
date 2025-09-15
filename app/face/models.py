@@ -212,7 +212,7 @@ class WagesModel:
 
 class EmployeeModel:
     @staticmethod
-    def getNameandAmount(employeeID):
+    def getNameandAmount(employeeID, unitID):
         try:
             conn = DatabaseManager.get_connection()
             if not conn:
@@ -223,7 +223,13 @@ class EmployeeModel:
                 SELECT LabourName, Amount
                 FROM WagesUpload
                 WHERE NucleusId = ?
-            """, (employeeID,))
+                and UnitId = ?
+                and CreatedAt = (
+                SELECT MAX(CreatedAt) 
+                FROM WagesUpload wu 
+                WHERE wu.NucleusId = WagesUpload.NucleusId
+                )
+            """, (employeeID,unitID,))
 
             results = cursor.fetchone()
             if not results:

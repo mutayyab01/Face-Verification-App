@@ -76,6 +76,9 @@
                 to_date: toDate
             }),
             success: function (data) {
+                if (data.length === 0) {
+                    swal.fire("No Data", "No unpaid employees found for the selected date range.", "info");
+                }
                 renderTable(data);
             }
         });

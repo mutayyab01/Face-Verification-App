@@ -63,7 +63,8 @@ def GetEmployeeById_onFacePage():
     """Main face matching interface"""
     data = request.get_json(force=True)
     employee_id = data.get("neclusid")
-    
+    cashier_unit = session.get('cashier_unit', 1)
+
     if not employee_id:
         return jsonify({'message': 'Please Enter Number'})
     
@@ -73,7 +74,7 @@ def GetEmployeeById_onFacePage():
         return jsonify({'message': 'ID must be a valid integer'})
     try:
         employee = EmployeeFaceModel.get_by_id(employee_id)
-        row = EmployeeModel.getNameandAmount(employee_id)
+        row = EmployeeModel.getNameandAmount(employee_id,cashier_unit)
         
         if not employee or not employee.Image:
             flash("Employee not found or no image available.", "error")
@@ -93,7 +94,7 @@ def GetEmployeeById_onFacePage():
                              
     except FaceRecognitionError as e:
         logger.error(f"Face recognition error: {e}")
-        flash(str(e), "error")
+        flash("An unexpected error occurred.", "error")
         return jsonify({'message': 'Face recognition error occurred.'})
     except Exception as e:
         logger.error(f"Unexpected error in match_employee_face: {e}")
@@ -260,7 +261,7 @@ def RenderCodePage():
 
     except FaceRecognitionError as e:
         logger.error(f"Face recognition error: {e}")
-        flash(str(e), "error")
+        flash("An unexpected error occurred.", "error")
         return render_template('FaceRecognition/VerifyByCode.html', upload_data=upload_data)
     except Exception as e:
         logger.error(f"Unexpected error in match_employee_face: {e}")
@@ -276,7 +277,6 @@ def MatchbyCode():
     employee_id = request.args.get('employee_id', type=int)
     cashier_unit = session.get('cashier_unit', 1)
     unit_map = {1: "C4", 2: "E-38", 3: "B44"}
-
     if not employee_id:
         # This is the initial page load, render the template with data
         upload_data = get_upload_data(cashier_unit)
@@ -296,8 +296,7 @@ def MatchbyCode():
 
         import base64
         image_base64 = base64.b64encode(employee.Image).decode("utf-8")
-        row = EmployeeModel.getNameandAmount(employee_id)
-
+        row = EmployeeModel.getNameandAmount(employee_id,cashier_unit)
         return jsonify({
             "status": "success",
             "employee_id": employee_id,
@@ -308,7 +307,7 @@ def MatchbyCode():
             "image_base64": image_base64
         })
     except Exception as e:
-        return jsonify({"status": "error", "message": str(e)})
+        return jsonify({"status": "error", "message": "Unexpected error occurred"})
 
 
 # verification method for employee by code
@@ -357,7 +356,7 @@ def verify_employeebyCode():
 
     except Exception as e:
         logger.error(f"Verification failed: {e}")
-        return jsonify({"status": "error", "message": str(e)}), 500
+        return jsonify({"status": "error", "message": "Unexpected error occurred"}), 500
 
 
 @face_bp.route('/ViewUnpaidEmployees')
