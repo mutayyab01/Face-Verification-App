@@ -112,7 +112,7 @@
     </div>
   </form>
   {% endif %}
-  {% if session.user_type == 'cashier' %}
+  {% if session.user_type == 'cashier:paid' or session.user_type == 'cashier:match' %}
   <div class="row align-items-center mb-3">
     <!-- Date -->
     <div class="col-md-4">

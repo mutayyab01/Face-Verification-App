@@ -85,7 +85,7 @@ block content %}
         </div>
       </form>
       {% endif %}
-      {% if session.user_type == 'cashier' %}
+      {% if session.user_type == 'cashier:paid' or session.user_type == 'cashier:match' %}
       <!-- Date -->
       <div class="col-md-4">
         <h6><mark>Data is Shown by Date :

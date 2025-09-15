@@ -362,13 +362,13 @@ def verify_employeebyCode():
 
 @face_bp.route('/ViewUnpaidEmployees')
 @require_auth
-@require_role(['admin', 'cashier:match'])
+@require_role(['admin', 'cashier:match','cashier:paid'])
 def ViewUnpaidEmployees():
     return render_template('FaceRecognition/PreviousWeekUnpaidEmployee.html')
 
 @face_bp.route("/api/PreviousWeekUnpaidEmployees", methods=["GET", "POST"])
 @require_auth
-@require_role(['admin', 'cashier:match'])
+@require_role(['admin', 'cashier:match','cashier:paid'])
 def PreviousWeekUnpaidEmployees():
     cashier_unit = session.get('cashier_unit', 1)
     data = request.get_json(silent=True)
