@@ -31,55 +31,99 @@
   let employeeTable;
 
   // Author: Abrar ul Hassan, Comment: Load Paid Employee Data, Created At: 09-01-2025
+  // Author: Abrar ul Hassan, Comment: Load Paid Employee Data, updated At: 09-15-2025
   function loadPayments() {
-    $.ajax({
-      url: "/admin/api/get_employeesPayment",
-      method: "GET",
-      success: function (data,row) {
-        if (!employeeTable) {
-          employeeTable = $('#employeeTable').DataTable({
-            pageLength: 10,
-            lengthChange: false,
-            ordering: false,
-            data: data,
-            dom: '<"d-flex justify-content-between align-items-center mb-2"fB>rtip',
-            buttons: [
-              'copy', 'csv', 'excel', 'pdf', 'print'
-            ],
-            columns: [
-              { data: "NucleusId" },
-              { data: "LabourName" },
-              { data: "ContractorName" },
-              { data: "Amount" },
-              { data: "Unit" },
-              { data: "Date" },
-              {
-                data: "IsPaid",
-                render: function (data, type, row) {
+  $.ajax({
+    url: "/admin/api/get_employeesPayment",
+    method: "GET",
+    success: function (data, row) {
+      if (!employeeTable) {
+        employeeTable = $('#employeeTable').DataTable({
+          pageLength: 10,
+          lengthChange: false,
+          ordering: false,
+          data: data,
+          dom: '<"d-flex justify-content-between align-items-center mb-2"fB>rtip',
+          buttons: [
+            {
+              extend: 'copy',
+              exportOptions: {
+                columns: ':visible',
+                orthogonal: 'export'   // export ke liye rendered value use karega
+              }
+            },
+            {
+              extend: 'csv',
+              exportOptions: {
+                columns: ':visible',
+                orthogonal: 'export'
+              }
+            },
+            {
+              extend: 'excel',
+              exportOptions: {
+                columns: ':visible',
+                orthogonal: 'export'
+              }
+            },
+            {
+              extend: 'pdf',
+              exportOptions: {
+                columns: ':visible',
+                orthogonal: 'export'
+              }
+            },
+            {
+              extend: 'print',
+              exportOptions: {
+                columns: ':visible',
+                orthogonal: 'export'
+              }
+            }
+          ],
+          columns: [
+            { data: "NucleusId" },
+            { data: "LabourName" },
+            { data: "ContractorName" },
+            { data: "Amount" },
+            { data: "Unit" },
+            { data: "Date" },
+            {
+              data: "IsPaid",
+              render: function (data, type, row) {
+                if (type === 'display') {
                   let checked = data == 1 ? "checked" : "";
                   let disabled = data == 1 ? "disabled" : "";
                   return `<div class="form-check">
-        <input 
-          class="form-check-input border-dark" 
-          type="checkbox" 
-          id="defaultCheckbox_${row.NucleusId}" 
-          onchange="onChangeCheckbox(this, ${row.NucleusId})" 
-          ${checked} ${disabled} >
-        <label class="form-check-label" for="defaultCheckbox_${row.NucleusId}"></label>
-      </div>`;
+                    <input 
+                      class="form-check-input border-dark" 
+                      type="checkbox" 
+                      id="defaultCheckbox_${row.NucleusId}" 
+                      onchange="onChangeCheckbox(this, ${row.NucleusId})" 
+                      ${checked} ${disabled} >
+                    <label class="form-check-label" for="defaultCheckbox_${row.NucleusId}"></label>
+                  </div>`;
+                } else if (type === 'export' || type === 'filter') {
+                  return data == 1 ? "Paid" : "Unpaid";
+                } else {
+                  return data;
                 }
               }
-            ]
-          });
-        } else {
-          employeeTable.clear().rows.add(data).draw();
-        }
+            }
+          ]
+        });
+      } else {
+        employeeTable.clear().rows.add(data).draw();
       }
-    });
-  }
-  $(document).ready(function () {
-    loadPayments();
+    }
   });
+}
+$(document).ready(function () {
+  loadPayments();
+  setInterval(function () {
+    loadPayments();
+  }, 3000); 
+});
   //Author: Abrar ul Hassan, Comment: Get Nucleus id and Update Ispaid , Created At: 09-01-2025
   function onChangeCheckbox(checkbox, NucleusId)
   {

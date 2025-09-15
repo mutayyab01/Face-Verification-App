@@ -36,6 +36,7 @@ def viewPaymentLabour():
     return render_template('admin/EmployeePaymentView.html')
 
 #Author: Abrar ul Hassan, Comment: Get Employee Paid Record, Created At: 09-01-2025
+#Author: Abrar ul Hassan, Comment: Get Employee Paid Record, Updated At: 09-15-2025
 @admin_bp.route("/api/get_employeesPayment")
 @require_auth
 @require_role(["cashier:paid"])
@@ -56,7 +57,7 @@ def get_employees_payment():
         VerifyType,
         CASE 
             WHEN UnitId = 1 THEN 'C4'
-            WHEN UnitId = 2 THEN 'B-38'
+            WHEN UnitId = 2 THEN 'E-38'
             WHEN UnitId = 3 THEN 'B44'
             ELSE 'Unknown'
         END AS UnitName
