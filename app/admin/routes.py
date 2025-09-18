@@ -45,31 +45,32 @@ def get_employees_payment():
     cursor = conn.cursor()
 
     cursor.execute("""
-    SELECT 
-        NucleusId, 
-        ContractorId, 
-        LabourName, 
-        ContractorName, 
-        UpdatedAt, 
-        Amount,
-        UnitId, 
-        IsPaid, 
-        VerifyType,
-        CASE 
-            WHEN UnitId = 1 THEN 'C4'
-            WHEN UnitId = 2 THEN 'E-38'
-            WHEN UnitId = 3 THEN 'B44'
-            ELSE 'Unknown'
-        END AS UnitName
-    FROM WagesUpload
-    WHERE CreatedAt = (
-        SELECT MAX(CreatedAt) 
-        FROM WagesUpload wu 
-        WHERE wu.NucleusId = WagesUpload.NucleusId
-    )
-    AND UnitId = ?
-    AND UpdatedAt IS NOT NULL
-    ORDER BY UpdatedAt DESC;  
+                SELECT 
+                NucleusId, 
+                ContractorId, 
+                LabourName, 
+                ContractorName, 
+                UpdatedAt, 
+                Amount,
+                UnitId, 
+                IsPaid, 
+                VerifyType,
+                CASE 
+                WHEN UnitId = 1 THEN 'C4'
+                WHEN UnitId = 2 THEN 'E-38'
+                WHEN UnitId = 3 THEN 'B44'
+                ELSE 'Unknown'
+                END AS UnitName
+                FROM WagesUpload
+                WHERE CreatedAt = (
+                SELECT MAX(CreatedAt) 
+                FROM WagesUpload wu 
+                WHERE wu.NucleusId = WagesUpload.NucleusId
+                )
+                AND UnitId = ?
+                AND IsPaid = 0
+                AND UpdatedAt IS NOT NULL
+                ORDER BY UpdatedAt DESC;  
 """, (session['cashier_unit'],))
 
     rows = cursor.fetchall()
@@ -103,6 +104,10 @@ def PyamentConfirm():
     UpdatedAt = ?, 
     UpdatedBy = ?
     where NucleusId = ? AND UnitId = ?
+    AND CreatedAt = (
+    SELECT MAX(CreatedAt) 
+    FROM WagesUpload wu 
+    WHERE wu.NucleusId = WagesUpload.NucleusId )
 """, (IsPaid, datetime.now(), session['user_id'], NucleusId, session['cashier_unit'],))
         conn.commit()
         return jsonify({"success": True, "message": "Payment confirmed"})
