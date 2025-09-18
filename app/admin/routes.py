@@ -62,13 +62,11 @@ def get_employees_payment():
                 ELSE 'Unknown'
                 END AS UnitName
                 FROM WagesUpload
-                WHERE CreatedAt = (
-                SELECT MAX(CreatedAt) 
-                FROM WagesUpload wu 
-                WHERE wu.NucleusId = WagesUpload.NucleusId
+                WHERE cast(CreatedAt AS DATE) = (
+                SELECT MAX(cast(CreatedAt AS DATE)) 
+                FROM WagesUpload 
                 )
                 AND UnitId = ?
-                AND IsPaid = 0
                 AND UpdatedAt IS NOT NULL
                 ORDER BY UpdatedAt DESC;  
 """, (session['cashier_unit'],))
