@@ -64,12 +64,12 @@ def get_employees_payment():
                 FROM WagesUpload
                 WHERE cast(CreatedAt AS DATE) = (
                 SELECT MAX(cast(CreatedAt AS DATE)) 
-                FROM WagesUpload 
+                FROM WagesUpload where UnitId = ?
                 )
                 AND UnitId = ?
                 AND UpdatedAt IS NOT NULL
                 ORDER BY UpdatedAt DESC;  
-""", (session['cashier_unit'],))
+""", (session['cashier_unit'],session['cashier_unit'],))
 
     rows = cursor.fetchall()
 
