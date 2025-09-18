@@ -28,20 +28,18 @@
       <span>
         <strong style="color: rgb(68, 73, 68); display: none;" id="employeeNameLabel">Employee Name:</strong>
       </span>
-      <br id="linebreak" style="display:none;"> <!-- Line break -->
+      <br id="linebreak" style="display:none;">
       <span>
         <strong style="color: rgb(108, 116, 108); display: none;" id="employeeAmountLabel">Employee Amount:</strong>
       </span>
 
       <!-- Employee Image + Live Camera Feed -->
       <div class="row text-center">
-        <!-- Employee Registered Image -->
         <div class="col-md-5">
           <img id="employeeImage" class="img-thumbnail w-100"
             style="height:280px; object-fit:cover; border-radius:8px; ">
         </div>
 
-        <!-- Verify Button in Middle -->
         <div class="col-md-2 d-flex align-items-center justify-content-center flex-column">
           <button id="verifyBtn" class="btn btn-success btn-lg d-none">Verify</button>
           <div id="verifyLoader" class="spinner-border text-success mt-2" role="status"
@@ -50,7 +48,7 @@
           </div>
         </div>
 
-        <!-- ===== Live Camera Feed with Loader ===== -->
+        <!-- Live Camera Feed -->
         <div class="col-md-5 position-relative" style="margin-top:20px;">
           <div id="videoLoader" style="position:absolute; top:50%; left:50%;
        transform:translate(-50%,-50%); background:rgba(0,0,0,0.6);
@@ -71,7 +69,6 @@
         </div>
       </div>
 
-      <!-- Hidden Canvas + Captured Image -->
       <canvas id="canvas" width="640" height="480" class="d-none"></canvas>
       <div class="text-center mt-3">
         <img id="capturedImage" class="d-none img-thumbnail"
@@ -80,24 +77,18 @@
 
     </div>
   </div>
+
   {% if session.user_type == 'admin' %}
   <form method="GET" action="{{ url_for('face.RenderFacePage') }}">
     <div class="row align-items-center mb-3">
-      <!-- Date -->
       <div class="col-md-4">
         <h6><mark>Data is Shown by Date :
-            {% if upload_data %}{{ upload_data[0][9].strftime('%Y-%m-%d %H:%M:%S') }}{% else %}--{%
-            endif %}
+            {% if upload_data %}{{ upload_data[0][9].strftime('%Y-%m-%d %H:%M:%S') }}{% else %}--{% endif %}
           </mark></h6>
       </div>
-
-      <!-- Unit Display -->
       <div class="col-md-4">
-        <h6><mark>Unit : {% if upload_data %}{{ unit_map[upload_data[0][7]] }}{% else %}--{% endif
-            %}</mark></h6>
+        <h6><mark>Unit : {% if upload_data %}{{ unit_map[upload_data[0][7]] }}{% else %}--{% endif %}</mark></h6>
       </div>
-
-      <!-- Unit Dropdown -->
       <div class="col-md-4">
         <label for="Unit" class="form-label">Select Unit *</label>
         <select class="form-control" id="Unit" name="unit_id" required onchange="this.form.submit()">
@@ -112,23 +103,21 @@
     </div>
   </form>
   {% endif %}
+
   {% if session.user_type == 'cashier:paid' or session.user_type == 'cashier:match' %}
   <div class="row align-items-center mb-3">
-    <!-- Date -->
     <div class="col-md-4">
       <h6><mark>Data is Shown by Date :
-          {% if upload_data %}{{ upload_data[0][9].strftime('%Y-%m-%d %H:%M:%S') }}{% else %}--{%
-          endif %}
+          {% if upload_data %}{{ upload_data[0][9].strftime('%Y-%m-%d %H:%M:%S') }}{% else %}--{% endif %}
         </mark></h6>
     </div>
-    <!-- Unit Display -->
     <div class="col-md-4">
-      <h6><mark>Unit : {% if upload_data %}{{ unit_map[upload_data[0][7]] }}{% else %}--{% endif
-          %}</mark></h6>
+      <h6><mark>Unit : {% if upload_data %}{{ unit_map[upload_data[0][7]] }}{% else %}--{% endif %}</mark></h6>
     </div>
   </div>
   {% endif %}
-  <!-- ===== Wages Upload Grid Card ===== -->
+
+  <!-- Wages Upload Grid -->
   <div class="card mt-4">
     <div class="card-header">
       <h6>Uploaded Wages Data</h6>
@@ -169,11 +158,11 @@
       </div>
     </div>
   </div>
-
 </div>
 
 <!-- ===== Scripts ===== -->
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
   const video = document.getElementById("video");
@@ -193,23 +182,31 @@
   navigator.mediaDevices.getUserMedia({ video: true })
     .then(stream => {
       video.srcObject = stream;
-      document.getElementById("videoLoader").style.display = "none"; // hide loader
+      document.getElementById("videoLoader").style.display = "none";
     })
     .catch(err => {
       document.getElementById("videoLoader").innerText = "Camera access denied!";
+      Swal.fire({
+        icon: "error",
+        title: "Camera Error",
+        text: "Camera access denied! Please allow camera permissions."
+      });
     });
 
   // ===== Fetch Employee =====
   fetchEmployeeBtn.addEventListener("click", async () => {
-    // 🔒 Prevent multiple clicks
     if (fetchEmployeeBtn.disabled) return;
-    fetchEmployeeBtn.disabled = true; // disable immediately
+    fetchEmployeeBtn.disabled = true;
     fetchLoader.style.display = "inline-block";
 
     const employeeCode = document.getElementById("employeeCode").value.trim();
     if (!employeeCode) {
-      alert("Enter Employee Code");
-      fetchEmployeeBtn.disabled = false; // re-enable if invalid input
+      Swal.fire({
+        icon: "warning",
+        title: "Missing Input",
+        text: "Please enter Employee Code!"
+      });
+      fetchEmployeeBtn.disabled = false;
       fetchLoader.style.display = "none";
       return;
     }
@@ -236,28 +233,39 @@
         verifyBtn.classList.remove("d-none");
         verificationOverlay.style.display = "none";
         capturedImage.classList.add("d-none");
+
+        Swal.fire({
+          icon: "success",
+          title: "Employee Found",
+          text: "Employee data loaded successfully."
+        });
+
       } else {
-        alert("❌ " + result.message);
+        Swal.fire({
+          icon: "error",
+          title: "Not Found",
+          text: result.message
+        });
       }
 
     } catch (err) {
-      alert("⚠️ Request Failed: " + err);
+      Swal.fire({
+        icon: "error",
+        title: "Request Failed",
+        text: "⚠️ " + err
+      });
     } finally {
       fetchLoader.style.display = "none";
-
-      // 🕒 Auto clear after 10 seconds and re-enable button
       setTimeout(() => {
         fetchEmployeeBtn.disabled = false;
       }, 1000);
     }
   });
 
-
   // ===== Verify Face =====
   verifyBtn.addEventListener("click", async () => {
-    // 🔒 Prevent multiple clicks
     if (verifyBtn.disabled) return;
-    verifyBtn.disabled = true; // disable immediately
+    verifyBtn.disabled = true;
     verifyLoader.style.display = "block";
 
     const employeeCode = document.getElementById("employeeCode").value.trim();
@@ -276,17 +284,18 @@
       });
 
       const result = await response.json();
+      console.log(result);
 
       verificationOverlay.textContent = result.status === "success" ? result.message : "❌ " + result.message;
       verificationOverlay.style.color = result.status === "success" ? "green" : "red";
       verificationOverlay.style.display = "block";
-      console.log(result);
 
-      if (result.status === "success") {
+      Swal.fire({
+        icon: result.status === "success" ? "success" : "error",
+        title: result.status === "success" ? "Verification Success" : "Verification Failed",
+        text: result.message
+      });
 
-      }
-
-      // 🕒 Auto clear after 10 seconds
       setTimeout(() => {
         verificationOverlay.style.display = "none";
         capturedImage.classList.add("d-none");
@@ -297,19 +306,22 @@
       verificationOverlay.style.color = "red";
       verificationOverlay.style.display = "block";
 
+      Swal.fire({
+        icon: "error",
+        title: "Request Failed",
+        text: "Something went wrong while verifying."
+      });
+
       setTimeout(() => {
         verificationOverlay.style.display = "none";
         capturedImage.classList.add("d-none");
       }, 5000);
     } finally {
       verifyLoader.style.display = "none";
-      // 🔓 Re-enable after 2 seconds (to avoid spamming)
       setTimeout(() => {
         verifyBtn.disabled = false;
       }, 1000);
     }
   });
-
-
 </script>
 {% endblock %}
