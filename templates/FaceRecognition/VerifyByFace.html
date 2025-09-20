@@ -263,65 +263,148 @@
   });
 
   // ===== Verify Face =====
-  verifyBtn.addEventListener("click", async () => {
-    if (verifyBtn.disabled) return;
-    verifyBtn.disabled = true;
-    verifyLoader.style.display = "block";
+verifyBtn.addEventListener("click", async () => {
+  if (verifyBtn.disabled) return;
+  verifyBtn.disabled = true;
+  verifyLoader.style.display = "block";
 
-    const employeeCode = document.getElementById("employeeCode").value.trim();
-    const context = canvas.getContext("2d");
-    context.drawImage(video, 0, 0, canvas.width, canvas.height);
+  const employeeCode = document.getElementById("employeeCode").value.trim();
+  const context = canvas.getContext("2d");
+  context.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-    const capturedDataUrl = canvas.toDataURL("image/png");
-    capturedImage.src = capturedDataUrl;
-    capturedImage.classList.remove("d-none");
+  const capturedDataUrl = canvas.toDataURL("image/png");
+  capturedImage.src = capturedDataUrl;
+  capturedImage.classList.remove("d-none");
 
-    try {
-      const response = await fetch("VerifyEmployeeOnFacePage", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ neclusid: employeeCode, live_image: capturedDataUrl })
-      });
+  try {
+    const response = await fetch("VerifyEmployeeOnFacePage", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ neclusid: employeeCode, live_image: capturedDataUrl })
+    });
 
-      const result = await response.json();
-      console.log(result);
+    const result = await response.json();
+    console.log(result);
 
-      verificationOverlay.textContent = result.status === "success" ? result.message : "❌ " + result.message;
-      verificationOverlay.style.color = result.status === "success" ? "green" : "red";
+    // Handle different response scenarios
+    if (result.status === "success") {
+      verificationOverlay.textContent = result.message;
+      verificationOverlay.style.color = "green";
       verificationOverlay.style.display = "block";
-
+      
+      // Update the checkbox in the table if payment was successful
+      if (result.nucleus_id) {
+        const checkbox = document.getElementById(`paid-${result.nucleus_id}`);
+        if (checkbox) {
+          checkbox.checked = true;
+          const row = document.getElementById(`row-${result.nucleus_id}`);
+          if (row) row.classList.add("table-success");
+        }
+      }
+      
       Swal.fire({
-        icon: result.status === "success" ? "success" : "error",
-        title: result.status === "success" ? "Verification Success" : "Verification Failed",
-        text: result.message
+        icon: "success",
+        title: "Verification Success",
+        html: `
+          <div class="text-center">
+            ${result.employee_name ? `
+            <div style="background: #f8f9fa; padding: 1rem; border-radius: 8px; margin-top: 1rem;">
+              <div style="display: flex; justify-content: center;">
+                <div style="text-align: left;">
+                  <p style="margin: 0.5rem 0;"><strong>Employee:</strong> ${result.employee_name}</p>
+                  <p style="margin: 0.5rem 0;"><strong>Amount:</strong> Rs: ${result.amount || 'N/A'}</p>
+                  <p style="margin: 0.5rem 0;"><strong>ID:</strong> ${result.nucleus_id || 'N/A'}</p>
+                </div>
+              </div>
+            </div>
+            ` : ''}
+          </div>
+        `,
+        confirmButtonText: 'OK',
+        confirmButtonColor: '#28a745'
       });
 
-      setTimeout(() => {
-        verificationOverlay.style.display = "none";
-        capturedImage.classList.add("d-none");
-      }, 10000);
+    } else if (result.status === "warning") {
+      verificationOverlay.textContent = "⚠️ " + result.message;
+      verificationOverlay.style.color = "orange";
+      verificationOverlay.style.display = "block";
+      
+      Swal.fire({
+        icon: "warning",
+        title: "Already Paid",
+        html: `
+          <div class="text-center">
+            ${result.LabourName ? `
+            <div style="padding: 1rem; border-radius: 8px; margin-top: 1rem;">
+              <div style="display: flex; justify-content: center;">
+                <div style="text-align: left;">
+                  <p style="margin: 0.5rem 0;"><strong>Employee:</strong> ${result.LabourName}</p>
+                  <p style="margin: 0.5rem 0;"><strong>Amount:</strong> Rs:${result.amount || 'N/A'}</p>
+                  <p style="margin: 0.5rem 0;"><strong>ID:</strong> ${result.nucleus_id || 'N/A'}</p>
+                </div>
+              </div>
+            </div>
+            ` : ''}
+          </div>
+        `,
+        confirmButtonText: 'OK',
+        confirmButtonColor: '#ffc107'
+      });
 
-    } catch (err) {
-      verificationOverlay.textContent = "⚠️ Request Failed";
+    } else {
+      verificationOverlay.textContent = "❌ " + result.message;
       verificationOverlay.style.color = "red";
       verificationOverlay.style.display = "block";
-
+      
       Swal.fire({
         icon: "error",
-        title: "Request Failed",
-        text: "Something went wrong while verifying."
+        title: "Verification Failed",
+        html: `
+          <div class="text-center">
+            <div style="font-size: 1.2rem; color: #dc3545;">
+              ${result.message}
+            </div>
+          </div>
+        `,
+        confirmButtonText: 'Try Again',
+        confirmButtonColor: '#dc3545'
       });
-
-      setTimeout(() => {
-        verificationOverlay.style.display = "none";
-        capturedImage.classList.add("d-none");
-      }, 5000);
-    } finally {
-      verifyLoader.style.display = "none";
-      setTimeout(() => {
-        verifyBtn.disabled = false;
-      }, 1000);
     }
-  });
+
+    setTimeout(() => {
+      verificationOverlay.style.display = "none";
+      capturedImage.classList.add("d-none");
+    }, 10000);
+
+  } catch (err) {
+    verificationOverlay.textContent = "⚠️ Request Failed";
+    verificationOverlay.style.color = "red";
+    verificationOverlay.style.display = "block";
+
+    Swal.fire({
+      icon: "error",
+      title: "Request Failed",
+      html: `
+        <div class="text-center">
+          <div style="font-size: 1.2rem; color: #dc3545;">
+            Something went wrong while verifying.
+          </div>
+        </div>
+      `,
+      confirmButtonText: 'OK',
+      confirmButtonColor: '#dc3545'
+    });
+
+    setTimeout(() => {
+      verificationOverlay.style.display = "none";
+      capturedImage.classList.add("d-none");
+    }, 5000);
+  } finally {
+    verifyLoader.style.display = "none";
+    setTimeout(() => {
+      verifyBtn.disabled = false;
+    }, 1000);
+  }
+});
 </script>
 {% endblock %}
