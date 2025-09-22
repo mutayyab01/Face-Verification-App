@@ -95,7 +95,8 @@ def wages_upload():
             return redirect(url_for('finance.wages_upload'))
 
         try:
-            result = WagesUploadModel.delete_existing_record_with_unitId(unit_id)         
+            result = WagesUploadModel.delete_existing_record_with_unitId(unit_id)
+            print(f"🗑️ Existing records deletion for UnitId result: {result}")         
             df = pd.read_excel(file)
             df.columns = df.columns.str.strip()
             
