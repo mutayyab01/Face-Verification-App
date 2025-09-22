@@ -37,6 +37,7 @@ def viewPaymentLabour():
 
 #Author: Abrar ul Hassan, Comment: Get Employee Paid Record, Created At: 09-01-2025
 #Author: Abrar ul Hassan, Comment: Get Employee Paid Record, Updated At: 09-15-2025
+#Author: Abrar ul Hassan, Comment: Paid record go down, then unpaid on top, Updated At: 09-22-2025
 @admin_bp.route("/api/get_employeesPayment")
 @require_auth
 @require_role(["cashier:paid"])
@@ -45,31 +46,34 @@ def get_employees_payment():
     cursor = conn.cursor()
 
     cursor.execute("""
-                SELECT 
-                NucleusId, 
-                ContractorId, 
-                LabourName, 
-                ContractorName, 
-                UpdatedAt, 
-                Amount,
-                UnitId, 
-                IsPaid, 
-                VerifyType,
-                CASE 
-                WHEN UnitId = 1 THEN 'C4'
-                WHEN UnitId = 2 THEN 'E-38'
-                WHEN UnitId = 3 THEN 'B44'
-                ELSE 'Unknown'
-                END AS UnitName
-                FROM WagesUpload
-                WHERE cast(CreatedAt AS DATE) = (
-                SELECT MAX(cast(CreatedAt AS DATE)) 
-                FROM WagesUpload where UnitId = ?
-                )
-                AND UnitId = ?
-                AND UpdatedAt IS NOT NULL
-                ORDER BY UpdatedAt DESC;  
-""", (session['cashier_unit'],session['cashier_unit'],))
+    SELECT 
+        NucleusId, 
+        ContractorId, 
+        LabourName, 
+        ContractorName, 
+        UpdatedAt, 
+        Amount,
+        UnitId, 
+        IsPaid, 
+        VerifyType,
+        CASE 
+            WHEN UnitId = 1 THEN 'C4'
+            WHEN UnitId = 2 THEN 'E-38'
+            WHEN UnitId = 3 THEN 'B44'
+            ELSE 'Unknown'
+        END AS UnitName
+    FROM WagesUpload
+    WHERE cast(CreatedAt AS DATE) = (
+        SELECT MAX(cast(CreatedAt AS DATE)) 
+        FROM WagesUpload 
+        WHERE UnitId = ?
+    )
+    AND UnitId = ?
+    AND UpdatedAt IS NOT NULL
+    ORDER BY 
+        CASE WHEN IsPaid = 1 THEN 1 ELSE 0 END,  -- unpaid first
+        UpdatedAt DESC;  
+""", (session['cashier_unit'], session['cashier_unit']))
 
     rows = cursor.fetchall()
 
