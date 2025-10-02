@@ -48,8 +48,11 @@ class WagesUploadModel:
                 CreatedAt
                 FROM WagesUpload
                 WHERE UnitId = ?
-                AND CAST(CreatedAt AS DATE) = ?
-                """, (unitId, datetime.now().date()))
+                and CAST(CreatedAt AS DATE) = (
+                SELECT MAX(cast(CreatedAt AS DATE)) 
+                FROM WagesUpload where UnitId = ?
+                )
+                """, (unitId, unitId,))
                 
                 record = cursor.fetchall()
                 conn.close()
