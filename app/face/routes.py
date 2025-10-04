@@ -9,7 +9,7 @@ from .models import EmployeeModel
 from app.contractors.models import ContractorModel
 from .face_service import FaceRecognitionService
 from .exceptions import FaceRecognitionError
-from .utils import  get_upload_data, mark_labour_as_paid_for_code,check_labour_ispaid_or_not,mark_labour_as_paid_for_face,PreviousWeekUnpaidEmployeesfromDB,FilterByDatePreviousWeek
+from .utils import  get_upload_data, mark_labour_as_paid_for_code,check_labour_ispaid_or_not,mark_labour_as_paid_for_face,PreviousWeekUnpaidEmployeesfromDB,FilterByDatePreviousWeek,get_Employee,get_Paid_Employee_Details,mark_labour_as_paid_for_code_for_single_employee
 from . import face_bp
 import face_recognition
 import base64
@@ -397,3 +397,69 @@ def PreviousWeekUnpaidEmployees():
         })
 
     return jsonify(result)  
+
+
+@face_bp.route('/PreviousWeekPaidEmployees')
+@require_auth
+@require_role(['admin', 'cashier:match','cashier:paid'])
+def PreviousWeekPaidEmployeesPage():
+    return render_template('FaceRecognition/PreviousWeekPaidEmployee.html')
+
+
+@face_bp.route('/api/PreviousWeekPaidEmployees', methods=['GET'])
+@require_auth
+@require_role(['admin', 'cashier:match', 'cashier:paid'])
+def PreviousWeekPaidEmployees():
+    cashier_unit = session.get('cashier_unit')
+    LabourId = request.args.get('LabourId')
+    Date = request.args.get('Date')
+    Amount = request.args.get('Amount')
+
+    if not LabourId or not Date or not Amount:
+        return jsonify({'error': 'Missing parameters'}), 400
+
+    employee = get_Employee(LabourId, cashier_unit)
+    if employee:
+        paid_employee_detail = get_Paid_Employee_Details(LabourId, cashier_unit, Date, Amount)
+        if paid_employee_detail:
+            image_data = employee[1]
+            image_base64 = None
+            if image_data:
+                # Encode bytes → base64 string
+                image_base64 = base64.b64encode(image_data).decode('utf-8')
+
+            return jsonify({
+                "Employee": {
+                    "NucleusId": employee[0],
+                    "Image": f"data:image/jpeg;base64,{image_base64}" if image_base64 else None
+                },
+                "PaymentDetail": {
+                    "NucleusId": paid_employee_detail[0],
+                    "ContractorId": paid_employee_detail[1],
+                    "LabourName": paid_employee_detail[2],
+                    "ContractorName": paid_employee_detail[3],
+                    "Amount": paid_employee_detail[4],
+                    "UnitId": paid_employee_detail[5],
+                    "IsPaid": paid_employee_detail[6],
+                    "CreatedAt": paid_employee_detail[7].strftime('%Y-%m-%d') if isinstance(paid_employee_detail[7], datetime) else paid_employee_detail[7]
+                }
+            })
+
+    return jsonify([])
+
+
+@face_bp.route('/api/PreviousWeekPaidEmployeesConfirmed', methods=['POST'])
+@require_auth
+@require_role(['admin', 'cashier:match', 'cashier:paid'])
+def PreviousWeekPaidEmployeesConfirmed():
+    cashier_unit = session.get('cashier_unit')
+    LabourId = request.args.get('LabourId')
+    Date = request.args.get('Date')
+    Amount = request.args.get('Amount')
+    if not LabourId or not Date or not Amount:
+        return jsonify({'error': 'Missing parameters'}), 400
+
+    # Confirm the payment
+    payment_status = mark_labour_as_paid_for_code_for_single_employee(LabourId, cashier_unit, Date, Amount)
+    
+    return jsonify({'status': 'success' if payment_status else 'failure'})

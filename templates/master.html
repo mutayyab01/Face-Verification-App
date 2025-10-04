@@ -100,6 +100,20 @@
           </div>
         </div>
       </li>
+      <div class="sidebar-heading">Previous Week Unpaid Employees</div>
+      <li class="nav-item">
+        <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#PaidEmployee" aria-expanded="true"
+          aria-controls="PaidEmployee">
+          <i class="fas fa-fw fa-user"></i>
+          <span>Paid Employees</span>
+        </a>
+        <div id="PaidEmployee" class="collapse" aria-labelledby="headingEmployeeDetector"
+          data-parent="#accordionSidebar">
+          <div class="bg-white py-2 collapse-inner rounded">
+            <a class="collapse-item" href="{{ url_for('face.PreviousWeekPaidEmployeesPage') }}">Previous Week Payment</a>
+          </div>
+        </div>
+      </li>
       {% endif %}
       <!-- Divider -->
       <hr class="sidebar-divider" />
@@ -174,6 +188,20 @@
           data-parent="#accordionSidebar">
           <div class="bg-white py-2 collapse-inner rounded">
             <a class="collapse-item" href="{{ url_for('face.ViewUnpaidEmployees') }}">Unpaid Employees List</a>
+          </div>
+        </div>
+      </li>
+      <div class="sidebar-heading">Previous Week Unpaid Employees</div>
+      <li class="nav-item">
+        <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#PaidEmployee" aria-expanded="true"
+          aria-controls="PaidEmployee">
+          <i class="fas fa-fw fa-user"></i>
+          <span>Paid Employees</span>
+        </a>
+        <div id="PaidEmployee" class="collapse" aria-labelledby="headingEmployeeDetector"
+          data-parent="#accordionSidebar">
+          <div class="bg-white py-2 collapse-inner rounded">
+            <a class="collapse-item" href="{{ url_for('face.PreviousWeekPaidEmployeesPage') }}">Previous Week Payment</a>
           </div>
         </div>
       </li>

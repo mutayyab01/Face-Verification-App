@@ -247,3 +247,88 @@ def FilterByDatePreviousWeek(unit_id: int, from_date: datetime.date, to_date: da
     except Exception as e:
         logger.error(f"Failed to load previous week unpaid employees: {e}")
     return []
+
+
+def get_Employee(nucleus_id: int, unit_id: int) -> Any:
+    """
+    Fetch employee Based on NucleusId.
+    """
+    try:
+        conn = DatabaseManager.get_connection()
+        if conn:
+            cursor = conn.cursor()
+
+            query = """
+                    SELECT NucleusId,Image FROM Employee WHERE NucleusId = ? AND UnitId = ?
+            """
+            params = (nucleus_id, unit_id)
+
+            cursor.execute(query, params)
+            return cursor.fetchone()
+
+    except Exception as e:
+        logger.error(f"Failed to Get employee details: {e}")
+    return False
+
+def get_Paid_Employee_Details(nucleus_id: int, unit_id: int, date: datetime.date, amount: int) -> Any:
+    """
+    Get Paid Employee Details.
+    """
+    try:
+        conn = DatabaseManager.get_connection()
+        if conn:
+            cursor = conn.cursor()
+
+            query = """
+                    SELECT 
+                     NucleusId,
+                     ContractorId,
+                     LabourName,
+                     ContractorName,
+                     Amount,
+                     UnitId,
+                     IsPaid,
+                     CreatedAt
+                     FROM WagesUpload WHERE NucleusId = ? AND UnitId = ? AND IsPaid=0 AND Amount=? AND CAST(CreatedAt AS DATE)=?
+            """
+            params = (nucleus_id, unit_id, amount, date)
+
+            cursor.execute(query, params)
+            return cursor.fetchone()
+
+    except Exception as e:
+        logger.error(f"Failed to Get employee details: {e}")
+    return False
+
+def mark_labour_as_paid_for_code_for_single_employee(nucleus_id: int, unit_id: int, date: datetime.date, amount: int) -> bool:
+    """
+    Update WagesUpload by setting IsPaid = 1 
+    for a given UnitId and CreatedAt date (latest record).
+    """
+    try:
+        conn = DatabaseManager.get_connection()
+        if conn:
+            cursor = conn.cursor()
+
+            query = """
+            UPDATE WagesUpload
+            SET VerifyType = 'Code -- Single Employee',
+            UpdatedBy = ?,
+            UpdatedAt = ?,
+            IsPaid = 1
+            WHERE UnitId = ?
+            AND CAST(CreatedAt AS DATE) = ?
+            AND NucleusId = ?
+            AND Amount=?
+            """
+            params = (session['user_id'], datetime.now(), unit_id, date, nucleus_id, amount)
+            print(params,"Params in utils")
+            cursor.execute(query, params)
+            conn.commit()
+
+            return cursor.rowcount > 0   # True if at least one row updated
+
+    except Exception as e:
+        logger.error(f"Failed to update wages: {e}")
+
+    return False
