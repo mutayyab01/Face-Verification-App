@@ -249,7 +249,7 @@ def FilterByDatePreviousWeek(unit_id: int, from_date: datetime.date, to_date: da
     return []
 
 
-def get_Employee(nucleus_id: int, unit_id: int) -> Any:
+def get_EmployeeByLabourId(nucleus_id: int) -> Any:
     """
     Fetch employee Based on NucleusId.
     """
@@ -259,9 +259,10 @@ def get_Employee(nucleus_id: int, unit_id: int) -> Any:
             cursor = conn.cursor()
 
             query = """
-                    SELECT NucleusId,Image FROM Employee WHERE NucleusId = ? AND UnitId = ?
+                    SELECT e.NucleusId,e.Name ,e.FatherName,e.PhoneNo,e.Address,c.Name,e.UnitId,e.Image,e.IsActive
+                    FROM Employee e inner join Contractor c on c.ContractorId=e.ContractorId where e.NucleusId = ?
             """
-            params = (nucleus_id, unit_id)
+            params = (nucleus_id, )
 
             cursor.execute(query, params)
             return cursor.fetchone()

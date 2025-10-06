@@ -1,0 +1,208 @@
+{% extends "master.html" %}
+{% block title %}Search Employee By Code{% endblock %}
+{% block content %}
+
+<style>
+    .card {
+        border-radius: 15px;
+        transition: all 0.3s ease;
+    }
+
+    .card:hover {
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .form-label {
+        font-weight: 600;
+    }
+
+    .form-control {
+        border-radius: 10px;
+        transition: 0.2s;
+    }
+
+    .form-control:focus {
+        border-color: #198754;
+        box-shadow: 0 0 0 0.25rem rgba(25, 135, 84, 0.25);
+    }
+
+    .btn-success {
+        border-radius: 10px;
+        padding: 10px 20px;
+    }
+
+    #resultCard {
+        border-top: 4px solid #198754;
+    }
+
+    .employee-img {
+        border-radius: 15px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        transition: transform 0.3s ease;
+    }
+
+    .employee-img:hover {
+        transform: scale(1.05);
+    }
+
+    .employee-info p {
+        margin-bottom: 6px;
+        font-size: 20px;
+    }
+
+    .employee-info strong {
+        color: #110dfd;
+    }
+
+    .no-result {
+        text-align: center;
+        color: #dc3545;
+        font-weight: 600;
+        padding: 20px 0;
+    }
+
+    .employee-img {
+        border-radius: 15px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        transition: transform 0.3s ease;
+        max-width: 100%;
+        height: auto;
+        width: 550px;
+        /* <-- increase this */
+        height: 350px;
+        /* <-- make square */
+        object-fit: cover;
+    }
+</style>
+
+<div class="container-fluid mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold" style="color: black;">
+            <i class="fas fa-users me-2" style="color: rgb(28, 116, 175);"></i>
+            Search Employee By Code
+        </h2>
+        <a href="{{ url_for('admin.dashboard' if session.user_type == 'admin' else 'face.dashboard') }}"
+            class="btn btn-outline-secondary rounded-pill px-4">
+            <i class="fas fa-arrow-left me-1"></i> Back
+        </a>
+    </div>
+
+    <!-- Search Card -->
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-header bg-gradient  text-white rounded-top">
+            <h5 class="mb-0 fw-semibold">
+                <i class="fas fa-search me-2"></i> Search Employee by Labour ID
+            </h5>
+        </div>
+        <div class="card-body bg-light">
+            <form id="employeeForm" novalidate>
+                <div class="row g-3 align-items-end">
+                    <div class="col-md-4">
+                        <label for="LabourId" class="form-label">Labour ID *</label>
+                        <input type="number" class="form-control" id="LabourId" placeholder="Enter Labour ID" required  />
+                    </div>
+                    <div class="col-md-2 d-flex justify-content-end">
+                        <button type="submit" class="btn btn-primary shadow-sm">
+                            <i class="fas fa-check-circle me-1"></i> Fetch Details
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="card shadow-sm border-0 d-none" id="resultCard">
+        <div class="card-header bg-gradient text-white rounded-top">
+            <h5 class="mb-0 fw-semibold">
+                <i class="fas fa-info-circle me-2"></i>Employee Payment Details
+            </h5>
+        </div>
+        <div class="card-body bg-white" id="employeeDetails"></div>
+    </div>
+</div>
+<script>
+    document.getElementById('employeeForm').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        const LabourId = document.getElementById('LabourId').value.trim();
+
+        if (!LabourId) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Missing Fields',
+                text: 'Please enter a Labour ID before searching.',
+                confirmButtonColor: '#198754'
+            });
+            return;
+        }
+
+        fetch(`/face/api/SearchEmployeeByCode?LabourId=${LabourId}`, {
+            method: 'GET',
+            headers: { 'Accept': 'application/json' }
+        })
+            .then(res => res.json())
+            .then(data => {
+                const resultCard = document.getElementById('resultCard');
+                const detailsDiv = document.getElementById('employeeDetails');
+                resultCard.classList.remove('d-none');
+
+                if (data && data.Employee) {
+                    const emp = data.Employee;
+                    let unitName = '';
+                    if (emp.UnitId === 1) {
+                        unitName = 'C4';
+                    } else if (emp.UnitId === 2) {
+                        unitName = 'E-38';
+                    } else {
+                        unitName = 'B44';
+                    }
+
+                    detailsDiv.innerHTML = `
+                        <div class="row align-items-center">
+                            <div class="col-md-5 text-center">
+                                <img src="${emp.Image || '/static/img/default-avatar.png'}"
+                                    alt="Employee Image"
+                                    class="employee-img mb-3" />
+                            </div>
+                            <div class="col-md-7 employee-info">
+                                <p><strong>Nucleus ID:</strong> ${emp.NucleusId}</p>
+                                <p><strong>Name:</strong> ${emp.Name}</p>
+                                <p><strong>Father Name:</strong> ${emp.FatherName}</p>
+                                <p><strong>Phone No:</strong> ${emp.PhoneNo}</p>
+                                <p><strong>Address:</strong> ${emp.Address}</p>
+                                <p><strong>Contractor Name:</strong> ${emp.ContractorName}</p>
+                                <p><strong>Unit:</strong> ${unitName}</p>
+                                <p><strong>Is Active:</strong> ${emp.IsActive ? 'Yes' : 'No'}</p>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    swal.fire({
+                        icon: 'info',
+                        title: 'No Records Found',
+                        text: 'No employee found for the given Labour ID.',
+                        confirmButtonColor: '#198754'
+                    });
+                    detailsDiv.innerHTML = `
+                        <div class="no-result">
+                            <i class="fas fa-exclamation-circle me-2"></i>
+                            No records found for the given Labour ID.
+                        </div>
+                    `;
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Failed to fetch data. Please try again later.',
+                    confirmButtonColor: '#198754'
+                });
+            });
+    });
+</script>
+
+
+
+{% endblock %}
