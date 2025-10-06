@@ -22,10 +22,10 @@
         transition: 0.2s;
     }
 
-    .form-control:focus {
+    /* .form-control:focus {
         border-color: #198754;
         box-shadow: 0 0 0 0.25rem rgba(25, 135, 84, 0.25);
-    }
+    } */
 
     .btn-success {
         border-radius: 10px;
@@ -78,9 +78,10 @@
 
 <div class="container-fluid mt-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="fw-bold text-success">
-            <i class="fas fa-users me-2"></i>Previous Week Paid Employees
-        </h2>
+       <h2 class="fw-bold" style="color: black;">
+    <i class="fas fa-users me-2" style="color: rgb(28, 116, 175);"></i>
+    Previous Week Paid Employees
+</h2>
         <a href="{{ url_for('admin.dashboard' if session.user_type == 'admin' else 'face.dashboard') }}" class="btn btn-outline-secondary rounded-pill px-4">
             <i class="fas fa-arrow-left me-1"></i> Back
         </a>
@@ -93,30 +94,25 @@
                 <i class="fas fa-search me-2"></i> Search Paid Employee
             </h5>
         </div>
-        <div class="card-body bg-light">
-            <form id="employeeForm" novalidate>
-                <div class="row g-3">
-                    <div class="col-md-4">
-                        <label for="LabourId" class="form-label">Labour ID *</label>
-                        <input type="text" class="form-control" id="LabourId" placeholder="Enter Labour ID" required />
-                    </div>
-                    <div class="col-md-4">
-                        <label for="Date" class="form-label">Date *</label>
-                        <input type="date" class="form-control" id="Date" required />
-                    </div>
-                    <div class="col-md-4">
-                        <label for="Amount" class="form-label">Amount *</label>
-                        <input type="text" class="form-control" id="Amount" placeholder="Enter Paid Amount" required />
-                    </div>
-                </div>
-
-                <div class="text-end mt-4">
-                    <button type="submit" class="btn btn-success shadow-sm me-5">
-                        <i class="fas fa-check-circle me-1"></i> Fetch Details
-                    </button>
-                </div>
-            </form>
+      <div class="card-body bg-light">
+    <form id="employeeForm" novalidate>
+        <div class="row g-3 align-items-end">
+            <div class="col-md-4">
+                <label for="LabourId" class="form-label">Labour ID *</label>
+                <input type="text" class="form-control" id="LabourId" placeholder="Enter Labour ID" required />
+            </div>
+            <div class="col-md-4">
+                <label for="Date" class="form-label">Date *</label>
+                <input type="date" class="form-control" id="Date" required />
+            </div>
+            <div class="col-md-2 d-flex justify-content-end">
+                <button type="submit" class="btn btn-primary shadow-sm">
+                    <i class="fas fa-check-circle me-1"></i> Fetch Details
+                </button>
+            </div>
         </div>
+    </form>
+</div>
     </div>
 
     <div class="card shadow-sm border-0 d-none" id="resultCard">
@@ -135,9 +131,9 @@
 
         const LabourId = document.getElementById('LabourId').value.trim();
         const Date = document.getElementById('Date').value.trim();
-        const Amount = document.getElementById('Amount').value.trim();
+        //const Amount = document.getElementById('Amount').value.trim();
 
-        if (!LabourId || !Date || !Amount) {
+        if (!LabourId || !Date ) {
             Swal.fire({
                 icon: 'warning',
                 title: 'Missing Fields',
@@ -147,7 +143,7 @@
             return;
         }
 
-        fetch(`/face/api/PreviousWeekPaidEmployees?LabourId=${LabourId}&Date=${Date}&Amount=${Amount}`, {
+        fetch(`/face/api/PreviousWeekPaidEmployees?LabourId=${LabourId}&Date=${Date}`, {
             method: 'GET',
             headers: { 'Accept': 'application/json' }
         })
@@ -170,7 +166,6 @@
                             <p><strong>Labour Name:</strong> ${data.PaymentDetail.LabourName}</p>
                             <p><strong>Contractor Name:</strong> ${data.PaymentDetail.ContractorName}</p>
                             <p><strong>Amount:</strong> <span class="text-success fw-bold">${data.PaymentDetail.Amount}</span></p>
-                            <p><strong>Date Paid:</strong> ${data.PaymentDetail.CreatedAt}</p>
                             <p><strong>Status:</strong> 
                                 <span id="paymentStatus" class="badge ${data.PaymentDetail.IsPaid ? 'bg-success' : 'bg-danger'}">
                                     ${data.PaymentDetail.IsPaid ? 'Paid' : 'Unpaid'}
@@ -208,7 +203,7 @@
                                         didOpen: () => Swal.showLoading()
                                     });
 
-                                    fetch(`/face/api/PreviousWeekPaidEmployeesConfirmed?LabourId=${LabourId}&Date=${Date}&Amount=${Amount}`, {
+                                    fetch(`/face/api/PreviousWeekPaidEmployeesConfirmed?LabourId=${LabourId}&Date=${Date}`, {
                                         method: "POST",
                                         headers: { "Accept": "application/json" }
                                     })

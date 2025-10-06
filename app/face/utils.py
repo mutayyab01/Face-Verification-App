@@ -270,7 +270,7 @@ def get_Employee(nucleus_id: int, unit_id: int) -> Any:
         logger.error(f"Failed to Get employee details: {e}")
     return False
 
-def get_Paid_Employee_Details(nucleus_id: int, unit_id: int, date: datetime.date, amount: int) -> Any:
+def get_Paid_Employee_Details(nucleus_id: int, unit_id: int, date: datetime.date) -> Any:
     """
     Get Paid Employee Details.
     """
@@ -289,9 +289,9 @@ def get_Paid_Employee_Details(nucleus_id: int, unit_id: int, date: datetime.date
                      UnitId,
                      IsPaid,
                      CreatedAt
-                     FROM WagesUpload WHERE NucleusId = ? AND UnitId = ? AND IsPaid=0 AND Amount=? AND CAST(CreatedAt AS DATE)=?
+                     FROM WagesUpload WHERE NucleusId = ? AND UnitId = ? AND IsPaid=0 AND CAST(CreatedAt AS DATE)=?
             """
-            params = (nucleus_id, unit_id, amount, date)
+            params = (nucleus_id, unit_id, date)
 
             cursor.execute(query, params)
             return cursor.fetchone()
@@ -300,7 +300,7 @@ def get_Paid_Employee_Details(nucleus_id: int, unit_id: int, date: datetime.date
         logger.error(f"Failed to Get employee details: {e}")
     return False
 
-def mark_labour_as_paid_for_code_for_single_employee(nucleus_id: int, unit_id: int, date: datetime.date, amount: int) -> bool:
+def mark_labour_as_paid_for_code_for_single_employee(nucleus_id: int, unit_id: int, date: datetime.date) -> bool:
     """
     Update WagesUpload by setting IsPaid = 1 
     for a given UnitId and CreatedAt date (latest record).
@@ -319,10 +319,8 @@ def mark_labour_as_paid_for_code_for_single_employee(nucleus_id: int, unit_id: i
             WHERE UnitId = ?
             AND CAST(CreatedAt AS DATE) = ?
             AND NucleusId = ?
-            AND Amount=?
             """
-            params = (session['user_id'], datetime.now(), unit_id, date, nucleus_id, amount)
-            print(params,"Params in utils")
+            params = (session['user_id'], datetime.now(), unit_id, date, nucleus_id)
             cursor.execute(query, params)
             conn.commit()
 

@@ -413,14 +413,15 @@ def PreviousWeekPaidEmployees():
     cashier_unit = session.get('cashier_unit')
     LabourId = request.args.get('LabourId')
     Date = request.args.get('Date')
-    Amount = request.args.get('Amount')
+    # Amount = request.args.get('Amount')
 
-    if not LabourId or not Date or not Amount:
+    if not LabourId or not Date:
         return jsonify({'error': 'Missing parameters'}), 400
 
     employee = get_Employee(LabourId, cashier_unit)
     if employee:
-        paid_employee_detail = get_Paid_Employee_Details(LabourId, cashier_unit, Date, Amount)
+        paid_employee_detail = get_Paid_Employee_Details(LabourId, cashier_unit, Date)
+        print("sain see here",paid_employee_detail)
         if paid_employee_detail:
             image_data = employee[1]
             image_base64 = None
@@ -441,7 +442,7 @@ def PreviousWeekPaidEmployees():
                     "Amount": paid_employee_detail[4],
                     "UnitId": paid_employee_detail[5],
                     "IsPaid": paid_employee_detail[6],
-                    "CreatedAt": paid_employee_detail[7].strftime('%Y-%m-%d') if isinstance(paid_employee_detail[7], datetime) else paid_employee_detail[7]
+                    # "CreatedAt": paid_employee_detail[7].strftime('%Y-%m-%d') if isinstance(paid_employee_detail[7], datetime) else paid_employee_detail[7]
                 }
             })
 
@@ -455,11 +456,10 @@ def PreviousWeekPaidEmployeesConfirmed():
     cashier_unit = session.get('cashier_unit')
     LabourId = request.args.get('LabourId')
     Date = request.args.get('Date')
-    Amount = request.args.get('Amount')
-    if not LabourId or not Date or not Amount:
+    if not LabourId or not Date:
         return jsonify({'error': 'Missing parameters'}), 400
 
     # Confirm the payment
-    payment_status = mark_labour_as_paid_for_code_for_single_employee(LabourId, cashier_unit, Date, Amount)
+    payment_status = mark_labour_as_paid_for_code_for_single_employee(LabourId, cashier_unit, Date)
     
     return jsonify({'status': 'success' if payment_status else 'failure'})
