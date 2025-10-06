@@ -101,21 +101,6 @@ def GetEmployeeById_onFacePage():
         flash("An unexpected error occurred.", "error")
         return jsonify({'message': 'Unexpected error occurred.'})
 
-@face_bp.route('/cashier/GetWagesData')
-@require_auth
-@require_role(['admin', 'cashier:match'])
-def get_wages_data():
-    upload_data = get_upload_data()
-    rows = []
-    for row in upload_data:
-        rows.append({
-            "labour_code": row[0],
-            "labour_name": row[2],
-            "contractor_name": row[3],
-            "amount": row[4],
-            "paid": bool(row[5])
-        })
-    return jsonify({"data": rows})
 
 # ===== Match Face & Update Wages =====
 @face_bp.route('/cashier/VerifyEmployeeOnFacePage', methods=["POST"])
