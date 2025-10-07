@@ -449,6 +449,7 @@ def get_all_unpaid_previous_week():
                 Amount,
                 UnitId,
                 IsPaid,
+                CreatedAt,
                 CASE 
                     WHEN UnitId = 1 THEN 'C4'
                     WHEN UnitId = 2 THEN 'E-38'
@@ -469,7 +470,7 @@ def get_all_unpaid_previous_week():
                 "ContractorName": row.ContractorName,
                 "Amount": row.Amount,
                 "UnitName": row.UnitName,
-                # "Date": row.CreatedAt.strftime("%Y-%m-%d %H:%M:%S") if row.CreatedAt else None,
+                "Date": row.CreatedAt.strftime("%Y-%m-%d %H:%M:%S") if row.CreatedAt else None,
                 "IsPaid": row.IsPaid
             })
 
@@ -501,9 +502,9 @@ def update_payment_status():
 
         cursor.execute("""
             UPDATE WagesUpload
-            SET IsPaid = ?, UpdatedAt = ?, UnitId = ?
+            SET IsPaid = ?, VerifyType = 'Previous Week Payment', UpdatedBy = ?, UpdatedAt = ?, UnitId = ?
             WHERE Id = ?
-        """, (is_paid, datetime.now(), session['cashier_unit'], record_id))
+        """, (is_paid, session['user_id'], datetime.now(), session['cashier_unit'], record_id))
 
         conn.commit()
 
