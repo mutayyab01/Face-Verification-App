@@ -1,0 +1,119 @@
+{% extends "master.html" %}
+{% block title %}Wages Pay Unpaid Employee{% endblock %}
+
+{% block content %}
+<main class="container mt-4">
+  <h3>Pay Unpaid Employees (Last Week)</h3>
+
+  <table class="table table-bordered" id="employeeTable">
+    <thead class="table-dark">
+      <tr>
+        <th>Id</th>
+        <th>Employee Code</th>
+        <th>Labour Name</th>
+        <th>Contractor</th>
+        <th>Amount</th>
+        <th>Unit</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</main>
+
+<!-- jQuery + DataTables -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+let employeeTable;
+
+// ✅ Load all unpaid employees (GET)
+function loadPayments() {
+  $.ajax({
+    url: "/face/api/getallunpaidpreviousweekEmp",
+    method: "GET",
+    success: function (data) {
+      if (!employeeTable) {
+        employeeTable = $('#employeeTable').DataTable({
+          pageLength: 25,
+          lengthChange: false,
+          ordering: false,
+          data: data,
+          dom: '<"d-flex justify-content-between align-items-center mb-2"fB>rtip',
+          buttons: [],
+          columns: [
+            { data: "Id" },
+            { data: "NucleusId" },
+            { data: "LabourName" },
+            { data: "ContractorName" },
+            { data: "Amount" },
+            { data: "UnitName" },
+            {
+              data: "IsPaid",
+              render: function (data, type, row) {
+                if (type === 'display') {
+                  let checked = data == 1 ? "checked" : "";
+                  let disabled = data == 1 ? "disabled" : "";
+                  return `
+                    <div class="form-check">
+                      <input 
+                        class="form-check-input border-dark" 
+                        type="checkbox" 
+                        id="checkbox_${row.Id}" 
+                        onchange="onChangeCheckbox(this, ${row.Id})" 
+                        ${checked} ${disabled}>
+                    </div>`;
+                } else if (type === 'export' || type === 'filter') {
+                  return data == 1 ? "Paid" : "Unpaid";
+                } else {
+                  return data;
+                }
+              }
+            }
+          ]
+        });
+      } else {
+        employeeTable.clear().rows.add(data).draw();
+      }
+    },
+    error: function (xhr, status, error) {
+      console.error("Load Failed:", error);
+    }
+  });
+}
+
+// ✅ Update record when checkbox is clicked
+function onChangeCheckbox(checkbox, recordId) {
+  const isPaid = checkbox.checked ? 1 : 0;
+
+  $.ajax({
+    url: "/face/api/updatepaymentstatus",
+    type: "POST",
+    contentType: "application/json; charset=utf-8",
+    dataType: "json",
+    data: JSON.stringify({
+      Id: recordId,
+      isPaid: isPaid
+    }),
+    success: function (response) {
+      if (response.success) {
+        console.log("Updated Successfully:", response.message);
+        $(checkbox).closest('tr').addClass('table-success');
+        checkbox.disabled = true; // disable after update
+      } else {
+        alert("Update Failed: " + response.message);
+        checkbox.checked = false;
+      }
+    },
+    error: function (xhr, status, error) {
+      console.error("Update Failed:", xhr.responseText || error);
+      alert("Server error occurred!");
+      checkbox.checked = false;
+    }
+  });
+}
+
+$(document).ready(function () {
+  loadPayments();
+});
+</script>
+{% endblock %}

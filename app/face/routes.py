@@ -422,3 +422,100 @@ def SearchEmployeeByCode():
         })
 
     return jsonify([])
+
+
+#Author: Abrar ul Hassan, Comment: Wages pay to unpaid Employee, Created At: 10-06-2025
+@face_bp.route('/ViewWagesPayEmployees')
+@require_auth
+@require_role(['admin', 'cashier:match', 'cashier:paid'])
+def ViewWagesPayEmployee():
+    return render_template('FaceRecognition/WagespayUnpaidEmployee.html')
+
+#Author: Abrar ul Hassan, Comment: Paid record go down, then unpaid on top, Updated At: 09-22-2025
+@face_bp.route("/api/getallunpaidpreviousweekEmp", methods=["GET"])
+@require_auth
+@require_role(['admin', 'cashier:match', 'cashier:paid'])
+def get_all_unpaid_previous_week():
+    try:
+        conn = DatabaseManager.get_connection()
+        cursor = conn.cursor()
+
+        cursor.execute("""
+            SELECT 
+                Id,
+                NucleusId,
+                LabourName,
+                ContractorName,
+                Amount,
+                UnitId,
+                IsPaid,
+                CASE 
+                    WHEN UnitId = 1 THEN 'C4'
+                    WHEN UnitId = 2 THEN 'E-38'
+                    WHEN UnitId = 3 THEN 'B44'
+                    ELSE 'Unknown'
+                END AS UnitName
+            FROM WagesUpload
+            WHERE IsPaid = 0 AND UnitId = ?
+        """,session['cashier_unit'])
+        rows = cursor.fetchall()
+
+        data = []
+        for row in rows:
+            data.append({
+                "Id": row.Id,
+                "NucleusId": row.NucleusId,
+                "LabourName": row.LabourName,
+                "ContractorName": row.ContractorName,
+                "Amount": row.Amount,
+                "UnitName": row.UnitName,
+                # "Date": row.CreatedAt.strftime("%Y-%m-%d %H:%M:%S") if row.CreatedAt else None,
+                "IsPaid": row.IsPaid
+            })
+
+        return jsonify(data)
+
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
+
+#Author: Abrar ul Hassan, Comment: Paid record go down, then unpaid on top, Updated At: 09-22-2025
+@face_bp.route("/api/updatepaymentstatus", methods=["POST"])
+@require_auth
+@require_role(['admin', 'cashier:match', 'cashier:paid'])
+def update_payment_status():
+    try:
+        data = request.get_json()
+
+        record_id = data.get("Id")
+        is_paid = data.get("isPaid")
+
+        if record_id is None:
+            return jsonify({"success": False, "message": "Missing record Id"}), 400
+
+        conn = DatabaseManager.get_connection()
+        cursor = conn.cursor()
+
+        cursor.execute("""
+            UPDATE WagesUpload
+            SET IsPaid = ?, UpdatedAt = ?, UnitId = ?
+            WHERE Id = ?
+        """, (is_paid, datetime.now(), session['cashier_unit'], record_id))
+
+        conn.commit()
+
+        if cursor.rowcount > 0:
+            return jsonify({"success": True, "message": "Payment updated successfully"})
+        else:
+            return jsonify({"success": False, "message": "No record found"}), 404
+
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
+        
